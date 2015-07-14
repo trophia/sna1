@@ -1,0 +1,10 @@
+# Ignore requirements
+/requires
+
+# Ignore compiled files
+*.exe
+*.debug
+*.prof
+
+# Ignore editor/IDE files
+*.sublime-*
