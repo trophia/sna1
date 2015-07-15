@@ -69,7 +69,7 @@ requires: requires-boost requires-stencila
  
 # Define compile options and required libraries
 CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -pthread
-INC_DIRS := -I. -Irequires/stencila -Irequires/boost-$(OS)
+INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/stencila -Irequires/fsl
 LIB_DIRS := -Lrequires/boost-$(OS)/lib
 LIBS := 
 

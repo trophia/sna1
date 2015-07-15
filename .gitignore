@@ -1,6 +1,9 @@
 # Ignore requirements
 /requires
 
+# Ignore outputs
+/outputs
+
 # Ignore compiled files
 *.exe
 *.debug

@@ -24,11 +24,16 @@ public:
     }
 
     Model& step(const int& steps=1){
+        now = 1;
         for(int step=0;step<steps;step++){
-            //std::cout<<step<<std::endl;
+            std::cout<<'.'<<std::flush;
+
+            fishes.track();
+
             environ.update();
             fishes.update(environ);
             fleet.update(fishes,environ);
+            now++;
         }
         return *this;
     }
@@ -37,7 +42,7 @@ public:
         return *this;
     }
 
-    Model& run(int steps=1000){
+    Model& run(int steps=100){
         start();
         step(steps);
         stop();
