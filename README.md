@@ -8,9 +8,9 @@ This model is being developed to aid in the evaluation alternative monitoring an
 
 This work is being undertaken by [NIWA](http://niwa.co.nz) and [Trophia](http://trophia.com) as part of a project funded by the [New Zealand Ministry of Primary Industries](http://mpi.govt.nz).
 
-## Model structure
+## Structure
 
-The model is an [individual-based (aka agent-based)](https://en.wikipedia.org/wiki/Agent-based_model)(IBM). IBMs have been used for some time in ecology (see Grimm & Railsback (2005) for a review) but their use in fisheries science has been limited (although see Thorson et al (2012) for a recent example). We chose to use an IBM because it has a number of advantages for simulating detailed temporal and spatial dynamics.
+The model is an [individual-based](https://en.wikipedia.org/wiki/Agent-based_model)(IBM, aka agent-based). IBMs have been used for some time in ecology (see Grimm & Railsback (2005) for a review) but their use in fisheries science has been limited (although see Thorson et al (2012) for a recent example). We chose to use an IBM because it has a number of advantages for simulating detailed temporal and spatial dynamics.
 
 The SNA 1 fishery is one of New Zealand's most important. Commensurate with the fishery's importance, we wanted to use a model structure that could accommodate the types of questions that would be asked of it. While a coarse single-area, age-structured model is more than adequate to evaluate many types of monitoring and management strategies it could not answer questions around multiple area, multiple substocks or size-based processes that are of interest for SNA 1.
 
@@ -20,7 +20,7 @@ Instead of having a model that performs it's mathematical accounting on 20000 pa
 
 Perhaps most importantly, the nature of IBM models, and in particular how they model detailed population processes, is likely to be more easily explained and understood by stakeholders than complicated partition based models.
 
-It is generally easy to add additional complexity to an IBM. This is important in the current context; we wanted a model that could start off relatively simple but be flexible enough to have complexity added to in in response to questions asked of it by stakeholders. For example, in an IBM, explicit modeling of "trap shyness" just involves adding an attribute to each individual which counts the number of times it has previously been caught and then making it's probability of capture partly dependent on that count. 
+It is generally easy to add additional complexity to an IBM. This is important in the current context; we wanted a model that could start off relatively simple but be flexible enough to have complexity added to in response to questions asked of it by stakeholders. For example, in an IBM, explicit modeling of "trap shyness" just involves adding an attribute to each individual which counts the number of times it has previously been caught and then making it's probability of capture partly dependent on that count. 
 
 IBMs are inherently easy to parrallelize and thus take advantage of multi-core and multi-machine computing environments.
 
