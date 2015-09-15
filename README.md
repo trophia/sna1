@@ -10,7 +10,7 @@ This work is being undertaken by [NIWA](http://niwa.co.nz) and [Trophia](http://
 
 ## Structure
 
-The model is an [individual-based](https://en.wikipedia.org/wiki/Agent-based_model)(IBM, aka agent-based). IBMs have been used for some time in ecology (see Grimm & Railsback (2005) for a review) but their use in fisheries science has been limited (although see Thorson et al (2012) for a recent example). We chose to use an IBM because it has a number of advantages for simulating detailed temporal and spatial dynamics.
+The model is an [individual-based](https://en.wikipedia.org/wiki/Agent-based_model) (IBM, aka agent-based). IBMs have been used for some time in ecology (see Grimm & Railsback (2005) for a review) but their use in fisheries science has been limited (although see Thorson et al (2012) for a recent example). We chose to use an IBM because it has a number of advantages for simulating detailed temporal and spatial dynamics.
 
 The SNA 1 fishery is one of New Zealand's most important. Commensurate with the fishery's importance, we wanted to use a model structure that could accommodate the types of questions that would be asked of it. While a coarse single-area, age-structured model is more than adequate to evaluate many types of monitoring and management strategies it could not answer questions around multiple area, multiple substocks or size-based processes that are of interest for SNA 1.
 
@@ -30,6 +30,6 @@ The model is in early stages of development. The basic architecture has been set
 
 ## References
 
-Grimm, V., and Railsback, S. F. 2005. Individual-based Modeling andEcology. Princeton University Press, Princeton, NJ. 428 pp.
+Grimm, V., and Railsback, S. F. 2005. Individual-based modeling and ecology. Princeton University Press, Princeton, NJ. 428 pp.
 
 Thorson, J. T., Stewart, I. J., & Punt, A. E. (2012). Development and application of an agent-based model to evaluate methods for estimating relative abundance indices for shoaling fish such as Pacific rockfish (Sebastes spp.). ICES Journal of Marine Science: Journal du Conseil, 69(4), 635-647.

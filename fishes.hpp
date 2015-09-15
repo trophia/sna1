@@ -4,11 +4,24 @@
 #include <vector>
 #include <thread>
 
+#include <stencila/array-static.hpp>
+using Stencila::Array;
 #include <stencila/query.hpp>
 using namespace Stencila::Queries;
 
+#include <fsl/math/probability/truncated.hpp>
+using Fsl::Math::Probability::Truncated;
+#include <fsl/math/probability/normal.hpp>
+using Fsl::Math::Probability::Normal;
 #include <fsl/math/probability/lognormal.hpp>
 using Fsl::Math::Probability::Lognormal;
+#include <fsl/math/probability/exponential.hpp>
+using Fsl::Math::Probability::Exponential;
+#include <fsl/math/probability/discrete.hpp>
+using Fsl::Math::Probability::Discrete;
+
+#include <fsl/population/growth/von-bert.hpp>
+using Fsl::Population::Growth::VonBert;
 
 #include "dimensions.hpp"
 #include "environ.hpp"
@@ -18,8 +31,64 @@ using Fsl::Math::Probability::Lognormal;
  */
 class FishParameters {
  public:
-    Lognormal create_length = {30,30};
+    /**
+     * Stock distribution of initial seed population
+     */
+    Discrete<Stock,2> seed_stock = {
+        {W,E},
+        {0.6,0.4}
+    };
+
+    /**
+     * Stock specific area distribution of initial seed population
+     */
+    Array<
+        Discrete<Area,3>,
+        Stocks
+    > seed_area;
+
+    /**
+     * Total mortality of the initial seed population
+     *
+     * Determines the equilibrium age structure.
+     */
+    double seed_total_mortality = 0.1;
+
+    Exponential seed_age;
+
+    /**
+     * Sex at birth
+     */
+    Discrete<Sex,2> sex_at_birth = {
+        {male,female},
+        {0.5,0.5}
+    };
+
     float natural_mortality_rate = 0.1;
+
+    VonBert length_at_age_func = {
+        k:0.1,
+        linf:100
+    };
+    float length_at_age_cv = 0.1;
+    Array<Normal,Ages> length_at_age;
+
+    void initialise(void){
+
+        seed_area(W) = Discrete<Area,3>({EN,HG,BP},{0.5,0.4,0.1});
+        seed_area(E) = Discrete<Area,3>({EN,HG,BP},{0.1,0.4,0.5});
+
+        seed_age = Exponential(seed_total_mortality);
+
+        for(auto age : ages){
+            auto mean = length_at_age_func(age.index());
+            auto sd = std::max(mean*length_at_age_cv,1.);
+            length_at_age(age) = Normal(mean,sd);
+        }
+        length_at_age.write("output/fishes/length_at_age.tsv",{"mean","sd"},[](std::ostream& file,const Normal& distribution){
+            file<<distribution.mean()<<"\t"<<distribution.sd();
+        });
+    }
 };
 
 /**
@@ -55,7 +124,7 @@ class Fish {
     /**
      * Location of this fish
      */
-    Area location;
+    Area area;
 
     /**
      * Is this fish tagged?
@@ -68,37 +137,38 @@ class Fish {
     /**
      * Create a fish 
      * 
-     * Create as in the Book of Genesis creation. This constructor is needed 
-     * for intial seeding of the population prior to burning it in.
+     * This constructor is needed for intial seeding of the 
+     * population prior to burning it in. In other circumstances
+     * the `Fish(const Fish& father, const Fish& mother)` constructor
+     * is used.
      */
     Fish(void) {
-        auto stock = E;//create_stock.random();
-        auto location = EN;//create_location.random();
-        auto length = params.create_length.random();
-        init(stock,location,length);
+        stock = params.seed_stock.random();
+        area = params.seed_area(stock).random();
+        auto age = std::max(1.,std::min(params.seed_age.random(),30.));
+        birth = now-age;
+        death = 0;
+        sex = params.sex_at_birth.random();
+        length = std::max(params.length_at_age(age).random(),0.);
+        tagged = false;
     }
 
     /**
      * Spawn a fish
      */
     Fish(const Fish& father, const Fish& mother) {
-        init(father.stock,father.location);
-    }
-
-    /**
-     * Initialise a fish
-     * 
-     * Should only be called from the constructors above
-     */
-    void init(Stock stock, Area location, uint length = 0){
-        Fish::stock = stock;
+        stock = father.stock;
+        area = father.area;
         birth = now;
         death = 0;
-        sex = male;//sex_at_birth.random();
-        Fish::length = length;
-        Fish::location = location;
+        sex = params.sex_at_birth.random();
+        length = 1;
         tagged = false;
     }
+
+    /*************************************************************
+     * Attributes
+     ************************************************************/
 
     /**
      * Is this fish alive?
@@ -115,20 +185,38 @@ class Fish {
     }
 
     /**
+     * Get the age bin of this fish
+     */
+    int age_bin(void) const {
+        return ::age_bin(age());
+    }
+
+    /**
+     * Get the length bin of this fish
+     */
+    int length_bin(void) const {
+        return ::length_bin(length);
+    }
+
+
+    /*************************************************************
+     * Processes
+     ************************************************************/
+
+    /**
      * Does this fish survive this time step?
      */
     bool survive(void) {
-        auto dies = chance.random() < params.natural_mortality_rate;
-        if (dies) death = now;
-        return dies;
+        auto survives = chance.random() > params.natural_mortality_rate;
+        if(not survives) death = now;
+        return survives;
     }
 
     /**
      * Increase the length of this fish
      */
     Fish& grow(void) {
-        auto incr = 0;//growth_function(length);
-        length += incr;
+        length = std::max(params.length_at_age(age_bin()).random(),1.0);
         return *this;
     }
 
@@ -136,7 +224,7 @@ class Fish {
      * Move this fish
      */
     Fish& move(void) {
-        location = EN;//movement_probabilities(location);
+        //! @todo
         return *this;
     }
 
@@ -161,7 +249,9 @@ class Fishes {
     std::vector<Fish> fishes;
 
     /**
-     * The actual number of fish in the entire population
+     * Number of fish in the population
+     *
+     * Used to scale the `fishes`
      */
     unsigned int number;
 
@@ -170,26 +260,30 @@ class Fishes {
 
     Count alive;
     Mean length_mean;
-    Frequency length_freq;
+
+    Array<uint,Stocks,Areas,Sexes,Ages,Lengths> counts;
+
+    Fishes& initialise(void){
+        Fish::params.initialise();
+
+        return *this;
+    }
 
     void start(const Environ& environ) {
         // Seed the population
         fishes.clear();
         fishes.resize(start_number);
         // Burn in
-        
+        //! @todo
     }
 
     void update(const Environ& environ) {
-
+        // Update each fish
         #if !defined(FISHES_PARALLEL)
-
-            for (Fish& fish : fishes) {
+            for(Fish& fish : fishes) {
                 fish.update(environ);
             }
-
         #else
-
             int each = fishes.size()/6;
 
             std::thread thread0(update_task, &fishes, environ, 0, each);
@@ -205,15 +299,21 @@ class Fishes {
             thread3.join();
             thread4.join();
             thread5.join();
-
         #endif
 
-        // Spawn 
-        for(auto& fish : fishes){
-            if(not fish.alive()){
-                Fish egg;
-                fish = egg;
-            };
+        // Spawn
+        auto replace = fishes.begin();
+        auto end = fishes.end();
+        int eggs = 10000;
+        for(int index=0; index<eggs; index++){
+            Fish father;
+            Fish mother;
+            Fish egg(father,mother);
+            // Find a dea
+            while(replace!=end and replace->alive()) replace++;
+            // If
+            if(replace!=end) *replace = egg;
+            else fishes.push_back(egg);
         }
     }
 
@@ -228,23 +328,30 @@ class Fishes {
 
     void enumerate(void) {
         alive.reset();
-        length_mean.reset();
-        length_freq.reset(100);
+        counts = 0;
         for (auto fish : fishes){
             if(fish.alive()){
                 alive.append();
+
+                counts(
+                    fish.stock,
+                    fish.area,
+                    fish.sex,
+                    fish.age_bin(),
+                    fish.length_bin()
+                )++;
+
                 length_mean.append(fish.length);
-                length_freq.append(fish.length);
-                //location_freq(fish.location);
             }
         }
     }
 
     void track(void){ 
         static std::ofstream* general = nullptr;
-        if(not general) general = new std::ofstream("output/fish/general.tsv");
-        static std::ofstream* length_freq_file = nullptr;
-        if(not length_freq_file) length_freq_file = new std::ofstream("output/fish/length_freq.tsv");
+        if(not general) general = new std::ofstream("output/fishes/general.tsv"); 
+
+        static std::ofstream* counts_file = nullptr;
+        if(not counts_file) counts_file = new std::ofstream("output/fishes/counts.tsv");
 
         enumerate();
 
@@ -254,13 +361,26 @@ class Fishes {
                 <<alive<<"\t"
                 <<length_mean<<std::endl;
 
-        uint index = 0;
-        for(auto count : length_freq.result()){
-            (*length_freq_file)
-                <<now<<"\t"
-                <<index++<<"\t"
-                <<count<<std::endl;
-        };
+        for(auto stock : stocks){
+            for(auto area : areas){
+                for(auto sex : sexes){
+                    for(auto age: ages){
+                        for(auto length : lengths){
+                            (*counts_file)
+                                <<now<<"\t"
+                                <<stock<<"\t"
+                                <<area<<"\t"
+                                <<sex<<"\t"
+                                <<age<<"\t"
+                                <<length<<"\t"
+                                <<counts(stock,area,sex,age,length)<<"\n"
+                            ;
+                        }
+                    }
+                }
+            }
+        }
+        (*counts_file).flush();
     }
 
 };  // end class Fishes

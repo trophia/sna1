@@ -16,7 +16,13 @@ public:
     Fishes fishes;
     Fleet fleet;
 
+    Model& initialise(void){
+        fishes.initialise();
+        return *this;
+    }
+
     Model& start(void){
+        now = 1900;
         environ.start();
         fishes.start(environ);
         fleet.start(fishes,environ);
@@ -24,9 +30,8 @@ public:
     }
 
     Model& step(const int& steps=1){
-        now = 1;
         for(int step=0;step<steps;step++){
-            std::cout<<'.'<<std::flush;
+            std::cout<<now<<std::endl;
 
             fishes.track();
 
@@ -42,7 +47,7 @@ public:
         return *this;
     }
 
-    Model& run(int steps=100){
+    Model& run(int steps=20){
         start();
         step(steps);
         stop();

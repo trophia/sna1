@@ -88,3 +88,10 @@ sna1.debug: $(HPPS) $(CPPS)
 # Executable for profiling
 sna1.prof: $(HPPS) $(CPPS)
 	$(CXX) $(CXX_FLAGS) -pg -O3 $(INC_DIRS) -o$@ sna1.cpp $(LIB_DIRS) $(LIBS)
+
+
+#############################################################
+# Running
+ 
+run: sna1.exe
+	time ./sna1.exe

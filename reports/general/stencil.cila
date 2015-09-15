@@ -1,0 +1,84 @@
+#title General summaries
+
+A general report of simulation outputs. Currently, these are mostly used for debugging and testing.
+
+r &k5wXK4
+	require(dplyr)
+	 require(ggplot2)
+
+	 counts <- read.table('../../output/fishes/counts.tsv',sep='\t',header=F)
+	 names(counts) <- c('time','stock','area','sex','age','length','count')
+	 counts <- within(counts,{
+	   stock <- factor(stock+1,labels=c('W','E'))
+	   area <- factor(area+1,labels=c('HG','EN','BP'))
+     age <- factor(age)
+	 })
+
+figure ^1
+
+	r format png size 20x15cm &YDhzyw
+		print(
+		   ggplot(
+		     summarise(group_by(counts,time,stock),count=sum(count)),
+		     aes(x=time,y=count,colour=stock)
+		   ) + 
+		     geom_line() +
+		     geom_hline(y=0,alpha=0)
+		 )
+
+	out
+		{img [src=out/population-numbers-by-sto-YDhzyw.png] [style=max-width:10cm;max-height:10cm]}
+
+	figcaption Population numbers by stock and year
+
+figure ^2
+
+	r format png size 20x15cm &X7I6a6
+		print(
+		   ggplot(
+		     summarise(group_by(counts,time,stock,area),count=sum(count)),
+		     aes(x=time,y=count,colour=area)
+		   ) + 
+		     geom_line() + 
+		     geom_hline(y=0,alpha=0) +
+		     facet_grid(stock~.)
+		 )
+
+	out
+		{img [src=out/population-numbers-by-sto-X7I6a6.png] [style=max-width:10cm;max-height:10cm]}
+
+	figcaption Population numbers by stock, area and year
+
+figure ^3
+
+	r format png size 20x20cm &bLP6olb
+		print(
+		   ggplot(
+		     summarise(group_by(counts,time,age),count=sum(count)),
+		     aes(x=age,y=count)
+		   ) + 
+		     geom_bar(stat='identity') + 
+		     facet_wrap(~time)
+		 )
+
+	out
+		{img [src=out/age-frequencies-by-year-bLP6olb.png] [style=max-width:10cm;max-height:10cm]}
+
+	figcaption Age frequencies by year
+
+figure ^4
+
+	r format png size 20x20cm &kMrC60
+		print(
+		   ggplot(
+		     summarise(group_by(counts,time,age,length),count=sum(count)),
+		     aes(x=length,y=count,colour=age)
+		   ) + 
+		     geom_line() + 
+		     facet_wrap(~time)
+		 )
+
+	out
+		{img [src=out/length-frequencies-by-age-kMrC60.png] [style=max-width:10cm;max-height:10cm]}
+
+	figcaption Length frequencies by age and year
