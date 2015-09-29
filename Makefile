@@ -47,7 +47,7 @@ requires/boost-$(OS).flag: requires/boost-$(OS)
 requires-boost: requires/boost-$(OS).flag
 
 
-STENCILA_VERSION := 0.16
+STENCILA_VERSION := 0.18
 
 requires/stencila-$(STENCILA_VERSION).zip:
 	@mkdir -p requires
@@ -61,7 +61,23 @@ requires/stencila: requires/stencila-$(STENCILA_VERSION).zip
 
 requires-stencila: requires/stencila
 
-requires: requires-boost requires-stencila
+
+FSL_VERSION := 1d2eb9c7a35b498cd30d990804365e32aef0d8c1
+
+requires/fsl-$(FSL_VERSION).zip:
+	@mkdir -p requires
+	wget --no-check-certificate -O $@ https://github.com/trident-systems/fsl/archive/$(FSL_VERSION).zip
+
+requires/fsl: requires/fsl-$(FSL_VERSION).zip
+	rm -rf requires/fsl
+	unzip $< -d requires
+	mv requires/fsl-$(FSL_VERSION) requires/fsl
+	touch $@
+
+requires-fsl: requires/fsl
+
+
+requires: requires-boost requires-stencila requires-fsl
 
 
 #############################################################
