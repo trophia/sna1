@@ -81,7 +81,7 @@ class FishParameters {
         seed_age = Exponential(seed_total_mortality);
 
         for(auto age : ages){
-            auto mean = length_at_age_func(age.index());
+            auto mean = length_at_age_func.value(age.index());
             auto sd = std::max(mean*length_at_age_cv,1.);
             length_at_age(age) = Normal(mean,sd);
         }
