@@ -30,7 +30,8 @@ using Fsl::Population::Growth::VonBert;
  * Fish parameters
  */
 class FishParameters {
- public:
+public:
+
     /**
      * Stock distribution of initial seed population
      */
@@ -50,10 +51,14 @@ class FishParameters {
     /**
      * Total mortality of the initial seed population
      *
-     * Determines the equilibrium age structure.
+     * Determines the equilibrium age structure of the seed population.
      */
     double seed_total_mortality = 0.1;
 
+    /**
+     * Exponential distribution for the age structure of the 
+     * seed population
+     */
     Exponential seed_age;
 
     /**
@@ -64,8 +69,17 @@ class FishParameters {
         {0.5,0.5}
     };
 
+    /**
+     * Instantaneous rate of natural mortality
+     */
     float natural_mortality_rate = 0.1;
 
+    /**
+     * Length at age
+     *
+     * Uses a normal ditribtion around the mean age at length
+     * determined by the von-Bertallanfy growth function.
+     */
     VonBert length_at_age_func = {
         k:0.1,
         linf:100
@@ -73,6 +87,9 @@ class FishParameters {
     float length_at_age_cv = 0.1;
     Array<Normal,Ages> length_at_age;
 
+    /**
+     * Initialise the parameters
+     */
     void initialise(void){
 
         seed_area(W) = Discrete<Area,3>({EN,HG,BP},{0.5,0.4,0.1});
@@ -131,7 +148,9 @@ class Fish {
      */
     bool tagged;
 
-
+    /**
+     * Parameters for `Fish` dynamics
+     */
     static FishParameters params;
 
     /**
@@ -243,15 +262,25 @@ class Fish {
 
 FishParameters Fish::params;
 
+/**
+ * The population of `Fish`
+ */
 class Fishes {
  public:
 
+    /**
+     * List of individual fish
+     *
+     * We don't attempt to model every single fish in the population. Rather,
+     * `fishes` are intended to be representative of the larger population.
+     */
     std::vector<Fish> fishes;
 
     /**
      * Number of fish in the population
      *
-     * Used to scale the `fishes`
+     * Used to scale the things like biomass etc from the size of `fishes` to the 
+     * total population size
      */
     unsigned int number;
 
@@ -277,10 +306,15 @@ class Fishes {
         //! @todo
     }
 
+    /**
+     * Update the population
+     * 
+     * @param environ Current state of the environment
+     */
     void update(const Environ& environ) {
         // Update each fish
         #if !defined(FISHES_PARALLEL)
-            for(Fish& fish : fishes) {
+            for (Fish& fish : fishes) {
                 fish.update(environ);
             }
         #else
@@ -301,7 +335,7 @@ class Fishes {
             thread5.join();
         #endif
 
-        // Spawn
+        // Spawn new fishes
         auto replace = fishes.begin();
         auto end = fishes.end();
         int eggs = 10000;
@@ -309,14 +343,23 @@ class Fishes {
             Fish father;
             Fish mother;
             Fish egg(father,mother);
-            // Find a dea
+            // Try to find a dead fish in `fishes` which can be replaced by
+            // the new egg
             while(replace!=end and replace->alive()) replace++;
-            // If
+            // If possible replace a dead fish, otherwise add to fishes
             if(replace!=end) *replace = egg;
             else fishes.push_back(egg);
         }
     }
 
+    /**
+     * An update task for use when `update()` is parallelized
+     * 
+     * @param fishes  Vector of `Fish`
+     * @param environ Current environment
+     * @param start   Index of fish to start updating
+     * @param num     Number of fish to update
+     */
     static void update_task(std::vector<Fish>* fishes, const Environ& environ, const uint& start, const uint& num) {
         auto fish = fishes->begin()+start;
         auto end = fish+num;
@@ -326,6 +369,9 @@ class Fishes {
         }
     }
 
+    /**
+     * Enumerate the population (count number of fish etc)
+     */
     void enumerate(void) {
         alive.reset();
         counts = 0;
@@ -346,6 +392,9 @@ class Fishes {
         }
     }
 
+    /**
+     * Track the population by writing attributes and structure to files
+     */
     void track(void){ 
         static std::ofstream* general = nullptr;
         if(not general) general = new std::ofstream("output/fishes/general.tsv"); 
