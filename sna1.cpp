@@ -13,8 +13,8 @@ int main(int argc, char** argv){
 
     model.initialise();
     
-    model.fishes.start_number = 1e5;
-    model.run();
+    model.fishes.start_number = 1e4;
+    model.run(1980,2020);
 
     std::cout<<std::endl;
     return 0;

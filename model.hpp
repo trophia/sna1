@@ -22,24 +22,20 @@ public:
     }
 
     Model& start(void){
-        now = 1900;
         environ.start();
         fishes.start(environ);
         fleet.start(fishes,environ);
         return *this;
     }
 
-    Model& step(const int& steps=1){
-        for(int step=0;step<steps;step++){
-            std::cout<<now<<std::endl;
+    Model& step(void){
+        fishes.track();
 
-            fishes.track();
+        environ.update();
+        fishes.update(environ);
+        fleet.update(fishes,environ);
+        now++;
 
-            environ.update();
-            fishes.update(environ);
-            fleet.update(fishes,environ);
-            now++;
-        }
         return *this;
     }
 
@@ -47,9 +43,13 @@ public:
         return *this;
     }
 
-    Model& run(int steps=20){
+    Model& run(unsigned int from, unsigned int to){
+        now = from;
         start();
-        step(steps);
+        while(now<=to){
+            std::cout<<now<<std::endl;
+            step();
+        }
         stop();
         return *this;
     }

@@ -33,12 +33,9 @@ class FishParameters {
 public:
 
     /**
-     * Stock distribution of initial seed population
+     * Stock distribution of initial seed population e.g. 60% west, 40% east
      */
-    Discrete<Stock,2> seed_stock = {
-        {W,E},
-        {0.6,0.4}
-    };
+    Discrete<Stock,2> seed_stock;
 
     /**
      * Stock specific area distribution of initial seed population
@@ -62,17 +59,19 @@ public:
     Exponential seed_age;
 
     /**
+     * Stock recruitment
+     */
+    double recruitment_steepness = 0.85;
+
+    /**
      * Sex at birth
      */
-    Discrete<Sex,2> sex_at_birth = {
-        {male,female},
-        {0.5,0.5}
-    };
+    Discrete<Sex,2> sex_at_birth;
 
     /**
      * Instantaneous rate of natural mortality
      */
-    float natural_mortality_rate = 0.1;
+    double natural_mortality_rate = 0.075;
 
     /**
      * Length at age
@@ -88,15 +87,51 @@ public:
     Array<Normal,Ages> length_at_age;
 
     /**
+     * Length-weight relation
+     */
+    double length_weight_a = 4.467e-08;
+    double length_weight_b = 2.793;
+
+    /**
+     * Maturity-at-age
+     *
+     * This is not the proportion mature at an age but rather the probability
+     * of maturing
+     */
+    dou
+
+
+    /**
      * Initialise the parameters
+     *
+     * In the future, these could be read in from file, but for the moment done here
      */
     void initialise(void){
 
-        seed_area(W) = Discrete<Area,3>({EN,HG,BP},{0.5,0.4,0.1});
-        seed_area(E) = Discrete<Area,3>({EN,HG,BP},{0.1,0.4,0.5});
+        seed_stock = {
+            {W,E},
+            {0.6,0.4}
+        };
 
-        seed_age = Exponential(seed_total_mortality);
+        seed_area(W) = {
+            {EN,HG,BP},
+            {0.5,0.4,0.1}
+        };
+        seed_area(E) = {
+            {EN,HG,BP},
+            {0.1,0.4,0.5}
+        };
 
+        seed_age = Exponential(
+            seed_total_mortality
+        );
+
+        sex_at_birth = {
+            {male,female},
+            {0.5,0.5}
+        };
+
+        // Initialise the length-at-age distributions
         for(auto age : ages){
             auto mean = length_at_age_func.value(age.index());
             auto sd = std::max(mean*length_at_age_cv,1.);
@@ -217,6 +252,15 @@ class Fish {
         return ::length_bin(length);
     }
 
+    /**
+     * Get the weight of this fish
+     *
+     * Currently, all fish have the same condition factor so weight is
+     * simply a function of length
+     */
+    double weight(void) const {
+        return params.length_weight_a*std::pow(length, params.length_weight_b);
+    }
 
     /*************************************************************
      * Processes
@@ -318,21 +362,17 @@ class Fishes {
                 fish.update(environ);
             }
         #else
-            int each = fishes.size()/6;
+            int each = fishes.size()/4;
 
             std::thread thread0(update_task, &fishes, environ, 0, each);
             std::thread thread1(update_task, &fishes, environ, each, each);
             std::thread thread2(update_task, &fishes, environ, each*2, each);
             std::thread thread3(update_task, &fishes, environ, each*3, each);
-            std::thread thread4(update_task, &fishes, environ, each*4, each);
-            std::thread thread5(update_task, &fishes, environ, each*5, each);
 
             thread0.join();
             thread1.join();
             thread2.join();
             thread3.join();
-            thread4.join();
-            thread5.join();
         #endif
 
         // Spawn new fishes
