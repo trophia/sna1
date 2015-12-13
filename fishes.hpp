@@ -376,26 +376,15 @@ class Fishes {
      */
     std::vector<Fish> fishes;
 
-    uint start_number;
-    uint burn_times;
 
     Count alive;
     Mean length_mean;
-
     Array<uint,Stocks,Areas,Sexes,Ages,Lengths> counts;
 
     Fishes& initialise(void){
         Fish::params.initialise();
 
         return *this;
-    }
-
-    void start(const Environ& environ) {
-        // Seed the population
-        fishes.clear();
-        fishes.resize(start_number);
-        // Burn in
-        //! @todo
     }
 
     /**
@@ -453,6 +442,30 @@ class Fishes {
             fish->update(environ);
             fish++;
         }
+    }
+
+    /**
+     * Take the population to equilibrium
+     */
+    void equilibrium(const Environ& environ, int seed_number = 1000) {
+        // Set `now` at some arbitrary time in the past
+        now = 0;
+        // Seed the population. `resize()` uses the default
+        // constructor which creates seed individuals that is 
+        // intended to reduce the burn in time for the initial population
+        fishes.clear();
+        fishes.resize(seed_number);
+        // Burn in
+        // 
+        // TODO Currently just burns in for an arbitarty number of iterations
+        // Should instead exist when stability in population characteristics
+        while(now<100){
+            update(environ);
+            std::cout<<now<<"\t"<<fishes.size()<<std::endl;
+            now++;
+        }
+        // Re-age the fish to current time
+        // TODO
     }
 
     /**

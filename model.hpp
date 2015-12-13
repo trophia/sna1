@@ -24,25 +24,13 @@ public:
         return *this;
     }
 
-    Model& start(void){
-        environ.start();
-        fishes.start(environ);
-        fleet.start(fishes,environ);
-
-        return *this;
-    }
-
-    Model& step(void){
+    Model& update(void){
         fishes.track();
 
         environ.update();
         fishes.update(environ);
-        fleet.update(fishes,environ);
+        //fleet.update(fishes,environ);
 
-        return *this;
-    }
-
-    Model& stop(void){
         return *this;
     }
 
@@ -51,7 +39,7 @@ public:
         start();
         while(now<=to){
             std::cout<<now<<"\t"<<fishes.fishes.size()<<std::endl;
-            step();
+            update();
             now++;
         }
         stop();
