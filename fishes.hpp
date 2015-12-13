@@ -98,8 +98,7 @@ public:
      * This is not the proportion mature at an age but rather the probability
      * of maturing
      */
-    dou
-
+    Array<double,Ages> maturation_at_age;
 
     /**
      * Initialise the parameters
@@ -140,6 +139,11 @@ public:
         length_at_age.write("output/fishes/length_at_age.tsv",{"mean","sd"},[](std::ostream& file,const Normal& distribution){
             file<<distribution.mean()<<"\t"<<distribution.sd();
         });
+
+        for(auto age : ages){
+            // TODO implement something more sophisticated
+            maturation_at_age(age) = age.index()>4;
+        }
     }
 };
 
@@ -174,6 +178,11 @@ class Fish {
     float length;
 
     /**
+     * Is this fish mature?
+     */
+    bool mature;
+
+    /**
      * Location of this fish
      */
     Area area;
@@ -204,6 +213,7 @@ class Fish {
         death = 0;
         sex = params.sex_at_birth.random();
         length = std::max(params.length_at_age(age).random(),0.);
+        mature = chance.random()<params.maturation_at_age(age);
         tagged = false;
     }
 
@@ -217,6 +227,7 @@ class Fish {
         death = 0;
         sex = params.sex_at_birth.random();
         length = 1;
+        mature = false;
         tagged = false;
     }
 
@@ -267,26 +278,62 @@ class Fish {
      ************************************************************/
 
     /**
+     * Kill this fish
+     *
+     * This method is separate from `survive()` because it
+     * is also used by `Fleets` to kill a fish from harvest or
+     * incidental mortality
+     */
+    Fish& dieing(void) {
+        death = now;
+        return *this;
+    }
+
+    /**
      * Does this fish survive this time step?
      */
-    bool survive(void) {
+    bool survival(void) {
         auto survives = chance.random() > params.natural_mortality_rate;
-        if(not survives) death = now;
+        if(not survives) dieing();
         return survives;
     }
 
     /**
      * Increase the length of this fish
      */
-    Fish& grow(void) {
+    Fish& growth(void) {
         length = std::max(params.length_at_age(age_bin()).random(),1.0);
         return *this;
     }
 
     /**
+     * Change the maturation status of this fish
+     */
+    Fish& maturation(void) {
+        if(not mature){
+            mature = chance.random()<params.maturation_at_age(age_bin());
+        }
+        return *this;
+    }
+
+    /**
+     * Spawn a new fish
+     * 
+     * @return  The newly spawned eggs
+     */
+    std::vector<Fish> spawning(void) {
+        std::vector<Fish> eggs;
+        if(mature){
+            Fish egg(*this, *this);
+            eggs.push_back(egg);
+        }
+        return eggs;
+    }
+
+    /**
      * Move this fish
      */
-    Fish& move(void) {
+    Fish& movement(void) {
         //! @todo
         return *this;
     }
@@ -294,13 +341,14 @@ class Fish {
     /**
      * Update this fish (i.e. operate all processes on it)
      */
-    bool update(const Environ& environ){
-        if(survive()){
-            grow();
-            move();
-            return true;
+    std::vector<Fish> update(const Environ& environ){
+        if (survival()) {
+            growth();
+            maturation();
+            movement();
+            return spawning();
         }
-        else return false;
+        else return {};
     }
 };  // end class Fish
 
@@ -313,20 +361,20 @@ class Fishes {
  public:
 
     /**
+     * Population scalar
+     *
+     * Used to scale the things like biomass etc from the size of `fishes` to the 
+     * total population size
+     */
+    double scalar = 1.0;
+
+    /**
      * List of individual fish
      *
      * We don't attempt to model every single fish in the population. Rather,
      * `fishes` are intended to be representative of the larger population.
      */
     std::vector<Fish> fishes;
-
-    /**
-     * Number of fish in the population
-     *
-     * Used to scale the things like biomass etc from the size of `fishes` to the 
-     * total population size
-     */
-    unsigned int number;
 
     uint start_number;
     uint burn_times;
@@ -357,9 +405,11 @@ class Fishes {
      */
     void update(const Environ& environ) {
         // Update each fish
+        std::vector<Fish> eggs;
         #if !defined(FISHES_PARALLEL)
             for (Fish& fish : fishes) {
-                fish.update(environ);
+                auto spawn = fish.update(environ);
+                eggs.insert(eggs.end(),spawn.begin(),spawn.end());
             }
         #else
             int each = fishes.size()/4;
@@ -375,14 +425,10 @@ class Fishes {
             thread3.join();
         #endif
 
-        // Spawn new fishes
+        // Insert eggs into population
         auto replace = fishes.begin();
         auto end = fishes.end();
-        int eggs = 10000;
-        for(int index=0; index<eggs; index++){
-            Fish father;
-            Fish mother;
-            Fish egg(father,mother);
+        for (Fish egg : eggs) {
             // Try to find a dead fish in `fishes` which can be replaced by
             // the new egg
             while(replace!=end and replace->alive()) replace++;
@@ -450,6 +496,7 @@ class Fishes {
                 <<alive<<"\t"
                 <<length_mean<<std::endl;
 
+        /*
         for(auto stock : stocks){
             for(auto area : areas){
                 for(auto sex : sexes){
@@ -470,6 +517,7 @@ class Fishes {
             }
         }
         (*counts_file).flush();
+        */
     }
 
 };  // end class Fishes
