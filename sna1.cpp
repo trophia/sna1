@@ -5,17 +5,12 @@
 
 Model model;
 
-int main(int argc, char** argv){
-    std::cout<<"SNA1 model\n";
-    #if defined(FISHES_PARALLEL)
-    	std::cout<<"  - `fishes` parallelized\n";
-    #endif
+int main(int argc, char** argv) {
+    std::cout << "SNA1 model\n";
 
     model.initialise();
-    
-    model.fishes.start_number = 1e4;
-    model.run(1980,2020);
+    model.run(1980, 2020);
 
-    std::cout<<std::endl;
+    std::cout << std::endl;
     return 0;
 }
