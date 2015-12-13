@@ -310,7 +310,7 @@ class Fish {
      * Change the maturation status of this fish
      */
     Fish& maturation(void) {
-        if(not mature){
+        if (not mature) {
             mature = chance.random()<params.maturation_at_age(age_bin());
         }
         return *this;
@@ -323,9 +323,11 @@ class Fish {
      */
     std::vector<Fish> spawning(void) {
         std::vector<Fish> eggs;
-        if(mature){
-            Fish egg(*this, *this);
-            eggs.push_back(egg);
+        if (mature) {
+            if (chance.random() < 0.1) {
+                Fish egg(*this, *this);
+                eggs.push_back(egg);
+            }
         }
         return eggs;
     }
@@ -447,25 +449,51 @@ class Fishes {
     /**
      * Take the population to equilibrium
      */
-    void equilibrium(const Environ& environ, int seed_number = 1000) {
-        // Set `now` at some arbitrary time in the past
+    void equilibrium(Time time, const Environ& environ, int seed_number = 1000) {
+        // Set `now` to some arbitrary time
         now = 0;
         // Seed the population. `resize()` uses the default
-        // constructor which creates seed individuals that is 
+        // constructor which creates seed individuals that have attribute values 
         // intended to reduce the burn in time for the initial population
         fishes.clear();
         fishes.resize(seed_number);
         // Burn in
-        // 
         // TODO Currently just burns in for an arbitarty number of iterations
-        // Should instead exist when stability in population characteristics
+        // Should instead exit when stability in population characteristics
         while(now<100){
             update(environ);
-            std::cout<<now<<"\t"<<fishes.size()<<std::endl;
+            std::cout<<now<<"\t"<<count('s')<<"\t"<<count('a')<<std::endl;
             now++;
         }
         // Re-age the fish to current time
-        // TODO
+        // The fish have arbitrary `birth` times so we need to "re-age"
+        // them so that the population is in equilbrium AND "current"
+        auto diff = time-now;
+        for(auto fish : fishes){
+            fish.birth += diff;
+        }
+    }
+
+    /**
+     * Count the number of fish
+     *
+     * This is a convienience function for counting the number of fish
+     * in the population. It is mainly intended for debugging and tracking.
+     * For more sophisticated counting see `enumerate()`
+     * 
+     * @param what What to count
+     */
+    unsigned int count(char what='a') {
+        auto count = 0u;
+        if(what=='a'){
+            for (auto fish : fishes){
+                if(fish.alive()) count++;
+            }
+        }
+        else if(what=='s'){
+            count = fishes.size();
+        }
+        return count;
     }
 
     /**

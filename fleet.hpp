@@ -16,7 +16,7 @@ class Fleet {
 
     void encounter(Fish& fish) {
         if(now>=1980){
-            auto encountered = chance.random() < 0.1;
+            auto encountered = chance.random() < 0.2;
             if(encountered) {
                 fish.dieing();
             }
@@ -37,7 +37,7 @@ class Fleet {
         }
     }
 
-    Environ& finalise(void) {
+    Fleet& finalise(void) {
         return *this;
     }
 };  // class Fleet

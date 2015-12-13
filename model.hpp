@@ -29,21 +29,22 @@ public:
 
         environ.update();
         fishes.update(environ);
-        //fleet.update(fishes,environ);
+        fleet.update(fishes,environ);
 
         return *this;
     }
 
-    Model& run(unsigned int from, unsigned int to){
-        now = from;
-        start();
-        while(now<=to){
-            std::cout<<now<<"\t"<<fishes.fishes.size()<<std::endl;
+    Model& run(Time start, Time finish){
+        // Create initial population of fish
+        fishes.equilibrium(start, environ, 10000);
+        // Iterate over times
+        now = start;
+        while(now<=finish){
+            std::cout<<now<<"\t"<<fishes.count('s')<<"\t"<<fishes.count('a')<<std::endl;
             update();
             now++;
         }
-        stop();
-        
+
         return *this;
     }
 }; // end class Model
