@@ -17,7 +17,10 @@ public:
     Fleet fleet;
 
     Model& initialise(void){
+        environ.initialise();
         fishes.initialise();
+        fleet.initialise();
+
         return *this;
     }
 
@@ -25,6 +28,7 @@ public:
         environ.start();
         fishes.start(environ);
         fleet.start(fishes,environ);
+
         return *this;
     }
 
@@ -34,7 +38,6 @@ public:
         environ.update();
         fishes.update(environ);
         fleet.update(fishes,environ);
-        now++;
 
         return *this;
     }
@@ -47,10 +50,12 @@ public:
         now = from;
         start();
         while(now<=to){
-            std::cout<<now<<std::endl;
+            std::cout<<now<<"\t"<<fishes.fishes.size()<<std::endl;
             step();
+            now++;
         }
         stop();
+        
         return *this;
     }
 }; // end class Model
