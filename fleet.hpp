@@ -1,14 +1,47 @@
 #pragma once
 
 /**
- * The "fleet" of fishers both commercial and recreational
- *
- * Currently just a placeholder
+ * A fleet of fishing activity
  */
 class Fleet {
-public:
-    void start(const Fishes&, const Environ&){
+ public:
+	/**
+	 * Current catches (t)
+	 */
+	double catches;
+
+    Fleet& initialise(void){
+        return *this;
     }
-    void update(const Fishes&, const Environ&){
+
+    void encounter(Fish& fish) {
+        if(now>=1980){
+            auto encountered = chance.random() < 0.1;
+            if(encountered) {
+                fish.dieing();
+            }
+        }
     }
-}; //end class Fleet
+
+    void update(Fishes& fishes, const Environ& environ) {
+    	/**
+    	 * Calculate an exploitable biomass
+    	 */
+    	double biomass_vuln = 0;
+
+        /**
+         * Apply an exploitation rate
+         */
+        for (Fish& fish : fishes.fishes) {
+            encounter(fish);
+        }
+    }
+
+    Environ& finalise(void) {
+        return *this;
+    }
+};  // class Fleet
+
+/**
+ * Fleets
+ */
