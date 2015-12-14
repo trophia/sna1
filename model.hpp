@@ -5,6 +5,7 @@
 #include "environ.hpp"
 #include "fishes.hpp"
 #include "fleet.hpp"
+#include "monitor.hpp"
 
 /**
  * The model
@@ -17,11 +18,20 @@ public:
     Environ environ;
     Fishes fishes;
     Fleet fleet;
+    Monitor monitor;
 
     void initialise(void) {
         environ.initialise();
         fishes.initialise();
         fleet.initialise();
+        monitor.initialise();
+    }
+
+    void finalise(void){
+        environ.finalise();
+        fishes.finalise();
+        fleet.finalise();
+        monitor.finalise();
     }
 
     void trace(void) {
@@ -36,6 +46,7 @@ public:
         environ.update();
         fishes.update(environ);
         fleet.update(fishes, environ);
+        monitor.update(fleet, fishes, environ);
     }
 
     void run(Time start, Time finish, std::function<void()>* callback = 0) {
@@ -50,4 +61,5 @@ public:
             now++;
         }
     }
+
 };  // end class Model

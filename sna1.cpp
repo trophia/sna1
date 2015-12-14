@@ -2,7 +2,7 @@
 #include <string>
 #include <ctime>
 
-#define TRACE_LEVEL 0
+#define TRACE_LEVEL 10
 
 //#define FISHES_PARALLEL
 
@@ -70,5 +70,8 @@ int main(int argc, char** argv) {
         std::cout << "************Unknown error************\n";
         return 1;
     }
+
+    model.finalise();
+
     return 0;
 }

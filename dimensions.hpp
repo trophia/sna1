@@ -11,6 +11,10 @@ Time now;
 
 const uint times_per_year = 1;
 
+uint year(Time a) {
+    return a;
+}
+
 float years(Time a, Time b) {
     return (a-b)/times_per_year;
 }

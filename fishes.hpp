@@ -205,9 +205,9 @@ class Fish {
     Area area;
 
     /**
-     * Is this fish tagged?
+     * Tag number for fish
      */
-    bool tagged;
+    unsigned int tag ;
 
     /**
      * Parameters for `Fish` dynamics
@@ -231,7 +231,7 @@ class Fish {
         sex = params.sex_at_birth.random();
         length = std::max(params.length_at_age(age).random(),0.);
         mature = chance.random()<params.maturation_at_age(age);
-        tagged = false;
+        tag = 0;
     }
 
     /**
@@ -245,7 +245,7 @@ class Fish {
         sex = params.sex_at_birth.random();
         length = 1;
         mature = false;
-        tagged = false;
+        tag = 0;
     }
 
     /*************************************************************
@@ -435,6 +435,12 @@ class Fishes {
      */
     void initialise(void){
         Fish::params.initialise();
+    }
+
+    /**
+     * Finalise (e.g. write values to file)
+     */
+    void finalise(void){
     }
 
     /**
