@@ -363,6 +363,20 @@ class Fishes {
  public:
 
     /**
+     * List of individual fish
+     *
+     * We don't attempt to model every single fish in the population. Rather,
+     * `fishes` are intended to be representative of the larger population.
+     */
+    std::vector<Fish> fishes;
+
+    /**
+     * @name Population level attributes
+     *
+     * @{
+     */
+
+    /**
      * Population scalar
      *
      * Used to scale the things like biomass etc from the size of `fishes` to the 
@@ -371,22 +385,30 @@ class Fishes {
     double scalar = 1.0;
 
     /**
-     * List of individual fish
-     *
-     * We don't attempt to model every single fish in the population. Rather,
-     * `fishes` are intended to be representative of the larger population.
+     * Number of instances of `Fish` to seed the population with
      */
-    std::vector<Fish> fishes;
+    unsigned int instances_seed = 100000;
 
+    /**
+     * Pristine spawner biomass (t)
+     *
+     * Externally defined and used to calculate the value for `scalar`
+     *
+     * Total across stocks from Francis & McKenzie (2014) "Table 30: Base case 
+     * estimates of unfished biomass, B0 , and current biomass by stock and area"
+     */
+    double biomass_spawners_pristine = 376000;
 
-    Count alive;
-    Mean length_mean;
+    /**
+     * Counts of fish by model dimensions
+     */
     Array<uint,Stocks,Areas,Sexes,Ages,Lengths> counts;
 
-    Fishes& initialise(void){
+    /**
+     * Initialise parameters etc
+     */
+    void initialise(void){
         Fish::params.initialise();
-
-        return *this;
     }
 
     /**
@@ -449,63 +471,120 @@ class Fishes {
     /**
      * Take the population to equilibrium
      */
-    void equilibrium(Time time, const Environ& environ, int seed_number = 1000) {
+    void equilibrium(Time time, const Environ& environ, int instances) {
         // Set `now` to some arbitrary time
         now = 0;
         // Seed the population. `resize()` uses the default
         // constructor which creates seed individuals that have attribute values 
         // intended to reduce the burn in time for the initial population
         fishes.clear();
-        fishes.resize(seed_number);
+        fishes.resize(instances);
         // Burn in
         // TODO Currently just burns in for an arbitarty number of iterations
         // Should instead exit when stability in population characteristics
         while(now<100){
+            #if TRACE_LEVEL>0
+                std::cout<<now<<"\t";
+                trace();
+                std::cout<<"\n";
+            #endif
             update(environ);
-            std::cout<<now<<"\t"<<count('s')<<"\t"<<count('a')<<std::endl;
             now++;
         }
         // Re-age the fish to current time
         // The fish have arbitrary `birth` times so we need to "re-age"
         // them so that the population is in equilbrium AND "current"
         auto diff = time-now;
-        for(auto fish : fishes){
+        for (auto& fish : fishes) {
             fish.birth += diff;
         }
+        now = time;
     }
 
     /**
-     * Count the number of fish
+     * Take the population to pristine equilibium
      *
-     * This is a convienience function for counting the number of fish
-     * in the population. It is mainly intended for debugging and tracking.
-     * For more sophisticated counting see `enumerate()`
-     * 
-     * @param what What to count
+     * This method simply calls `equilibrium()` and then sets population level attributes
+     * like `biomass_spawners_pristine` and `scalar`
      */
-    unsigned int count(char what='a') {
-        auto count = 0u;
-        if(what=='a'){
-            for (auto fish : fishes){
-                if(fish.alive()) count++;
+    void pristine(Time time, const Environ& environ){
+        // Take population to equilibrium
+        equilibrium(time, environ, instances_seed);
+        // Adjust scalar so that the current spawner biomass 
+        // matches the intended value
+        scalar *= biomass_spawners_pristine/biomass_spawners();
+    }
+
+    /**
+     * Calculate the number of fish in the population
+     *
+     * @param scale Scale up the number?
+     */
+    double number(bool scale = true) {
+        auto sum = 0.0;
+        for (auto fish : fishes){
+            if (fish.alive()) {
+                sum ++;
             }
         }
-        else if(what=='s'){
-            count = fishes.size();
+        return sum * (scale?scalar:1);
+    }
+
+    /**
+     * Calculate the biomass
+     */
+    double biomass(void) {
+        auto sum = 0.0;
+        for (auto fish : fishes) {
+            if (fish.alive()) {
+                sum += fish.weight();
+            }
         }
-        return count;
+        return sum * scalar;
+    }
+
+    /**
+     * Calculate the biomass of spawners
+     */
+    double biomass_spawners(void) {
+        auto sum = 0.0;
+        for (auto fish : fishes) {
+            if (fish.alive() and fish.mature) {
+                sum += fish.weight();
+            }
+        }
+        return sum * scalar;
+    }
+
+    /**
+     * Calculate the mean age of fish
+     */
+    double age_mean(void) {
+        Mean mean;
+        for (auto fish : fishes) {
+            if (fish.alive()) mean.append(fish.age());
+        }
+        return mean;
+    }
+
+    /**
+     * Calculate the mean length of fish
+     */
+    double length_mean(void) {
+        Mean mean;
+        for (auto fish : fishes) {
+            if (fish.alive()) mean.append(fish.length);
+        }
+        return mean;
     }
 
     /**
      * Enumerate the population (count number of fish etc)
      */
     void enumerate(void) {
-        alive.reset();
         counts = 0;
-        for (auto fish : fishes){
+        for (auto fish : fishes) {
             if(fish.alive()){
-                alive.append();
-
                 counts(
                     fish.stock,
                     fish.area,
@@ -513,31 +592,42 @@ class Fishes {
                     fish.age_bin(),
                     fish.length_bin()
                 )++;
-
-                length_mean.append(fish.length);
             }
         }
+    }
+
+    /**
+     * Trace key attributes to output
+     *
+     * This is used for 
+     */
+    void trace(void) {
+        #if TRACE_LEVEL > 0
+        std::cout
+            << fishes.size() << "\t"
+            #if TRACE_LEVEL > 1
+                << number(false) << "\t"
+                << number() << "\t"
+                << biomass() << "\t"
+                << biomass_spawners() << "\t"
+            #endif
+            #if TRACE_LEVEL > 2
+                << age_mean() << "\t"
+                << length_mean() << "\t"
+            #endif
+        ;
+        #endif
     }
 
     /**
      * Track the population by writing attributes and structure to files
      */
     void track(void){ 
-        static std::ofstream* general = nullptr;
-        if(not general) general = new std::ofstream("output/fishes/general.tsv"); 
-
         static std::ofstream* counts_file = nullptr;
         if(not counts_file) counts_file = new std::ofstream("output/fishes/counts.tsv");
 
         enumerate();
 
-        (*general)
-                <<now<<"\t"
-                <<fishes.size()<<"\t"
-                <<alive<<"\t"
-                <<length_mean<<std::endl;
-
-        /*
         for(auto stock : stocks){
             for(auto area : areas){
                 for(auto sex : sexes){
@@ -558,7 +648,6 @@ class Fishes {
             }
         }
         (*counts_file).flush();
-        */
     }
 
 };  // end class Fishes

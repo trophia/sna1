@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 #include "environ.hpp"
 #include "fishes.hpp"
 #include "fleet.hpp"
@@ -16,35 +18,36 @@ public:
     Fishes fishes;
     Fleet fleet;
 
-    Model& initialise(void){
+    void initialise(void) {
         environ.initialise();
         fishes.initialise();
         fleet.initialise();
-
-        return *this;
     }
 
-    Model& update(void){
-        fishes.track();
+    void trace(void) {
+        #if TRACE_LEVEL>0
+            std::cout<<now<<"\t";
+            fishes.trace();
+            std::cout<<"\n";
+        #endif
+    }
 
+    void update(void) {
         environ.update();
         fishes.update(environ);
-        fleet.update(fishes,environ);
-
-        return *this;
+        fleet.update(fishes, environ);
     }
 
-    Model& run(Time start, Time finish){
+    void run(Time start, Time finish, std::function<void()>* callback = 0) {
         // Create initial population of fish
-        fishes.equilibrium(start, environ, 10000);
+        fishes.pristine(start, environ);
         // Iterate over times
         now = start;
-        while(now<=finish){
-            std::cout<<now<<"\t"<<fishes.count('s')<<"\t"<<fishes.count('a')<<std::endl;
+        while (now <= finish) {
+            trace();
+            if (callback) (*callback)();
             update();
             now++;
         }
-
-        return *this;
     }
-}; // end class Model
+};  // end class Model
