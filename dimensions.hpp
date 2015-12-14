@@ -24,6 +24,7 @@ enum Area {
     BP = 2
 };
 STENCILA_DIM(Areas,areas,area,3);
+STENCILA_DIM(AreaTos,area_tos,area_to,3);  // For defining and accessing movement matrix
 
 /**
  * Stock of fish

@@ -101,6 +101,11 @@ public:
     Array<double,Ages> maturation_at_age;
 
     /**
+     * Movement matrix
+     */
+    Array<double,Stocks,Areas,AreaTos> movement;
+
+    /**
      * Initialise the parameters
      *
      * In the future, these could be read in from file, but for the moment done here
@@ -144,6 +149,18 @@ public:
             // TODO implement something more sophisticated
             maturation_at_age(age) = age.index()>4;
         }
+
+        movement = 0;
+
+        movement(W,EN,HG) = 0.2;
+        movement(W,HG,EN) = 0.2;
+        movement(W,HG,BP) = 0.1;
+        movement(W,BP,HG) = 0.9;
+
+        movement(E,EN,HG) = 0.9;
+        movement(E,HG,EN) = 0.1;
+        movement(E,HG,BP) = 0.5;
+        movement(E,BP,HG) = 0.2;
     }
 };
 
@@ -336,7 +353,12 @@ class Fish {
      * Move this fish
      */
     Fish& movement(void) {
-        //! @todo
+        for (auto area_to : area_tos){
+            if (chance.random() < params.movement(stock,area,area_to)) {
+                area = Area(area_to.index());
+                break;
+            }
+        }
         return *this;
     }
 
@@ -386,6 +408,10 @@ class Fishes {
 
     /**
      * Number of instances of `Fish` to seed the population with
+     *
+     * Preliminary sensitity analyses (see `instances_seed_sensitivity` in `sna1.cpp`)
+     * suggested 100,000 was a good trade-off between run duration and precision at least
+     * during development. Should be increased for final runs.
      */
     unsigned int instances_seed = 100000;
 
@@ -524,7 +550,7 @@ class Fishes {
         auto sum = 0.0;
         for (auto fish : fishes){
             if (fish.alive()) {
-                sum ++;
+                sum++;
             }
         }
         return sum * (scale?scalar:1);
@@ -554,6 +580,20 @@ class Fishes {
             }
         }
         return sum * scalar;
+    }
+
+    /**
+     * Calculate the biomass of spawners by area
+     */
+    Array<double,Areas> biomass_spawners_area(void) {
+        Array<double,Areas> sums = 0.0;
+        for (auto fish : fishes) {
+            if (fish.alive() and fish.mature) {
+                sums(fish.area) += fish.weight();
+            }
+        }
+        sums *= scalar;
+        return sums;
     }
 
     /**
@@ -602,20 +642,23 @@ class Fishes {
      * This is used for 
      */
     void trace(void) {
-        #if TRACE_LEVEL > 0
-        std::cout
-            << fishes.size() << "\t"
-            #if TRACE_LEVEL > 1
+        #if TRACE_LEVEL >= 1
+            std::cout
+                << fishes.size() << "\t";
+        #endif
+        #if TRACE_LEVEL >= 2
+            std::cout
                 << number(false) << "\t"
                 << number() << "\t"
                 << biomass() << "\t"
-                << biomass_spawners() << "\t"
-            #endif
-            #if TRACE_LEVEL > 2
+                << biomass_spawners() << "\t";
+        #endif
+        #if TRACE_LEVEL >=3
+            auto bs = biomass_spawners_area();
+            std::cout
+                << bs(EN) << "\t" << bs(HG) << "\t" << bs(BP) << "\t"
                 << age_mean() << "\t"
-                << length_mean() << "\t"
-            #endif
-        ;
+                << length_mean() << "\t";
         #endif
     }
 
