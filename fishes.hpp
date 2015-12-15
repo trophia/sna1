@@ -301,7 +301,7 @@ class Fish {
      * is also used by `Fleets` to kill a fish from harvest or
      * incidental mortality
      */
-    Fish& dieing(void) {
+    Fish& dies(void) {
         death = now;
         return *this;
     }
@@ -311,7 +311,7 @@ class Fish {
      */
     bool survival(void) {
         auto survives = chance.random() > params.natural_mortality_rate;
-        if(not survives) dieing();
+        if (not survives) dies();
         return survives;
     }
 
@@ -319,7 +319,7 @@ class Fish {
      * Increase the length of this fish
      */
     Fish& growth(void) {
-        length = std::max(params.length_at_age(age_bin()).random(),1.0);
+        length = std::max(params.length_at_age(age_bin()).random(), 1.0);
         return *this;
     }
 
@@ -329,6 +329,19 @@ class Fish {
     Fish& maturation(void) {
         if (not mature) {
             mature = chance.random()<params.maturation_at_age(age_bin());
+        }
+        return *this;
+    }
+
+    /**
+     * Move this fish
+     */
+    Fish& movement(void) {
+        for (auto area_to : area_tos){
+            if (chance.random() < params.movement(stock,area,area_to)) {
+                area = Area(area_to.index());
+                break;
+            }
         }
         return *this;
     }
@@ -347,19 +360,6 @@ class Fish {
             }
         }
         return eggs;
-    }
-
-    /**
-     * Move this fish
-     */
-    Fish& movement(void) {
-        for (auto area_to : area_tos){
-            if (chance.random() < params.movement(stock,area,area_to)) {
-                area = Area(area_to.index());
-                break;
-            }
-        }
-        return *this;
     }
 
     /**
@@ -413,7 +413,7 @@ class Fishes {
      * suggested 100,000 was a good trade-off between run duration and precision at least
      * during development. Should be increased for final runs.
      */
-    unsigned int instances_seed = 100000;
+    unsigned int instances_seed = 10000;
 
     /**
      * Pristine spawner biomass (t)

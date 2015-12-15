@@ -89,7 +89,7 @@ requires: requires-boost requires-stencila requires-fsl
 CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -pthread
 INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/stencila/cpp -Irequires/fsl
 LIB_DIRS := -Lrequires/boost-$(OS)/lib
-LIBS := -lboost_system
+LIBS := -lboost_system -lboost_filesystem
 
 # Find all .hpp and .cpp files (to save time don't recurse into subdirectories)
 HPPS := $(shell find . -maxdepth 1 -name "*.hpp")

@@ -14,7 +14,10 @@ Model model;
  * Run the model
  */
 void run(void) {
-    model.run(1960, 2025);
+    std::function<void()> callback([&](){
+        model.fishes.track();
+    });
+    model.run(1960, 2025, &callback);
 }
 
 /**
@@ -44,6 +47,35 @@ void instances_seed_sensitivity(void) {
 }
 
 /**
+ * Generate trajectories using various MLS and selectivities
+ */
+void mls_changes_example(void) {
+    std::ofstream tracks("output/mls_changes_example.tsv");
+    model.fishes.instances_seed = 100000;
+    for (auto mls : {26,27,28,29,30}) {
+        for (auto iter = 0; iter < 10; iter++) {
+            std::function<void()> callback([&](){
+                auto y = year(now);
+                if (y<2017){
+                    model.fleet.mls = 27;
+                } else {
+                    model.fleet.mls = mls;
+                }
+                if (y>1980) {
+                    tracks
+                        << mls << "\t"
+                        << iter << "\t"
+                        << now << "\t"
+                        << model.fishes.biomass_spawners() << "\t"
+                        << model.fishes.length_mean() << "\n";
+                }
+            });
+            model.run(1960, 2030, &callback);
+        }
+    }
+}
+
+/**
  * Main entry point; dispatches to one of the above tasks
  */
 int main(int argc, char** argv) {
@@ -58,6 +90,8 @@ int main(int argc, char** argv) {
             run();
         } else if (task == "instances_seed_sensitivity") {
             instances_seed_sensitivity();
+        } else if (task == "mls_changes_example") {
+            mls_changes_example();
         } else {
             throw std::runtime_error("Unrecognised task");
         }

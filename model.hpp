@@ -27,7 +27,7 @@ public:
         monitor.initialise();
     }
 
-    void finalise(void){
+    void finalise(void) {
         environ.finalise();
         fishes.finalise();
         fleet.finalise();
