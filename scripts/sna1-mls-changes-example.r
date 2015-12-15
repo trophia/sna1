@@ -2,21 +2,18 @@ library(ggplot2)
 library(plyr)
 library(reshape)
 
-data <- read.table('../output/instances_seed_sensitivity.tsv')
-times <- read.table('../output/instances_seed_sensitivity_times.tsv')
+data <- read.table('../output/mls_changes_example.tsv')
 
-names(data) <- c('seed','iter','time','biomass_spawner','length_mean')
+names(data) <- c('mls','iter','time','biomass_spawner','length_mean')
 data <- within(data,{
-  seed <- factor(seed)
+  mls <- factor(mls)
   iter <- factor(iter)  
 })
+data <- subset(data,time>2015)
 
-names(times) <- c('seed','iter','duration')
-
-ggplot(data,aes(x=time,group=iter)) +
+ggplot(data,aes(x=time,color=mls,group=paste(mls,iter))) +
   geom_line(aes(y=biomass_spawner/1000),alpha=0.2) +
-  geom_hline(y=0,alpha=0) +
-  facet_wrap(~seed) + 
+  #geom_hline(y=0,alpha=0) +
   labs(x='',y='Spawner biomass (kt)')
 
 ggplot(data,aes(x=time,group=iter)) +
