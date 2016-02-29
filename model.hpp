@@ -45,6 +45,12 @@ public:
     void update(void) {
         auto y = year(now);
 
+        // Recruitment
+        // Create a vector of recruits which will replace fish that die below
+        std::vector<Fish> recruits = fishes.recruitment();
+
+
+
         // Update each fish
         std::vector<Fish> eggs;
         #if !defined(FISHES_PARALLEL)
@@ -53,7 +59,6 @@ public:
                     fish.growth();
                     fish.maturation();
                     fish.movement();
-                    fish.spawning();
                 }
             }
         #else
@@ -147,11 +152,11 @@ public:
     void equilibrium(Time time) {
         // Set `now` to some arbitrary time
         now = 0;
-        // Seed the population. `resize()` uses the default
-        // constructor which creates seed individuals that have attribute values 
+        // Seed the population. `create()` creates seed individuals that have attribute values 
         // intended to reduce the burn in time for the initial population
         fishes.clear();
         fishes.resize(fishes.instances_seed);
+        for(auto fish : fishes) fish.seed();
         // Burn in
         // TODO Currently just burns in for an arbitarty number of iterations
         // Should instead exit when stability in population characteristics

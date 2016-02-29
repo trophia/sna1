@@ -214,39 +214,6 @@ class Fish {
      */
     static FishParameters params;
 
-    /**
-     * Create a fish 
-     * 
-     * This constructor is needed for intial seeding of the 
-     * population prior to burning it in. In other circumstances
-     * the `Fish(const Fish& father, const Fish& mother)` constructor
-     * is used.
-     */
-    Fish(void) {
-        stock = params.seed_stock.random();
-        area = params.seed_area(stock).random();
-        auto age = std::max(1.,std::min(params.seed_age.random(),30.));
-        birth = now-age;
-        death = 0;
-        sex = params.sex_at_birth.random();
-        length = std::max(params.length_at_age(age).random(),0.);
-        mature = chance.random()<params.maturation_at_age(age);
-        tag = 0;
-    }
-
-    /**
-     * Spawn a fish
-     */
-    Fish(const Fish& father, const Fish& mother) {
-        stock = father.stock;
-        area = father.area;
-        birth = now;
-        death = 0;
-        sex = params.sex_at_birth.random();
-        length = 1;
-        mature = false;
-        tag = 0;
-    }
 
     /*************************************************************
      * Attributes
@@ -293,6 +260,42 @@ class Fish {
     /*************************************************************
      * Processes
      ************************************************************/
+
+
+    /**
+     * Create a seed fish 
+     * 
+     * Needed for intial seeding of the population prior to burning it in. In other circumstances
+     * `birth()` should used be used.
+     */
+    void seed(void) {
+        stock = params.seed_stock.random();
+        area = params.seed_area(stock).random();
+        auto age = std::max(1.,std::min(params.seed_age.random(),30.));
+        birth = now-age;
+        death = 0;
+        sex = params.sex_at_birth.random();
+        length = std::max(params.length_at_age(age).random(),0.);
+        mature = chance.random()<params.maturation_at_age(age);
+        tag = 0;
+    }
+
+    /**
+     * Birth this fish
+     *
+     * Initialises attributes as though this fish is close
+     * to age 0
+     */
+    void born(Stock stock, Area area) {
+        stock = stock;
+        area = area;
+        birth = now;
+        death = 0;
+        sex = params.sex_at_birth.random();
+        length = 1; // TODO random length from dist
+        mature = false;
+        tag = 0;
+    }
 
     /**
      * Kill this fish
@@ -344,22 +347,6 @@ class Fish {
             }
         }
         return *this;
-    }
-
-    /**
-     * Spawn a new fish
-     * 
-     * @return  The newly spawned eggs
-     */
-    std::vector<Fish> spawning(void) {
-        std::vector<Fish> eggs;
-        if (mature) {
-            if (chance.random() < 0.1) {
-                Fish egg(*this, *this);
-                eggs.push_back(egg);
-            }
-        }
-        return eggs;
     }
 
 };  // end class Fish
@@ -424,6 +411,28 @@ class Fishes : public std::vector<Fish> {
      * Finalise (e.g. write values to file)
      */
     void finalise(void){
+    }
+
+    /**
+     * Recruitment
+     * 
+     * @return  The new recruits
+     */
+    std::vector<Fish> recruitment(void) {
+        // Calculate the number of recruits (eggs) to produce
+        // and initialise the vector with that number
+        // TODO stock-recruitment in here
+        double number = 1000;
+        std::vector<Fish> recruits(number);
+        // Initialise each of the recruits
+        for(auto recruit : recruits){
+            // TODO determine recruits by stock and area
+            // instad of theis temporary random assignment
+            Stock stock = Fish::params.seed_stock.random();
+            Area area = Fish::params.seed_area(stock).random();
+            recruit.born(stock, area);
+        }
+        return recruits;
     }
 
     /**
