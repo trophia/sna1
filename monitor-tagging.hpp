@@ -70,32 +70,6 @@ class Tagging {
         tags_[fish.tag].second = Event(now,fish);
     }
 
-    /**
-     * Update of the tagging programme
-     *
-     * Currently very simplistic and not integrated with fleet
-     * dynamics for release or recpature
-     */
-    void update(Fleet& fleet, Fishes& fishes, const Environ& environ) {
-        auto y = year(now);
-        // Marking fish
-        if(y==1994 or y==2016) {
-            for (Fish& fish : fishes.fishes) {
-                if (fish.alive() and fish.length>30 and chance.random()< 0.1) {
-                    mark(fish);
-                }
-            }
-        }
-        // Recovering fish
-        if(y==1994 or y==1995 or y==2016 or y==2017) {
-            for (Fish& fish : fishes.fishes) {
-                if (fish.alive() and fish.tag and chance.random()< 0.01) {
-                    recover(fish);
-                }
-            }
-        }
-    }
-
     void write(void) {
         boost::filesystem::create_directories("output/monitor/tagging");
         std::ofstream file("output/monitor/tagging/tags.tsv");

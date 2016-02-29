@@ -7,7 +7,7 @@ using Fsl::Math::Probability::Uniform;
  * Represents stochasticity
  *
  * Used in numerous places for adding probabalistic 
- * behavious to dynamics
+ * behaviours to dynamics
  */
 static Uniform chance = {0, 1};
 
@@ -18,14 +18,9 @@ static Uniform chance = {0, 1};
  */
 class Environ {
  public:
-    Environ& initialise(void) {
-        return *this;
+    void initialise(void) {
     }
 
-    void update(void) {
-    }
-
-    Environ& finalise(void) {
-        return *this;
+    void finalise(void) {
     }
 };  // class Environ

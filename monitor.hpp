@@ -10,10 +10,6 @@ class Monitor {
         tagging.initialise();
     }
 
-    void update(Fleet& fleet, Fishes& fishes, const Environ& environ) {
-        tagging.update(fleet, fishes, environ);
-    }
-
     void finalise(void) {
         tagging.finalise();
     }

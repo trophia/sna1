@@ -362,35 +362,18 @@ class Fish {
         return eggs;
     }
 
-    /**
-     * Update this fish (i.e. operate all processes on it)
-     */
-    std::vector<Fish> update(const Environ& environ){
-        if (survival()) {
-            growth();
-            maturation();
-            movement();
-            return spawning();
-        }
-        else return {};
-    }
 };  // end class Fish
 
 FishParameters Fish::params;
 
 /**
  * The population of `Fish`
+ * 
+ * We don't attempt to model every single fish in the population. Rather,
+ * the population `Fish` objects is intended to be representative of the larger population.
  */
-class Fishes {
+class Fishes : public std::vector<Fish> {
  public:
-
-    /**
-     * List of individual fish
-     *
-     * We don't attempt to model every single fish in the population. Rather,
-     * `fishes` are intended to be representative of the larger population.
-     */
-    std::vector<Fish> fishes;
 
     /**
      * @name Population level attributes
@@ -444,117 +427,13 @@ class Fishes {
     }
 
     /**
-     * Update the population
-     * 
-     * @param environ Current state of the environment
-     */
-    void update(const Environ& environ) {
-        // Update each fish
-        std::vector<Fish> eggs;
-        #if !defined(FISHES_PARALLEL)
-            for (Fish& fish : fishes) {
-                auto spawn = fish.update(environ);
-                eggs.insert(eggs.end(),spawn.begin(),spawn.end());
-            }
-        #else
-            int each = fishes.size()/4;
-
-            std::thread thread0(update_task, &fishes, environ, 0, each);
-            std::thread thread1(update_task, &fishes, environ, each, each);
-            std::thread thread2(update_task, &fishes, environ, each*2, each);
-            std::thread thread3(update_task, &fishes, environ, each*3, each);
-
-            thread0.join();
-            thread1.join();
-            thread2.join();
-            thread3.join();
-        #endif
-
-        // Insert eggs into population
-        auto replace = fishes.begin();
-        auto end = fishes.end();
-        for (Fish egg : eggs) {
-            // Try to find a dead fish in `fishes` which can be replaced by
-            // the new egg
-            while(replace!=end and replace->alive()) replace++;
-            // If possible replace a dead fish, otherwise add to fishes
-            if(replace!=end) *replace = egg;
-            else fishes.push_back(egg);
-        }
-    }
-
-    /**
-     * An update task for use when `update()` is parallelized
-     * 
-     * @param fishes  Vector of `Fish`
-     * @param environ Current environment
-     * @param start   Index of fish to start updating
-     * @param num     Number of fish to update
-     */
-    static void update_task(std::vector<Fish>* fishes, const Environ& environ, const uint& start, const uint& num) {
-        auto fish = fishes->begin()+start;
-        auto end = fish+num;
-        while (fish != end) {
-            fish->update(environ);
-            fish++;
-        }
-    }
-
-    /**
-     * Take the population to equilibrium
-     */
-    void equilibrium(Time time, const Environ& environ, int instances) {
-        // Set `now` to some arbitrary time
-        now = 0;
-        // Seed the population. `resize()` uses the default
-        // constructor which creates seed individuals that have attribute values 
-        // intended to reduce the burn in time for the initial population
-        fishes.clear();
-        fishes.resize(instances);
-        // Burn in
-        // TODO Currently just burns in for an arbitarty number of iterations
-        // Should instead exit when stability in population characteristics
-        while(now<100){
-            #if TRACE_LEVEL>0
-                std::cout<<now<<"\t";
-                trace();
-                std::cout<<"\n";
-            #endif
-            update(environ);
-            now++;
-        }
-        // Re-age the fish to current time
-        // The fish have arbitrary `birth` times so we need to "re-age"
-        // them so that the population is in equilbrium AND "current"
-        auto diff = time-now;
-        for (auto& fish : fishes) {
-            fish.birth += diff;
-        }
-        now = time;
-    }
-
-    /**
-     * Take the population to pristine equilibium
-     *
-     * This method simply calls `equilibrium()` and then sets population level attributes
-     * like `biomass_spawners_pristine` and `scalar`
-     */
-    void pristine(Time time, const Environ& environ){
-        // Take population to equilibrium
-        equilibrium(time, environ, instances_seed);
-        // Adjust scalar so that the current spawner biomass 
-        // matches the intended value
-        scalar *= biomass_spawners_pristine/biomass_spawners();
-    }
-
-    /**
      * Calculate the number of fish in the population
      *
      * @param scale Scale up the number?
      */
     double number(bool scale = true) {
         auto sum = 0.0;
-        for (auto fish : fishes){
+        for (auto fish : *this){
             if (fish.alive()) {
                 sum++;
             }
@@ -567,7 +446,7 @@ class Fishes {
      */
     double biomass(void) {
         auto sum = 0.0;
-        for (auto fish : fishes) {
+        for (auto fish : *this) {
             if (fish.alive()) {
                 sum += fish.weight();
             }
@@ -580,7 +459,7 @@ class Fishes {
      */
     double biomass_spawners(void) {
         auto sum = 0.0;
-        for (auto fish : fishes) {
+        for (auto fish : *this) {
             if (fish.alive() and fish.mature) {
                 sum += fish.weight();
             }
@@ -593,7 +472,7 @@ class Fishes {
      */
     Array<double,Areas> biomass_spawners_area(void) {
         Array<double,Areas> sums = 0.0;
-        for (auto fish : fishes) {
+        for (auto fish : *this) {
             if (fish.alive() and fish.mature) {
                 sums(fish.area) += fish.weight();
             }
@@ -607,7 +486,7 @@ class Fishes {
      */
     double age_mean(void) {
         Mean mean;
-        for (auto fish : fishes) {
+        for (auto fish : *this) {
             if (fish.alive()) mean.append(fish.age());
         }
         return mean;
@@ -618,7 +497,7 @@ class Fishes {
      */
     double length_mean(void) {
         Mean mean;
-        for (auto fish : fishes) {
+        for (auto fish : *this) {
             if (fish.alive()) mean.append(fish.length);
         }
         return mean;
@@ -629,7 +508,7 @@ class Fishes {
      */
     void enumerate(void) {
         counts = 0;
-        for (auto fish : fishes) {
+        for (auto fish : *this) {
             if(fish.alive()){
                 counts(
                     fish.stock,
@@ -650,7 +529,7 @@ class Fishes {
     void trace(void) {
         #if TRACE_LEVEL >= 1
             std::cout
-                << fishes.size() << "\t";
+                << size() << "\t";
         #endif
         #if TRACE_LEVEL >= 2
             std::cout

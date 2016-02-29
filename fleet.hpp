@@ -48,36 +48,6 @@ class Fleet {
         }
     }
 
-    void exploit(Fish& fish) {
-        if (now >= 1970) {
-            if (chance.random() < 0.05) {  // encountered
-                if (chance.random() < selectivity_at_length(fish.length_bin())) {  // caught
-                    if (fish.length < mls) {  // returned
-                        if (chance.random() < handling_mortality) {  // returned but dies
-                            fish.dies();
-                        }
-                    } else {
-                        fish.dies();
-                    }
-                }
-            }
-        }
-    }
-
-    void update(Fishes& fishes, const Environ& environ) {
-    	/**
-    	 * Calculate an exploitable biomass
-    	 */
-    	double biomass_vuln = 0;
-
-        /**
-         * Apply an exploitation rate
-         */
-        for (Fish& fish : fishes.fishes) {
-            exploit(fish);
-        }
-    }
-
     void finalise(void) {
         boost::filesystem::create_directories("output/fleet");
         selectivity_at_length.write("output/fleet/selectivity_at_length.tsv");
