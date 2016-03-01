@@ -19,6 +19,7 @@ static Uniform chance = {0, 1};
 class Environ {
  public:
     void initialise(void) {
+    	boost::filesystem::create_directories("output/environ");
     }
 
     void finalise(void) {

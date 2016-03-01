@@ -7,6 +7,8 @@ class Monitor {
     Tagging tagging;
 
     void initialise(void) {
+    	boost::filesystem::create_directories("output/monitor");
+
         tagging.initialise();
     }
 

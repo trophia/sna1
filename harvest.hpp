@@ -42,6 +42,8 @@ class Harvest {
     }
 
     void initialise(void){
+        boost::filesystem::create_directories("output/harvest");
+
         for (auto length_bin : lengths) {
             auto length = length_bin.index() + 0.5;
             selectivity_at_length(length_bin) = selectivity(length);
@@ -49,7 +51,6 @@ class Harvest {
     }
 
     void finalise(void) {
-        boost::filesystem::create_directories("output/fleet");
-        selectivity_at_length.write("output/fleet/selectivity_at_length.tsv");
+        selectivity_at_length.write("output/harvest/selectivity_at_length.tsv");
     }
 };  // class Harvest

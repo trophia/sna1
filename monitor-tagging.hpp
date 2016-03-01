@@ -17,6 +17,7 @@
 class Tagging {
  public:
     void initialise(void) {
+        boost::filesystem::create_directories("output/monitor/tagging");
     }
 
     /**
@@ -71,7 +72,6 @@ class Tagging {
     }
 
     void write(void) {
-        boost::filesystem::create_directories("output/monitor/tagging");
         std::ofstream file("output/monitor/tagging/tags.tsv");
         for(auto iter : tags_){
             auto number = iter.first;

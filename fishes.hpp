@@ -373,6 +373,8 @@ class Fishes : public std::vector<Fish> {
      */
     void initialise(void){
         Fish::params.initialise();
+
+        boost::filesystem::create_directories("output/fishes");
     }
 
     /**
