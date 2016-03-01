@@ -6,7 +6,7 @@ using Fsl::Math::Functions::DoubleNormalPlateau;
 /**
  * A group of fishing activity
  */
-class Fleet {
+class Harvest {
  public:
 	
     /**
@@ -30,7 +30,7 @@ class Fleet {
     double handling_mortality;
 
 
-    Fleet(void){
+    Harvest(void){
         selectivity.inflection_1 = 27;
         selectivity.inflection_2_delta = 100;
         selectivity.steepness_1 = 5;
@@ -52,4 +52,4 @@ class Fleet {
         boost::filesystem::create_directories("output/fleet");
         selectivity_at_length.write("output/fleet/selectivity_at_length.tsv");
     }
-};  // class Fleet
+};  // class Harvest
