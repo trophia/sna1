@@ -57,9 +57,9 @@ void mls_changes_example(void) {
             std::function<void()> callback([&](){
                 auto y = year(now);
                 if (y<2017){
-                    model.fleet.mls = 27;
+                    model.harvest.mls = 27;
                 } else {
-                    model.fleet.mls = mls;
+                    model.harvest.mls = mls;
                 }
                 if (y>1980) {
                     tracks

@@ -4,33 +4,33 @@
 
 #include "environ.hpp"
 #include "fishes.hpp"
-#include "fleet.hpp"
+#include "harvest.hpp"
 #include "monitor.hpp"
 
 /**
  * The model
  *
- * Links together the sub-models `Environ`, 'Fishes` and `Fleet`
+ * Links together the sub-models `Environ`, 'Fishes` and `Harvest`
  */
 class Model {
 public:
 
     Environ environ;
     Fishes fishes;
-    Fleet fleet;
+    Harvest harvest;
     Monitor monitor;
 
     void initialise(void) {
         environ.initialise();
         fishes.initialise();
-        fleet.initialise();
+        harvest.initialise();
         monitor.initialise();
     }
 
     void finalise(void) {
         environ.finalise();
         fishes.finalise();
-        fleet.finalise();
+        harvest.finalise();
         monitor.finalise();
     }
 
@@ -82,9 +82,9 @@ public:
             // TODO this is just placeholder code
             if (now >= 1970) {
                 if (chance.random() < 0.05) {  // encountered
-                    if (chance.random() < fleet.selectivity_at_length(fish.length_bin())) {  // caught
-                        if (fish.length < fleet.mls) {  // returned
-                            if (chance.random() < fleet.handling_mortality) {  // returned but dies
+                    if (chance.random() < harvest.selectivity_at_length(fish.length_bin())) {  // caught
+                        if (fish.length < harvest.mls) {  // returned
+                            if (chance.random() < harvest.handling_mortality) {  // returned but dies
                                 fish.dies();
                             }
                         } else {
