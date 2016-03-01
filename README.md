@@ -1,7 +1,5 @@
 # `sna1`
 
-New
-
 A simulation model of the snapper (_Pagrus auratus_) population and fishery in the Auckland (East) Fisheries Management Area (SNA 1).
 
 ## Background
