@@ -34,7 +34,7 @@ void instances_seed_sensitivity(void) {
                     << num << "\t"
                     << iter << "\t"
                     << now << "\t"
-                    << model.fishes.biomass_spawners() << "\t"
+                    << model.fishes.biomass_spawners << "\t"
                     << model.fishes.length_mean() << "\n";
             });
             std::clock_t start = std::clock();
@@ -66,7 +66,7 @@ void mls_changes_example(void) {
                         << mls << "\t"
                         << iter << "\t"
                         << now << "\t"
-                        << model.fishes.biomass_spawners() << "\t"
+                        << model.fishes.biomass_spawners << "\t"
                         << model.fishes.length_mean() << "\n";
                 }
             });

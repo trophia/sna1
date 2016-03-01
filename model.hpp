@@ -44,51 +44,43 @@ public:
 
     void update(void) {
         auto y = year(now);
+        auto q = quarter(now);
+
+        // First loop over fish...
+        fishes.aggregates_reset();
+        for(auto fish : fishes){
+            if (fish.alive()) {
+                // Natural mortality
+                bool survives = fish.survival();
+                if (survives) {
+                    // Growth
+                    fish.growth();
+                    // Maturation
+                    fish.maturation();
+                    // Movement
+                    fish.movement();
+                    
+                    // Update population statistics used for recruitment,
+                    // fishing and tagging below
+                    fishes.aggregates_add(fish);
+                }
+            }
+        }
 
         // Recruitment
         // Create a vector of recruits which will replace fish that die below
-        std::vector<Fish> recruits = fishes.recruitment();
+        auto recruits = fishes.recruitment();
+        // Iterator pointing to the current recruit to be used as a replacement
+        auto replacement = recruits.begin();
 
-
-
-        // Update each fish
-        std::vector<Fish> eggs;
-        #if !defined(FISHES_PARALLEL)
-            for (Fish& fish : fishes) {
-                if (fish.survival()) {
-                    fish.growth();
-                    fish.maturation();
-                    fish.movement();
-                }
-            }
-        #else
-            int each = fishes.size()/4;
-
-            std::thread thread0(update_task, &fishes, environ, 0, each);
-            std::thread thread1(update_task, &fishes, environ, each, each);
-            std::thread thread2(update_task, &fishes, environ, each*2, each);
-            std::thread thread3(update_task, &fishes, environ, each*3, each);
-
-            thread0.join();
-            thread1.join();
-            thread2.join();
-            thread3.join();
-        #endif
-
-        // Insert eggs into population
-        auto replace = fishes.begin();
-        auto end = fishes.end();
-        for (Fish egg : eggs) {
-            // Try to find a dead fish in `fishes` which can be replaced by
-            // the new egg
-            while(replace!=end and replace->alive()) replace++;
-            // If possible replace a dead fish, otherwise add to fishes
-            if(replace!=end) *replace = egg;
-            else fishes.push_back(egg);
-        }
-    
-        if (now >= 1970) {
-            for (Fish& fish : fishes) {
+        // Second loop over fish...
+        auto iterator = fishes.begin();
+        while(iterator != fishes.end()){
+            Fish& fish = *iterator;
+            // Fishing
+            // Apply exploitation
+            // TODO this is just placeholder code
+            if (now >= 1970) {
                 if (chance.random() < 0.05) {  // encountered
                     if (chance.random() < fleet.selectivity_at_length(fish.length_bin())) {  // caught
                         if (fish.length < fleet.mls) {  // returned
@@ -98,33 +90,40 @@ public:
                         } else {
                             fish.dies();
                         }
+                        // Is this fish already tagged?
+                        if(fish.tag)
+
+                        // Does this fish get tagged?
+                        // Currently assumes we don't tag a fish that has already been tagged.
+                        // TODO determine tagging probability from tag release design and catches by method area
+                        if (not fish.tag and chance.random()< 0.1) {
+                            monitor.tagging.mark(fish);
+                        }
+                        // Is this fish already tagged and recovered?
+                        // TODO recovery probability willl be dependent upon method and area
+                        if (fish.tag and chance.random()< 0.01) {
+                            monitor.tagging.recover(fish);
+                        }
                     }
                 }
             }
+
+            // Recruitment
+            // If fish has died (either this loop or previously), 
+            // and there are still recruits to be inserted, replace it
+            if (not fish.alive() and replacement != recruits.end()) {
+                *iterator = *replacement;
+                replacement++;
+            }
+
+            iterator++;
         }
 
-        /**
-         * Update of the tagging programme
-         *
-         * Currently very simplistic and not integrated with fleet
-         * dynamics for release or recpature
-         */
-        auto tagging = monitor.tagging;
-        // Marking fish
-        if(y==1994 or y==2016) {
-            for (Fish& fish : fishes) {
-                if (fish.alive() and fish.length>30 and chance.random()< 0.1) {
-                    tagging.mark(fish);
-                }
-            }
-        }
-        // Recovering fish
-        if(y==1994 or y==1995 or y==2016 or y==2017) {
-            for (Fish& fish : fishes) {
-                if (fish.alive() and fish.tag and chance.random()< 0.01) {
-                    tagging.recover(fish);
-                }
-            }
+        // Recruitment
+        // If there are still recruits to be inserted then append them
+        while (replacement != recruits.end()) {
+            fishes.push_back(*replacement);
+            replacement++;
         }
 
     }
@@ -190,7 +189,7 @@ public:
         equilibrium(time);
         // Adjust scalar so that the current spawner biomass 
         // matches the intended value
-        fishes.scalar *= fishes.biomass_spawners_pristine/fishes.biomass_spawners();
+        fishes.scalar *= fishes.biomass_spawners_pristine/fishes.biomass_spawners;
     }
 
     void run(Time start, Time finish, std::function<void()>* callback = 0) {

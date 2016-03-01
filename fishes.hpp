@@ -170,9 +170,11 @@ public:
 class Fish {
  public:
     /**
-     * Stock this fish belongs to
+     * Home area for this fish
+     *
+     * Initially the area this fish was born
      */
-    Stock stock;
+    Area home;
 
     /**
      * Time of birth of this fish
@@ -200,7 +202,7 @@ class Fish {
     bool mature;
 
     /**
-     * Location of this fish
+     * Current location of this fish
      */
     Area area;
 
@@ -269,8 +271,8 @@ class Fish {
      * `birth()` should used be used.
      */
     void seed(void) {
-        stock = params.seed_stock.random();
         area = params.seed_area(stock).random();
+        home = area;
         auto age = std::max(1.,std::min(params.seed_age.random(),30.));
         birth = now-age;
         death = 0;
@@ -363,12 +365,6 @@ class Fishes : public std::vector<Fish> {
  public:
 
     /**
-     * @name Population level attributes
-     *
-     * @{
-     */
-
-    /**
      * Population scalar
      *
      * Used to scale the things like biomass etc from the size of `fishes` to the 
@@ -396,6 +392,11 @@ class Fishes : public std::vector<Fish> {
     double biomass_spawners_pristine = 376000;
 
     /**
+     * 
+     */
+    double biomass_spawners;
+
+    /**
      * Counts of fish by model dimensions
      */
     Array<uint,Stocks,Areas,Sexes,Ages,Lengths> counts;
@@ -411,6 +412,21 @@ class Fishes : public std::vector<Fish> {
      * Finalise (e.g. write values to file)
      */
     void finalise(void){
+    }
+
+    /**
+     * Reset aggregate statistics
+     */
+    void aggregates_reset(void) {
+        biomass_spawners = 0;
+    }
+
+    void aggregates_add(const Fish& fish) {
+        if (fish.alive()) {
+            if (fish.mature) {
+                biomass_spawners += fish.weight();
+            }
+        }
     }
 
     /**
@@ -457,19 +473,6 @@ class Fishes : public std::vector<Fish> {
         auto sum = 0.0;
         for (auto fish : *this) {
             if (fish.alive()) {
-                sum += fish.weight();
-            }
-        }
-        return sum * scalar;
-    }
-
-    /**
-     * Calculate the biomass of spawners
-     */
-    double biomass_spawners(void) {
-        auto sum = 0.0;
-        for (auto fish : *this) {
-            if (fish.alive() and fish.mature) {
                 sum += fish.weight();
             }
         }
@@ -545,7 +548,7 @@ class Fishes : public std::vector<Fish> {
                 << number(false) << "\t"
                 << number() << "\t"
                 << biomass() << "\t"
-                << biomass_spawners() << "\t";
+                << biomass_spawners << "\t";
         #endif
         #if TRACE_LEVEL >=3
             auto bs = biomass_spawners_area();

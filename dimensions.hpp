@@ -11,8 +11,14 @@ Time now;
 
 const uint times_per_year = 1;
 
-uint year(Time a) {
-    return a;
+uint year(Time t) {
+    // TODO
+    return t;
+}
+
+uint quarter(Time t) {
+    // TODO
+    return 0;
 }
 
 float years(Time a, Time b) {
