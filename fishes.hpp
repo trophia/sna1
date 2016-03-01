@@ -388,12 +388,25 @@ class Fishes : public std::vector<Fish> {
         biomass_spawners = 0;
     }
 
+    /**
+     * Add a fish to the aggregate statistics
+     * 
+     * @param fish Fish to add
+     */
     void aggregates_add(const Fish& fish) {
         if (fish.alive()) {
             if (fish.mature) {
                 biomass_spawners += fish.weight();
             }
         }
+    }
+
+    /**
+     * Calculate aggregate stattistics
+     */
+    void aggregates(void) {
+        aggregates_reset();
+        for(auto fish : *this) aggregates_add(fish);
     }
 
     /**
@@ -414,6 +427,25 @@ class Fishes : public std::vector<Fish> {
             Area area = chance.random()*Areas::size();
             recruit.born(area);
         }
+
+        // Iterator pointing to the current recruit to be used as a replacement
+        auto replacement = begin();
+        // As an optimisation, we previously had this replacement inside the next
+        // fish loop. But, that 
+        auto iterator = begin();
+        while(iterator != end() and replacement != recruits.end()){
+            // If fish has died and there are still recruits to be inserted, replace it
+            if (not iterator->alive() and replacement != recruits.end()) {
+                *iterator = *replacement;
+                replacement++;
+            }
+        }
+        // If there are still recruits to be inserted then append them
+        while (replacement != recruits.end()) {
+            push_back(*replacement);
+            replacement++;
+        }
+
         return recruits;
     }
 

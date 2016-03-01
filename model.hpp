@@ -46,7 +46,16 @@ public:
         auto y = year(now);
         auto q = quarter(now);
 
-        // First loop over fish...
+        // Calculate aggregates
+        // (required for recruiment)
+        fishes.aggregates();
+
+        // Recruitment
+        // (inserts new fish into the population)
+        fishes.recruitment();
+
+        // First loop over fish
+        // (does another mid-time step aggregation in the process)
         fishes.aggregates_reset();
         for(auto fish : fishes){
             if (fish.alive()) {
@@ -60,26 +69,16 @@ public:
                     // Movement
                     fish.movement();
                     
-                    // Update population statistics used for recruitment,
-                    // fishing and tagging below
+                    // Update aggregate statistics 
+                    // used for harvest and tagging below
                     fishes.aggregates_add(fish);
                 }
             }
         }
 
-        // Recruitment
-        // Create a vector of recruits which will replace fish that die below
-        auto recruits = fishes.recruitment();
-        // Iterator pointing to the current recruit to be used as a replacement
-        auto replacement = recruits.begin();
-
         // Second loop over fish...
-        auto iterator = fishes.begin();
-        while(iterator != fishes.end()){
-            Fish& fish = *iterator;
-            // Fishing
-            // Apply exploitation
-            // TODO this is just placeholder code
+        for(auto fish: fishes){
+            // Harvets and tagging
             if (now >= 1970) {
                 if (chance.random() < 0.05) {  // encountered
                     if (chance.random() < harvest.selectivity_at_length(fish.length_bin())) {  // caught
@@ -107,25 +106,7 @@ public:
                     }
                 }
             }
-
-            // Recruitment
-            // If fish has died (either this loop or previously), 
-            // and there are still recruits to be inserted, replace it
-            if (not fish.alive() and replacement != recruits.end()) {
-                *iterator = *replacement;
-                replacement++;
-            }
-
-            iterator++;
         }
-
-        // Recruitment
-        // If there are still recruits to be inserted then append them
-        while (replacement != recruits.end()) {
-            fishes.push_back(*replacement);
-            replacement++;
-        }
-
     }
 
     /**
