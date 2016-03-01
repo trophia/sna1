@@ -33,19 +33,6 @@ class FishParameters {
 public:
 
     /**
-     * Stock distribution of initial seed population e.g. 60% west, 40% east
-     */
-    Discrete<Stock,2> seed_stock;
-
-    /**
-     * Stock specific area distribution of initial seed population
-     */
-    Array<
-        Discrete<Area,3>,
-        Stocks
-    > seed_area;
-
-    /**
      * Total mortality of the initial seed population
      *
      * Determines the equilibrium age structure of the seed population.
@@ -103,7 +90,7 @@ public:
     /**
      * Movement matrix
      */
-    Array<double,Stocks,Areas,AreaTos> movement;
+    Array<double,Areas,AreaTos> movement;
 
     /**
      * Initialise the parameters
@@ -111,20 +98,6 @@ public:
      * In the future, these could be read in from file, but for the moment done here
      */
     void initialise(void){
-
-        seed_stock = {
-            {W,E},
-            {0.6,0.4}
-        };
-
-        seed_area(W) = {
-            {EN,HG,BP},
-            {0.5,0.4,0.1}
-        };
-        seed_area(E) = {
-            {EN,HG,BP},
-            {0.1,0.4,0.5}
-        };
 
         seed_age = Exponential(
             seed_total_mortality
@@ -151,16 +124,6 @@ public:
         }
 
         movement = 0;
-
-        movement(W,EN,HG) = 0.2;
-        movement(W,HG,EN) = 0.2;
-        movement(W,HG,BP) = 0.1;
-        movement(W,BP,HG) = 0.9;
-
-        movement(E,EN,HG) = 0.9;
-        movement(E,HG,EN) = 0.1;
-        movement(E,HG,BP) = 0.5;
-        movement(E,BP,HG) = 0.2;
     }
 };
 
@@ -263,15 +226,19 @@ class Fish {
      * Processes
      ************************************************************/
 
-
     /**
      * Create a seed fish 
      * 
      * Needed for intial seeding of the population prior to burning it in. In other circumstances
-     * `birth()` should used be used.
+     * `birth()` should used be used. Currently, a number of approximations are used so that the
+     * seed population is closer to an equilibrium population:
+     *
+     *  - exponential distribution of ages
+     *  - seed fish are distributed evenly across areas
+     *  - maturity is approximated by maturation schedule
      */
     void seed(void) {
-        area = params.seed_area(stock).random();
+        area = chance.random()*Areas::size();
         home = area;
         auto age = std::max(1.,std::min(params.seed_age.random(),30.));
         birth = now-age;
@@ -288,13 +255,13 @@ class Fish {
      * Initialises attributes as though this fish is close
      * to age 0
      */
-    void born(Stock stock, Area area) {
-        stock = stock;
+    void born(Area area) {
+        home = area;
         area = area;
         birth = now;
         death = 0;
         sex = params.sex_at_birth.random();
-        length = 1; // TODO random length from dist
+        length = 0;
         mature = false;
         tag = 0;
     }
@@ -343,7 +310,7 @@ class Fish {
      */
     Fish& movement(void) {
         for (auto area_to : area_tos){
-            if (chance.random() < params.movement(stock,area,area_to)) {
+            if (chance.random() < params.movement(area,area_to)) {
                 area = Area(area_to.index());
                 break;
             }
@@ -399,7 +366,7 @@ class Fishes : public std::vector<Fish> {
     /**
      * Counts of fish by model dimensions
      */
-    Array<uint,Stocks,Areas,Sexes,Ages,Lengths> counts;
+    Array<uint,Areas,Sexes,Ages,Lengths> counts;
 
     /**
      * Initialise parameters etc
@@ -442,11 +409,10 @@ class Fishes : public std::vector<Fish> {
         std::vector<Fish> recruits(number);
         // Initialise each of the recruits
         for(auto recruit : recruits){
-            // TODO determine recruits by stock and area
-            // instad of theis temporary random assignment
-            Stock stock = Fish::params.seed_stock.random();
-            Area area = Fish::params.seed_area(stock).random();
-            recruit.born(stock, area);
+            // TODO determine recruits by area
+            // instad of this temporary random assignment
+            Area area = chance.random()*Areas::size();
+            recruit.born(area);
         }
         return recruits;
     }
@@ -523,7 +489,6 @@ class Fishes : public std::vector<Fish> {
         for (auto fish : *this) {
             if(fish.alive()){
                 counts(
-                    fish.stock,
                     fish.area,
                     fish.sex,
                     fish.age_bin(),
@@ -568,21 +533,18 @@ class Fishes : public std::vector<Fish> {
 
         enumerate();
 
-        for(auto stock : stocks){
-            for(auto area : areas){
-                for(auto sex : sexes){
-                    for(auto age: ages){
-                        for(auto length : lengths){
-                            (*counts_file)
-                                <<now<<"\t"
-                                <<stock<<"\t"
-                                <<area<<"\t"
-                                <<sex<<"\t"
-                                <<age<<"\t"
-                                <<length<<"\t"
-                                <<counts(stock,area,sex,age,length)<<"\n"
-                            ;
-                        }
+        for(auto area : areas){
+            for(auto sex : sexes){
+                for(auto age: ages){
+                    for(auto length : lengths){
+                        (*counts_file)
+                            <<now<<"\t"
+                            <<area<<"\t"
+                            <<sex<<"\t"
+                            <<age<<"\t"
+                            <<length<<"\t"
+                            <<counts(area,sex,age,length)<<"\n"
+                        ;
                     }
                 }
             }

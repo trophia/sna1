@@ -26,24 +26,22 @@ float years(Time a, Time b) {
 }
 
 /**
- * Area
+ * Region
  */
-enum Area {
+enum Region {
     EN = 0,
     HG = 1,
     BP = 2
 };
-STENCILA_DIM(Areas,areas,area,3);
-STENCILA_DIM(AreaTos,area_tos,area_to,3);  // For defining and accessing movement matrix
+STENCILA_DIM(Regions,regions,region,3);
 
 /**
- * Stock of fish
+ * Area
  */
-enum Stock {
-    W = 0,
-    E = 1
-};
-STENCILA_DIM(Stocks,stocks,stock,2);
+typedef uint Area;
+STENCILA_DIM(Areas,areas,area,9);
+STENCILA_DIM(AreaTos,area_tos,area_to,9);  // For defining and accessing movement matrix
+
 
 /**
  * Sex of fish
