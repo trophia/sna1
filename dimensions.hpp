@@ -71,10 +71,12 @@ int length_bin(double length){
 }
 
 /**
- * Fishing methods
+ * Harvest methods
  */
-enum {
-    TR = 0,
-    LI = 1
+enum Method {
+    LI = 0,
+    TR = 1,
+    DS = 2,
+    RE = 3
 };
-STENCILA_DIM(Methods,methods,method,2);
+STENCILA_DIM(Methods,methods,method,4);
