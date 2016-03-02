@@ -1,0 +1,33 @@
+#title Parameter settings for the `sna1` model
+
+#mode free
+
+
+> Fishes
+
+	> Growth
+
+		par fishes_k type number
+
+			0.1
+
+		par fishes_linf type number
+		
+			60
+
+
+	> Movement 
+
+		par fishes_move type matrix
+
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+			0 0 0 0 0 0 0 0 0
+
+
