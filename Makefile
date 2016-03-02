@@ -112,4 +112,4 @@ sna1.prof: $(HPPS) $(CPPS)
 # Running
  
 run: sna1.exe
-	time ./sna1.exe
+	time ./sna1.exe run
