@@ -1,5 +1,8 @@
-## R script to get movement model for 9 areas to 9 areas in 3 stocks
-## (3 areas in each stock) to make the stock movement as close as 
+## R script for getting movement model for 9 areas to 9 areas in 3 stocks
+## (3 areas in each stock) to make the stock movement as close as possible
+## the model assumes the movement proportion from area i to j 
+## when j != i, sigma^(abs(i - j)*power) 
+## when j == i, 1 - sum of all proportions k, k = 1, 2, ... i - 1, i + 1, ... 9
 
 ## function for the sigma and power search
 func <- function(p, stock) {
@@ -46,7 +49,7 @@ for (stock in c('ENLD', 'HAGU', 'BPLE')) {
   ests <- rbind(ests, data.frame(stock = stock, sigma = par$estimate[1], power = par$estimate[2]))
 }
 
-## est sigma for BPLE is non-sensible, 
+## est sigma and power for BPLE is not sensible, 
 ## so assign a value to sigma and power for BPLE
 ests$sigma[ests$stock == 'BPLE'] <- 0.22
 ests$power[ests$stock == 'BPLE'] <- 0.7
