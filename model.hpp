@@ -6,6 +6,7 @@
 #include "fishes.hpp"
 #include "harvest.hpp"
 #include "monitor.hpp"
+#include "pars.hpp"
 
 /**
  * The model
@@ -19,12 +20,14 @@ public:
     Fishes fishes;
     Harvest harvest;
     Monitor monitor;
+    Pars pars;
 
     void initialise(void) {
         environ.initialise();
         fishes.initialise();
         harvest.initialise();
         monitor.initialise();
+        pars.initialise();
     }
 
     void finalise(void) {
@@ -32,6 +35,7 @@ public:
         fishes.finalise();
         harvest.finalise();
         monitor.finalise();
+        pars.initialise();
     }
 
     void trace(void) {

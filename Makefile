@@ -88,8 +88,8 @@ requires: requires-boost requires-stencila requires-fsl
 # Define compile options and required libraries
 CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -pthread
 INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/stencila/cpp -Irequires/fsl
-LIB_DIRS := -Lrequires/boost-$(OS)/lib
-LIBS := -lboost_system -lboost_filesystem
+LIB_DIRS := -Lrequires/boost-$(OS)/lib -Lrequires/stencila/build/current/cpp/library
+LIBS := -lboost_system -lboost_filesystem -lstencila -lz -lcrypto -lssl -lrt -lcurl
 
 # Find all .hpp and .cpp files (to save time don't recurse into subdirectories)
 HPPS := $(shell find . -maxdepth 1 -name "*.hpp")

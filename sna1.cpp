@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
         } else if (task == "mls_changes_example") {
             mls_changes_example();
         } else {
-            throw std::runtime_error("Unrecognised task");
+            std::cout << "No task specified" <<std::endl;
         }
     } catch(std::exception& error) {
         std::cout << "************Error************\n"
