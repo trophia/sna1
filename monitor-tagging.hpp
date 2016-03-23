@@ -1,8 +1,6 @@
 #pragma once
 
-#include <map>
-
-#include <boost/filesystem.hpp>
+#include "requirements.hpp"
 
 /**
  * Simulation of a tagging programme

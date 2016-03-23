@@ -1,7 +1,6 @@
 #pragma once
 
-#include <stencila/dimension.hpp>
-using Stencila::Dimension;
+#include "requirements.hpp"
 
 /**
  * Time

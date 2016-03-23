@@ -1,28 +1,6 @@
 #pragma once
 
-#include <fstream>
-#include <vector>
-#include <thread>
-
-#include <stencila/array-static.hpp>
-using Stencila::Array;
-#include <stencila/query.hpp>
-using namespace Stencila::Queries;
-
-#include <fsl/math/probability/truncated.hpp>
-using Fsl::Math::Probability::Truncated;
-#include <fsl/math/probability/normal.hpp>
-using Fsl::Math::Probability::Normal;
-#include <fsl/math/probability/lognormal.hpp>
-using Fsl::Math::Probability::Lognormal;
-#include <fsl/math/probability/exponential.hpp>
-using Fsl::Math::Probability::Exponential;
-#include <fsl/math/probability/discrete.hpp>
-using Fsl::Math::Probability::Discrete;
-
-#include <fsl/population/growth/von-bert.hpp>
-using Fsl::Population::Growth::VonBert;
-
+#include "requirements.hpp"
 #include "dimensions.hpp"
 #include "environ.hpp"
 

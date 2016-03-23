@@ -1,7 +1,6 @@
 #pragma once
 
-#include <iostream>
-
+#include "requirements.hpp"
 #include "environ.hpp"
 #include "fishes.hpp"
 #include "harvest.hpp"

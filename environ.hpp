@@ -1,7 +1,6 @@
 #pragma once
 
-#include <fsl/math/probability/uniform.hpp>
-using Fsl::Math::Probability::Uniform;
+#include "requirements.hpp"
 
 /**
  * Represents stochasticity

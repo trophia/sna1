@@ -1,7 +1,6 @@
 #pragma once
 
-#include <fsl/math/functions/double-normal-plateau.hpp>
-using Fsl::Math::Functions::DoubleNormalPlateau;
+#include "requirements.hpp"
 
 /**
  * A group of fishing activity
