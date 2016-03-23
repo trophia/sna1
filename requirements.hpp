@@ -31,8 +31,6 @@ using Fsl::Math::Probability::Uniform;
 using Fsl::Math::Probability::Truncated;
 #include <fsl/math/probability/normal.hpp>
 using Fsl::Math::Probability::Normal;
-#include <fsl/math/probability/lognormal.hpp>
-using Fsl::Math::Probability::Lognormal;
 #include <fsl/math/probability/exponential.hpp>
 using Fsl::Math::Probability::Exponential;
 #include <fsl/math/probability/discrete.hpp>

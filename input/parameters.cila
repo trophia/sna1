@@ -7,13 +7,18 @@
 
 	> Growth
 
-		par fishes_k type number
+		par fishes_k
+			par mean
+				0.1
+			par cv
+				0.1
 
-			0.1
+		par fishes_linf
+			par mean
+				60
+			par cv
+				0.1
 
-		par fishes_linf type number
-
-			60
 
 
 	> Movement 

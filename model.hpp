@@ -5,7 +5,7 @@
 #include "fishes.hpp"
 #include "harvest.hpp"
 #include "monitor.hpp"
-#include "pars.hpp"
+#include "parameters.hpp"
 
 /**
  * The model
@@ -13,20 +13,21 @@
  * Links together the sub-models `Environ`, 'Fishes` and `Harvest`
  */
 class Model {
-public:
+ public:
 
     Environ environ;
     Fishes fishes;
     Harvest harvest;
     Monitor monitor;
-    Pars pars;
+    
+    Parameters parameters;
 
     void initialise(void) {
         environ.initialise();
         fishes.initialise();
         harvest.initialise();
         monitor.initialise();
-        pars.initialise();
+        parameters.initialise();
     }
 
     void finalise(void) {
@@ -34,7 +35,7 @@ public:
         fishes.finalise();
         harvest.finalise();
         monitor.finalise();
-        pars.initialise();
+        parameters.initialise();
     }
 
     void trace(void) {
