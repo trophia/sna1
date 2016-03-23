@@ -8,8 +8,7 @@
  * Fish parameters
  */
 class FishParameters {
-public:
-
+ public:
     /**
      * Total mortality of the initial seed population
      *
@@ -37,19 +36,6 @@ public:
      * Instantaneous rate of natural mortality
      */
     double natural_mortality_rate = 0.075;
-
-    /**
-     * Length at age
-     *
-     * Uses a normal ditribtion around the mean age at length
-     * determined by the von-Bertallanfy growth function.
-     */
-    VonBert length_at_age_func = {
-        k:0.1,
-        linf:100
-    };
-    float length_at_age_cv = 0.1;
-    Array<Normal,Ages> length_at_age;
 
     /**
      * Length-weight relation
@@ -85,16 +71,6 @@ public:
             {male,female},
             {0.5,0.5}
         };
-
-        // Initialise the length-at-age distributions
-        for(auto age : ages){
-            auto mean = length_at_age_func.value(age.index());
-            auto sd = std::max(mean*length_at_age_cv,1.);
-            length_at_age(age) = Normal(mean,sd);
-        }
-        length_at_age.write("output/fishes/length_at_age.tsv",{"mean","sd"},[](std::ostream& file,const Normal& distribution){
-            file<<distribution.mean()<<"\t"<<distribution.sd();
-        });
 
         for(auto age : ages){
             // TODO implement something more sophisticated
@@ -133,7 +109,17 @@ class Fish {
     Sex sex;
 
     /**
-     * Length (cm) of this fish
+     * Growth coefficient (von Bertalanffy k) for this fish
+     */
+    float k;
+
+    /**
+     * Assymptotic length (von Bertalanffy Linf) for this fish
+     */
+    float linf;
+
+    /**
+     * Current length (cm) of this fish
      */
     float length;
 
@@ -150,7 +136,7 @@ class Fish {
     /**
      * Tag number for fish
      */
-    unsigned int tag ;
+    unsigned int tag;
 
     /**
      * Parameters for `Fish` dynamics
@@ -222,7 +208,7 @@ class Fish {
         birth = now-age;
         death = 0;
         sex = params.sex_at_birth.random();
-        length = std::max(params.length_at_age(age).random(),0.);
+        length = 0;
         mature = chance.random()<params.maturation_at_age(age);
         tag = 0;
     }
@@ -269,7 +255,7 @@ class Fish {
      * Increase the length of this fish
      */
     Fish& growth(void) {
-        length = std::max(params.length_at_age(age_bin()).random(), 1.0);
+        length = 0; // TODO von B
         return *this;
     }
 
