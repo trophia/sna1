@@ -111,12 +111,12 @@ class Fish {
     /**
      * Growth coefficient (von Bertalanffy k) for this fish
      */
-    float k;
+    float growth_intercept;
 
     /**
      * Assymptotic length (von Bertalanffy Linf) for this fish
      */
-    float linf;
+    float growth_slope;
 
     /**
      * Current length (cm) of this fish
@@ -237,9 +237,8 @@ class Fish {
      * is also used by `Fleets` to kill a fish from harvest or
      * incidental mortality
      */
-    Fish& dies(void) {
+    void dies(void) {
         death = now;
-        return *this;
     }
 
     /**
@@ -254,32 +253,29 @@ class Fish {
     /**
      * Increase the length of this fish
      */
-    Fish& growth(void) {
-        length = 0; // TODO von B
-        return *this;
+    void growth(void) {
+        length += growth_intercept + growth_slope * length;
     }
 
     /**
      * Change the maturation status of this fish
      */
-    Fish& maturation(void) {
+    void maturation(void) {
         if (not mature) {
             mature = chance.random()<params.maturation_at_age(age_bin());
         }
-        return *this;
     }
 
     /**
      * Move this fish
      */
-    Fish& movement(void) {
+    void movement(void) {
         for (auto area_to : area_tos){
             if (chance.random() < params.movement(area,area_to)) {
                 area = Area(area_to.index());
                 break;
             }
         }
-        return *this;
     }
 
 };  // end class Fish
