@@ -10,16 +10,16 @@ Model model;
 void run(void) {
     std::function<void()> callback([&](){
         auto fishes = model.fishes;
-        auto bs = fishes.biomass_spawners_area();
+        fishes.biomass_update();
         std::cout
             << year(now) << "\t"
             << quarter(now) << "\t"
             << fishes.size() << "\t"
             << fishes.number(false) << "\t"
             << fishes.number() << "\t"
-            << fishes.biomass() << "\t"
             << fishes.biomass_spawners << "\t"
-            << bs(EN) << "\t" << bs(HG) << "\t" << bs(BP) << "\t"
+            << fishes.recruitment << "\t"
+            << fishes.recruitment_instances << "\t"
             << fishes.age_mean() << "\t"
             << fishes.length_mean() << std::endl;
     });
@@ -33,7 +33,7 @@ void instances_seed_sensitivity(void) {
     std::ofstream tracks("output/instances_seed_sensitivity.tsv");
     std::ofstream times("output/instances_seed_sensitivity_times.tsv");
     for (auto num : {1e2, 1e3, 5e3, 1e4, 5e4, 1e5, 5e5, 1e6}) {
-        model.fishes.instances_seed = num;
+        parameters.fishes_seed_number = num;
         for (auto iter = 0; iter < 30; iter++) {
             std::function<void()> callback([&](){
                 tracks
@@ -57,7 +57,6 @@ void instances_seed_sensitivity(void) {
  */
 void mls_changes_example(void) {
     std::ofstream tracks("output/mls_changes_example.tsv");
-    model.fishes.instances_seed = 100000;
     for (auto mls : {26,27,28,29,30}) {
         for (auto iter = 0; iter < 10; iter++) {
             std::function<void()> callback([&](){

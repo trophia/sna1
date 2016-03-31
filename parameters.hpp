@@ -12,6 +12,16 @@
  */
 class Parameters : public Structure<Parameters> {
  public:
+
+    /**
+     * Number of instances of `Fish` to seed the population with
+     *
+     * Preliminary sensitity analyses (see `instances_seed_sensitivity` in `sna1.cpp`)
+     * suggested 100,000 was a good trade-off between run duration and precision at least
+     * during development. Should be increased for final runs.
+     */
+    unsigned int fishes_seed_number = 10000;
+
     /**
      * Total mortality of the initial seed population
      *
@@ -86,6 +96,16 @@ class Parameters : public Structure<Parameters> {
      * Movement matrix
      */
     Array<double, Areas, AreaTos> movement;
+
+    /**
+     * Pristine spawner biomass (t)
+     *
+     * Externally defined and used to calculate the value for `scalar`
+     *
+     * Total across stocks from Francis & McKenzie (2014) "Table 30: Base case 
+     * estimates of unfished biomass, B0 , and current biomass by stock and area"
+     */
+    double fishes_b0 = 376000;
 
     /**
      * Initialise parameters

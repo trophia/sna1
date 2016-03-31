@@ -5,83 +5,6 @@
 #include "environ.hpp"
 
 /**
- * Fish parameters
- */
-class FishParameters {
- public:
-    /**
-     * Total mortality of the initial seed population
-     *
-     * Determines the equilibrium age structure of the seed population.
-     */
-    double seed_total_mortality = 0.1;
-
-    /**
-     * Exponential distribution for the age structure of the 
-     * seed population
-     */
-    Exponential seed_age;
-
-    /**
-     * Stock recruitment
-     */
-    double recruitment_steepness = 0.85;
-
-    /**
-     * Sex at birth
-     */
-    Discrete<Sex,2> sex_at_birth;
-
-    /**
-     * Instantaneous rate of natural mortality
-     */
-    double natural_mortality_rate = 0.075;
-
-    /**
-     * Length-weight relation
-     */
-    double length_weight_a = 4.467e-08;
-    double length_weight_b = 2.793;
-
-    /**
-     * Maturity-at-age
-     *
-     * This is not the proportion mature at an age but rather the probability
-     * of maturing
-     */
-    Array<double,Ages> maturation_at_age;
-
-    /**
-     * Movement matrix
-     */
-    Array<double,Areas,AreaTos> movement;
-
-    /**
-     * Initialise the parameters
-     *
-     * In the future, these could be read in from file, but for the moment done here
-     */
-    void initialise(void){
-
-        seed_age = Exponential(
-            seed_total_mortality
-        );
-
-        sex_at_birth = {
-            {male,female},
-            {0.5,0.5}
-        };
-
-        for(auto age : ages){
-            // TODO implement something more sophisticated
-            maturation_at_age(age) = age.index()>4;
-        }
-
-        movement = 0;
-    }
-};
-
-/**
  * A fish
  */
 class Fish {
@@ -138,11 +61,6 @@ class Fish {
      */
     unsigned int tag;
 
-    /**
-     * Parameters for `Fish` dynamics
-     */
-    static FishParameters params;
-
 
     /*************************************************************
      * Attributes
@@ -177,13 +95,50 @@ class Fish {
     }
 
     /**
+     * Calculate the length at age for this fish based on its growth parameters
+     */
+    double length_at_age(uint age) const {
+        auto pars = vonb();
+        return length_at_age(age, pars[0], pars[1]);
+    }
+
+    /**
+     * Calculate the length at age of a fish given vonB growth parameters
+     */
+    static double length_at_age(uint age, const double& k, const double& linf) {
+        return linf*(1-std::exp(-k*age));
+    }
+
+    /**
+     * Set the von Bert growth parameters for this fish
+     *
+     * Converts `k` and `linf` to `growth_intercept` and `growth_slope`
+     */
+    void vonb(const double& k, const double& linf, const double& time = 1) {
+        growth_slope = std::exp(-k*time)-1;
+        growth_intercept = -growth_slope * linf;
+    }
+
+    /**
+     * Get the von Bert growth parameters for this fish
+     *
+     * Converts `growth_intercept` and `growth_slope` to `k` and `linf`
+     */
+    std::array<double, 2> vonb(void) const {
+        // TODO
+        auto k = 0.0;
+        auto linf = 0.0;
+        return {k, linf};
+    }
+
+    /**
      * Get the weight of this fish
      *
      * Currently, all fish have the same condition factor so weight is
      * simply a function of length
      */
     double weight(void) const {
-        return params.length_weight_a*std::pow(length, params.length_weight_b);
+        return parameters.fishes_a*std::pow(length, parameters.fishes_b);
     }
 
     /*************************************************************
@@ -202,14 +157,23 @@ class Fish {
      *  - maturity is approximated by maturation schedule
      */
     void seed(void) {
-        area = chance.random()*Areas::size();
+        area = chance()*Areas::size();
         home = area;
-        auto age = std::max(1.,std::min(params.seed_age.random(),30.));
+
+        auto age = std::max(1.,std::min(parameters.fishes_seed_age_dist.random(),100.));
         birth = now-age;
         death = 0;
-        sex = params.sex_at_birth.random();
-        length = 0;
-        mature = chance.random()<params.maturation_at_age(age);
+
+        sex = (chance()<parameters.fishes_males)?male:female;
+
+        // Set von Bert growth parameters from their distributions
+        auto k = parameters.fishes_k_dist.random();
+        auto linf = parameters.fishes_linf_dist.random();
+        vonb(k, linf);
+        length = length_at_age(age, k, linf);
+
+        mature = chance()<parameters.fishes_mature;
+
         tag = 0;
     }
 
@@ -224,9 +188,17 @@ class Fish {
         area = area;
         birth = now;
         death = 0;
-        sex = params.sex_at_birth.random();
+        
+        sex = (chance()<parameters.fishes_males)?male:female;
+
+        // Set von Bert growth parameters from their distributions
+        auto k = parameters.fishes_k_dist.random();
+        auto linf = parameters.fishes_linf_dist.random();
+        vonb(k, linf);
         length = 0;
+
         mature = false;
+
         tag = 0;
     }
 
@@ -245,7 +217,7 @@ class Fish {
      * Does this fish survive this time step?
      */
     bool survival(void) {
-        auto survives = chance.random() > params.natural_mortality_rate;
+        auto survives = chance() > parameters.fishes_m_rate;
         if (not survives) dies();
         return survives;
     }
@@ -262,7 +234,7 @@ class Fish {
      */
     void maturation(void) {
         if (not mature) {
-            mature = chance.random()<params.maturation_at_age(age_bin());
+            mature = chance()<parameters.fishes_mature;
         }
     }
 
@@ -271,7 +243,7 @@ class Fish {
      */
     void movement(void) {
         for (auto area_to : area_tos){
-            if (chance.random() < params.movement(area,area_to)) {
+            if (chance() < parameters.movement(area,area_to)) {
                 area = Area(area_to.index());
                 break;
             }
@@ -280,7 +252,6 @@ class Fish {
 
 };  // end class Fish
 
-FishParameters Fish::params;
 
 /**
  * The population of `Fish`
@@ -299,144 +270,46 @@ class Fishes : public std::vector<Fish> {
      */
     double scalar = 1.0;
 
-    /**
-     * Number of instances of `Fish` to seed the population with
-     *
-     * Preliminary sensitity analyses (see `instances_seed_sensitivity` in `sna1.cpp`)
-     * suggested 100,000 was a good trade-off between run duration and precision at least
-     * during development. Should be increased for final runs.
-     */
-    unsigned int instances_seed = 10000;
+
+    char recruitment_mode = 'n';
 
     /**
-     * Pristine spawner biomass (t)
-     *
-     * Externally defined and used to calculate the value for `scalar`
-     *
-     * Total across stocks from Francis & McKenzie (2014) "Table 30: Base case 
-     * estimates of unfished biomass, B0 , and current biomass by stock and area"
+     * Recruitment for pristine population (see `Model::pristine()`)
      */
-    double biomass_spawners_pristine = 376000;
+    double recruitment_pristine;
 
     /**
-     * 
+     * Aggregate properties that get calculated at various times
+     */
+    
+    /**
+     * Current total biomass (t)
+     */
+    double biomass;
+
+    void biomass_update(void) {
+        biomass = 0.0;
+        for (auto& fish : *this) {
+            if (fish.alive()) {
+                biomass += fish.weight();
+            }
+        }
+        biomass *= scalar;
+    }
+
+    /**
+     * Current spawner biomass (t)
      */
     double biomass_spawners;
 
-    /**
-     * Counts of fish by model dimensions
-     */
-    Array<uint,Areas,Sexes,Ages,Lengths> counts;
-
-    /**
-     * Initialise parameters etc
-     */
-    void initialise(void){
-        Fish::params.initialise();
-
-        boost::filesystem::create_directories("output/fishes");
-    }
-
-    /**
-     * Finalise (e.g. write values to file)
-     */
-    void finalise(void){
-    }
-
-    /**
-     * Reset aggregate statistics
-     */
-    void aggregates_reset(void) {
-        biomass_spawners = 0;
-    }
-
-    /**
-     * Add a fish to the aggregate statistics
-     * 
-     * @param fish Fish to add
-     */
-    void aggregates_add(const Fish& fish) {
-        if (fish.alive()) {
-            if (fish.mature) {
+    void biomass_spawners_update(void) {
+        biomass_spawners = 0.0;
+        for (auto& fish : *this) {
+            if (fish.alive() and fish.mature) {
                 biomass_spawners += fish.weight();
             }
         }
-    }
-
-    /**
-     * Calculate aggregate stattistics
-     */
-    void aggregates(void) {
-        aggregates_reset();
-        for(auto fish : *this) aggregates_add(fish);
-    }
-
-    /**
-     * Recruitment
-     * 
-     * @return  The new recruits
-     */
-    std::vector<Fish> recruitment(void) {
-        // Calculate the number of recruits (eggs) to produce
-        // and initialise the vector with that number
-        // TODO stock-recruitment in here
-        double number = 1000;
-        std::vector<Fish> recruits(number);
-        // Initialise each of the recruits
-        for(auto recruit : recruits){
-            // TODO determine recruits by area
-            // instad of this temporary random assignment
-            Area area = chance.random()*Areas::size();
-            recruit.born(area);
-        }
-
-        // Iterator pointing to the current recruit to be used as a replacement
-        auto replacement = begin();
-        // As an optimisation, we previously had this replacement inside the next
-        // fish loop. But, that 
-        auto iterator = begin();
-        while(iterator != end() and replacement != recruits.end()){
-            // If fish has died and there are still recruits to be inserted, replace it
-            if (not iterator->alive() and replacement != recruits.end()) {
-                *iterator = *replacement;
-                replacement++;
-            }
-        }
-        // If there are still recruits to be inserted then append them
-        while (replacement != recruits.end()) {
-            push_back(*replacement);
-            replacement++;
-        }
-
-        return recruits;
-    }
-
-    /**
-     * Calculate the number of fish in the population
-     *
-     * @param scale Scale up the number?
-     */
-    double number(bool scale = true) {
-        auto sum = 0.0;
-        for (auto fish : *this){
-            if (fish.alive()) {
-                sum++;
-            }
-        }
-        return sum * (scale?scalar:1);
-    }
-
-    /**
-     * Calculate the biomass
-     */
-    double biomass(void) {
-        auto sum = 0.0;
-        for (auto fish : *this) {
-            if (fish.alive()) {
-                sum += fish.weight();
-            }
-        }
-        return sum * scalar;
+        biomass_spawners *= scalar;
     }
 
     /**
@@ -451,6 +324,65 @@ class Fishes : public std::vector<Fish> {
         }
         sums *= scalar;
         return sums;
+    }
+
+    /**
+     * Current recruitment (no.)
+     */
+    double recruitment;
+
+    /**
+     * Current recruitment (instances)
+     */
+    uint recruitment_instances;
+
+    void recruitment_update(void) {
+        if (recruitment_mode == 'p') {
+            recruitment = recruitment_pristine;
+        } else {
+            auto s = biomass_spawners;
+            auto r0 = recruitment_pristine;
+            auto s0 = parameters.fishes_b0;
+            auto h = parameters.fishes_steepness;
+            recruitment = 4*h*r0*s/((5*h-1)*s+s0*(1-h));
+        }
+        recruitment_instances = std::round(recruitment/scalar);
+    }
+
+
+    /**
+     * Counts of fish by model dimensions
+     */
+    Array<uint,Areas,Sexes,Ages,Lengths> counts;
+
+
+    /**
+     * Initialise parameters etc
+     */
+    void initialise(void){
+        boost::filesystem::create_directories("output/fishes");
+    }
+
+    /**
+     * Finalise (e.g. write values to file)
+     */
+    void finalise(void){
+    }
+
+
+    /**
+     * Calculate the number of fish in the population
+     *
+     * @param scale Scale up the number?
+     */
+    double number(bool scale = true) {
+        auto sum = 0.0;
+        for (auto fish : *this){
+            if (fish.alive()) {
+                sum++;
+            }
+        }
+        return sum * (scale?scalar:1);
     }
 
     /**
@@ -490,32 +422,6 @@ class Fishes : public std::vector<Fish> {
                 )++;
             }
         }
-    }
-
-    /**
-     * Trace key attributes to output
-     *
-     * This is used for 
-     */
-    void trace(void) {
-        #if TRACE_LEVEL >= 1
-            std::cout
-                << size() << "\t";
-        #endif
-        #if TRACE_LEVEL >= 2
-            std::cout
-                << number(false) << "\t"
-                << number() << "\t"
-                << biomass() << "\t"
-                << biomass_spawners << "\t";
-        #endif
-        #if TRACE_LEVEL >=3
-            auto bs = biomass_spawners_area();
-            std::cout
-                << bs(EN) << "\t" << bs(HG) << "\t" << bs(BP) << "\t"
-                << age_mean() << "\t"
-                << length_mean() << "\t";
-        #endif
     }
 
     /**
