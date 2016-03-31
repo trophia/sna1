@@ -8,7 +8,11 @@
 #include <boost/random/lognormal_distribution.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
-struct random_generator : boost::mt19937 {
+/**
+ * The mt11213b generator is fast and has a reasonable cycle length
+ * See http://www.boost.org/doc/libs/1_60_0/doc/html/boost_random/reference.html#boost_random.reference.generators
+ */
+struct random_generator : boost::mt11213b {
     random_generator(void){
         seed(static_cast<unsigned int>(std::time(0)));
     }
