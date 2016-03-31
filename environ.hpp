@@ -3,14 +3,6 @@
 #include "requirements.hpp"
 
 /**
- * Represents stochasticity
- *
- * Used in numerous places for adding probabalistic 
- * behaviours to dynamics
- */
-static Uniform chance = {0, 1};
-
-/**
  * The "environment"
  *
  * Currently just a placeholder
@@ -18,7 +10,7 @@ static Uniform chance = {0, 1};
 class Environ {
  public:
     void initialise(void) {
-    	boost::filesystem::create_directories("output/environ");
+        boost::filesystem::create_directories("output/environ");
     }
 
     void finalise(void) {

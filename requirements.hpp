@@ -10,9 +10,12 @@
 #include <thread>
 #include <map>
 #include <iostream>
+#include <string>
+#include <ctime>
 
 // Boost library
 #include <boost/filesystem.hpp>
+
 
 // Stencila structure, array and query classes
 #include <stencila/dimension.hpp>

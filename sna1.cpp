@@ -1,9 +1,3 @@
-#include <iostream>
-#include <string>
-#include <ctime>
-
-#define TRACE_LEVEL 10
-
 //#define FISHES_PARALLEL
 
 #include "model.hpp"
@@ -15,7 +9,19 @@ Model model;
  */
 void run(void) {
     std::function<void()> callback([&](){
-        model.fishes.track();
+        auto fishes = model.fishes;
+        auto bs = fishes.biomass_spawners_area();
+        std::cout
+            << year(now) << "\t"
+            << quarter(now) << "\t"
+            << fishes.size() << "\t"
+            << fishes.number(false) << "\t"
+            << fishes.number() << "\t"
+            << fishes.biomass() << "\t"
+            << fishes.biomass_spawners << "\t"
+            << bs(EN) << "\t" << bs(HG) << "\t" << bs(BP) << "\t"
+            << fishes.age_mean() << "\t"
+            << fishes.length_mean() << std::endl;
     });
     model.run(1960, 2025, &callback);
 }
@@ -75,10 +81,12 @@ void mls_changes_example(void) {
     }
 }
 
+
 /**
  * Main entry point; dispatches to one of the above tasks
  */
 int main(int argc, char** argv) {
+    parameters.initialise();
     model.initialise();
 
     try {
@@ -106,6 +114,7 @@ int main(int argc, char** argv) {
     }
 
     model.finalise();
+    parameters.finalise();
 
     return 0;
 }
