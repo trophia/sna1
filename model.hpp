@@ -47,7 +47,11 @@ class Model {
      */
     void update(void) {
         auto y = year(now);
-        auto q = quarter(now);
+        //auto q = quarter(now);
+
+        // As an optimisation, only do harvesting after a particular time
+        // step 
+        bool harvesting = y>=1900;
 
         /*****************************************************************
          * Spawning and recruitment
@@ -61,64 +65,92 @@ class Model {
 
         // Create and insert each recruit into the population
         uint slot = 0;
-        for (uint index = 0; index < fishes.recruitment_instances; index++){
-            Fish recruit;
+        for (auto region : regions) {
+            for (uint index = 0; index < fishes.recruitment_instances(region); index++){
+                Fish recruit;
+                recruit.born(Region(region.index()));
 
-            // TODO determine recruits by area
-            // instad of this temporary random assignment
-            Area area = chance()*Areas::size();
-            recruit.born(area);
-
-            // Find a "slot" in population to insert this recruit
-            // If no empty slot found add to end of fish population
-            while (slot < fishes.size()) {
-                if (not fishes[slot].alive()) {
-                    fishes[slot] = recruit;
-                    break;
-                } else {
-                    slot++;
+                // Find a "slot" in population to insert this recruit
+                // If no empty slot found add to end of fish population
+                while (slot < fishes.size()) {
+                    if (not fishes[slot].alive()) {
+                        fishes[slot] = recruit;
+                        break;
+                    } else {
+                        slot++;
+                    }
                 }
-            }
-            if (slot == fishes.size()) {
-                fishes.push_back(recruit);
+                if (slot == fishes.size()) {
+                    fishes.push_back(recruit);
+                }
             }
         }
 
         /*****************************************************************
          * Fish population dynamics
          *
-         * Also calculates some aggregate statistics used below for
-         * harvest and tagging
+         * Also calculates some vulnerable biomass by region and method.
+         * This may be used for harvest calculations and/or monitoring
          ****************************************************************/
 
+        harvest.biomass_vulnerable = 0;
         for (Fish& fish : fishes) {
             if (fish.alive()) {
                 bool survives = fish.survival();
                 if (survives) {
                     fish.growth();
                     fish.maturation();
+
+                    if (harvesting) {
+                        auto weight = fish.weight();
+                        auto length_bin = fish.length_bin();
+                        for (auto method : methods) {
+                            harvest.biomass_vulnerable(fish.region,method) += weight * harvest.selectivity_at_length(method,length_bin);
+                        }
+                    }
                 }
             }
         }
+        harvest.biomass_vulnerable *= fishes.scalar;
 
         /*****************************************************************
          * Harvesting and tagging
-         *
          ****************************************************************/
 
-        for(Fish& fish: fishes){
-            // Harvest and tagging
-            if (now >= 1970) {
-                // TODO encounter rate based on harvest
-                if (chance() < 0.5) {  // encountered
-                    if (chance() < harvest.selectivity_at_length(fish.length_bin())) {  // caught
+        if (harvesting) {
 
-                        if (fish.length < harvest.mls) {  // returned
-                            if (chance() < harvest.handling_mortality) {  // returned but dies
+            // Update the current catches by region/method
+            // from the catch history
+            harvest.catch_observed_update();
+
+            // Randomly draw fish and "assign" them with varying probabilities
+            // to a particular region/method catch if that
+            harvest.attempts = 0;
+            harvest.catch_taken = 0;
+            Array<bool,Regions,Methods> catch_caught = false;
+            while(true) {
+                Fish& fish = fishes[chance()*fishes.size()];
+                if (fish.alive()) {
+                    auto region = fish.region;
+                    auto method = Method(int(chance()*Methods::size()));
+                    if (not catch_caught(region,method)) {
+                        // Is this fish caught?
+                        auto caught = harvest.selectivity_at_length(method,fish.length_bin());
+                        if (caught) {
+                            // Is this fish retained?
+                            if (fish.length >= parameters.harvest_mls(method)) {
                                 fish.dies();
+                                // Add to catch taken for region/method
+                                harvest.catch_taken(region,method) += fish.weight() * fishes.scalar;
+                                catch_caught(region,method) = harvest.catch_taken(region,method) >= harvest.catch_observed(region,method);
+                                // If catch is taken for all region/methods then quit
+                                if (sum(catch_caught) == catch_caught.size()) break;
+                            } else {
+                                // Does this fish die after released?
+                                if (chance() < parameters.harvest_handling_mortality) {
+                                    fish.dies();
+                                }
                             }
-                        } else {
-                            fish.dies();
                         }
 
                         // Tagging currently not active
@@ -140,10 +172,19 @@ class Model {
                             }
                         }
                         #endif
+
                     }
+                    harvest.attempts++;
+                    if (harvest.attempts > fishes.size() * 100) {
+                        std::cerr << y << std::endl
+                                  << "Catch taken so far:\n" << harvest.catch_taken << std::endl
+                                  << "Catch observed:\n" << harvest.catch_observed << std::endl;
+                        throw std::runtime_error("Too many attempts to take catch. Something is probably wrong.");
+                    };
                 }
             }
-        }
+
+        };
 
     }
 
@@ -155,14 +196,18 @@ class Model {
      */
     void pristine(Time time, std::function<void()>* callback = 0){
         // Set `now` to some arbitrary time (but high enough that fish
-        // willl have a birth time (uint) greater than 0)
-        now = 1000;
+        // will have a birth time (uint) greater than 0)
+        now = 200;
         // Keep recruitment fixed at a constant level that will produce the
         // wanted `seed_number` of individuals in equilibrium
         fishes.recruitment_mode = 'p';
         double number = 0;
-        for(int age = 0; age < 200; age++) number += std::exp(-parameters.fishes_m*age);
-        fishes.recruitment_pristine = parameters.fishes_seed_number/number;
+        for (int age = 0; age < 200; age++) number += std::exp(-parameters.fishes_m*age);
+        for (auto region : regions) {
+            fishes.recruitment_pristine(region) = 
+                parameters.fishes_seed_number/number *
+                parameters.fishes_b0(region)/sum(parameters.fishes_b0);
+        }
         fishes.scalar = 1;
         // Seed the population with seed individuals that have attribute values 
         // intended to reduce the burn in time for the initial population
@@ -189,8 +234,8 @@ class Model {
         now = time;
         // Set scalar so that the current spawner biomass 
         // matches the intended value
-        fishes.scalar = parameters.fishes_b0/fishes.biomass_spawners;
-        // Adjust the accordingly
+        fishes.scalar = sum(parameters.fishes_b0)/sum(fishes.biomass_spawners);
+        // Adjust accordingly
         fishes.biomass_spawners *= fishes.scalar;
         fishes.recruitment_pristine *= fishes.scalar;
         // Go to "normal" recruitment

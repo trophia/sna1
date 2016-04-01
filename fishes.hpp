@@ -57,6 +57,11 @@ class Fish {
     Area area;
 
     /**
+     * Current region of this fish
+     */
+    Region region;
+
+    /**
      * Tag number for fish
      */
     unsigned int tag;
@@ -77,7 +82,7 @@ class Fish {
      * Get the age of this fish
      */
     float age(void) const {
-        return years(now, birth);
+        return year(now)-year(birth);
     }
 
     /**
@@ -157,8 +162,9 @@ class Fish {
      *  - maturity is approximated by maturation schedule
      */
     void seed(void) {
-        area = chance()*Areas::size();
-        home = area;
+        area = 0;
+        home = 0;
+        region = Region(int(parameters.fishes_seed_region_dist.random()));
 
         auto age = std::max(1.,std::min(parameters.fishes_seed_age_dist.random(),100.));
         birth = now-age;
@@ -172,7 +178,8 @@ class Fish {
         vonb(k, linf);
         length = length_at_age(age, k, linf);
 
-        mature = chance()<parameters.fishes_mature;
+        // The is an approximation
+        mature = chance()<parameters.fishes_maturation(age);
 
         tag = 0;
     }
@@ -183,9 +190,11 @@ class Fish {
      * Initialises attributes as though this fish is close
      * to age 0
      */
-    void born(Area area) {
-        home = area;
-        area = area;
+    void born(Region region_) {
+        home = 0;
+        area = 0;
+        region = region_;
+
         birth = now;
         death = 0;
         
@@ -234,7 +243,9 @@ class Fish {
      */
     void maturation(void) {
         if (not mature) {
-            mature = chance()<parameters.fishes_mature;
+            if (chance()<parameters.fishes_maturation(age_bin())) {
+                mature = true;
+            }
         }
     }
 
@@ -243,7 +254,7 @@ class Fish {
      */
     void movement(void) {
         for (auto area_to : area_tos){
-            if (chance() < parameters.movement(area,area_to)) {
+            if (chance() < parameters.fishes_movement(area,area_to)) {
                 area = Area(area_to.index());
                 break;
             }
@@ -270,14 +281,6 @@ class Fishes : public std::vector<Fish> {
      */
     double scalar = 1.0;
 
-
-    char recruitment_mode = 'n';
-
-    /**
-     * Recruitment for pristine population (see `Model::pristine()`)
-     */
-    double recruitment_pristine;
-
     /**
      * Aggregate properties that get calculated at various times
      */
@@ -300,53 +303,50 @@ class Fishes : public std::vector<Fish> {
     /**
      * Current spawner biomass (t)
      */
-    double biomass_spawners;
+    Array<double, Regions> biomass_spawners;
 
     void biomass_spawners_update(void) {
         biomass_spawners = 0.0;
         for (auto& fish : *this) {
             if (fish.alive() and fish.mature) {
-                biomass_spawners += fish.weight();
+                biomass_spawners(fish.region) += fish.weight();
             }
         }
         biomass_spawners *= scalar;
     }
 
+
+    char recruitment_mode = 'n';
+
     /**
-     * Calculate the biomass of spawners by area
+     * Recruitment for pristine population (see `Model::pristine()`)
      */
-    Array<double,Areas> biomass_spawners_area(void) {
-        Array<double,Areas> sums = 0.0;
-        for (auto fish : *this) {
-            if (fish.alive() and fish.mature) {
-                sums(fish.area) += fish.weight();
-            }
-        }
-        sums *= scalar;
-        return sums;
-    }
+    Array<double, Regions> recruitment_pristine;
 
     /**
      * Current recruitment (no.)
      */
-    double recruitment;
+    Array<double, Regions> recruitment;
 
     /**
      * Current recruitment (instances)
      */
-    uint recruitment_instances;
+    Array<uint, Regions> recruitment_instances;
+
 
     void recruitment_update(void) {
-        if (recruitment_mode == 'p') {
-            recruitment = recruitment_pristine;
-        } else {
-            auto s = biomass_spawners;
-            auto r0 = recruitment_pristine;
-            auto s0 = parameters.fishes_b0;
-            auto h = parameters.fishes_steepness;
-            recruitment = 4*h*r0*s/((5*h-1)*s+s0*(1-h));
+        for(auto region : regions) {
+            if (recruitment_mode == 'p') {
+                recruitment(region) = recruitment_pristine(region);
+            } else {
+                auto s = biomass_spawners(region);
+                auto r0 = recruitment_pristine(region);
+                auto s0 = parameters.fishes_b0(region);
+                auto h = parameters.fishes_steepness;
+                recruitment(region) = 4*h*r0*s/((5*h-1)*s+s0*(1-h));
+            }
+            recruitment_instances(region) = std::round(recruitment(region)/scalar);
         }
-        recruitment_instances = std::round(recruitment/scalar);
     }
 
 

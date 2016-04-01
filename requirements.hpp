@@ -24,6 +24,3 @@ using Stencila::Array;
 using namespace Stencila::Queries;
 #include <stencila/structure.hpp>
 using Stencila::Structure;
-
-#include <fsl/math/functions/double-normal-plateau.hpp>
-using Fsl::Math::Functions::DoubleNormalPlateau;

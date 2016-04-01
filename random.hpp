@@ -5,6 +5,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/random/uniform_01.hpp>
+#include <boost/random/uniform_real.hpp>
 #include <boost/random/lognormal_distribution.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
@@ -36,6 +37,7 @@ template<
 
 
 typedef Distribution< boost::uniform_01<> > Uniform01;
+typedef Distribution< boost::uniform_real<> > Uniform;
 typedef Distribution< boost::exponential_distribution<> > Exponential;
 typedef Distribution< boost::lognormal_distribution<> > Lognormal;
 

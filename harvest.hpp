@@ -3,53 +3,69 @@
 #include "requirements.hpp"
 
 /**
- * A group of fishing activity
+ * Fishing activities
  */
 class Harvest {
  public:
-	
-    /**
-     * Selectivity as a function of length
-     */
-    DoubleNormalPlateau selectivity;
 
     /**
-     * Precalculated selectivity for each length bin
+     * Catc history
      */
-    Array<double,Lengths> selectivity_at_length;
+    Array<double, Years, Regions, Methods> catch_history;
 
     /**
-     * Minimum legal size limit
+     * Selectivity by method for each length bin
      */
-    double mls;
+    Array<double, Methods, Lengths> selectivity_at_length;
 
     /**
-     * Mortality of fish that are returned to sea
+     * Current vulnerable biomass by method
      */
-    double handling_mortality;
+    Array<double, Regions, Methods> biomass_vulnerable;
+
+    Array<double, Regions, Methods> catch_observed;
+
+    Array<double, Regions, Methods> catch_taken;
+
+    uint attempts;
 
 
-    Harvest(void){
-        selectivity.inflection_1 = 27;
-        selectivity.inflection_2_delta = 100;
-        selectivity.steepness_1 = 5;
-        selectivity.steepness_2 = 100;
-
-        mls = 30;
-
-        handling_mortality = 0.1;
-    }
 
     void initialise(void){
-        boost::filesystem::create_directories("output/harvest");
+        catch_history = 0;
+        catch_history.read("input/harvest/catch-history.tsv");
 
-        for (auto length_bin : lengths) {
-            auto length = length_bin.index() + 0.5;
-            selectivity_at_length(length_bin) = selectivity(length);
+        for (auto method : methods) {
+            for (auto length_bin : lengths) {
+                auto steep1 = parameters.harvest_sel_steep1(method);
+                auto mode = parameters.harvest_sel_mode(method);
+                auto steep2 = parameters.harvest_sel_steep2(method);
+                auto length = length_bin.index() + 0.5;
+                double selectivity;
+                if(length<=mode) selectivity = std::pow(2,-std::pow((length-mode)/steep1,2));
+                else selectivity = std::pow((length-mode)/steep2,2);
+                selectivity_at_length(method,length_bin) = selectivity;
+            }
+        }
+    }
+
+    void catch_observed_update(void) {
+        auto y = year(now);
+        if (y >= Years_min and y <= Years_max) {
+            for (auto region : regions) {
+                for(auto method : methods) {
+                    auto catches = catch_history(y,region,method);
+                    catch_observed(region,method) = catches;
+                }
+            }
         }
     }
 
     void finalise(void) {
+        boost::filesystem::create_directories("output/harvest");
+
+        catch_history.write("output/harvest/catch-history.tsv");
         selectivity_at_length.write("output/harvest/selectivity_at_length.tsv");
     }
+
 };  // class Harvest

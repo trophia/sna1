@@ -10,20 +10,25 @@ Model model;
 void run(void) {
     std::function<void()> callback([&](){
         auto fishes = model.fishes;
+        auto harvest = model.harvest;
         fishes.biomass_update();
         std::cout
             << year(now) << "\t"
             << quarter(now) << "\t"
             << fishes.size() << "\t"
             << fishes.number(false) << "\t"
-            << fishes.number() << "\t"
-            << fishes.biomass_spawners << "\t"
-            << fishes.recruitment << "\t"
-            << fishes.recruitment_instances << "\t"
+            << fishes.number()/1e6 << "\t"
+            << sum(fishes.biomass_spawners)/sum(parameters.fishes_b0) << "\t"
+            << sum(fishes.recruitment)/1e6 << "\t"
+            << sum(fishes.recruitment_instances) << "\t"
+            << sum(harvest.catch_observed) << "\t"
+            << sum(harvest.catch_taken) << "\t"
+            << harvest.attempts << "\t"
+            << sum(harvest.catch_taken)/sum(harvest.biomass_vulnerable) << "\t"
             << fishes.age_mean() << "\t"
             << fishes.length_mean() << std::endl;
     });
-    model.run(1960, 2025, &callback);
+    model.run(1900, 2020, &callback);
 }
 
 /**
@@ -62,9 +67,9 @@ void mls_changes_example(void) {
             std::function<void()> callback([&](){
                 auto y = year(now);
                 if (y<2017){
-                    model.harvest.mls = 27;
+                    parameters.harvest_mls = 27;
                 } else {
-                    model.harvest.mls = mls;
+                    parameters.harvest_mls = mls;
                 }
                 if (y>1980) {
                     tracks

@@ -20,9 +20,12 @@ uint quarter(Time t) {
     return 0;
 }
 
-float years(Time a, Time b) {
-    return (a-b)/times_per_year;
-}
+/**
+ * Years
+ */
+const uint Years_min = 1900;
+const uint Years_max = 2025;
+STENCILA_DIM_RANGE(Years,years,year,Years_min,Years_max)
 
 /**
  * Region
@@ -73,8 +76,8 @@ int length_bin(double length){
  * Harvest methods
  */
 enum Method {
-    LI = 0,
-    TR = 1,
+    LL = 0,
+    BT = 1,
     DS = 2,
     RE = 3
 };
