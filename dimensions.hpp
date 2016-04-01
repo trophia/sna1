@@ -37,6 +37,11 @@ enum Region {
 };
 STENCILA_DIM(Regions,regions,region,3);
 
+std::string region_code(int region){
+    const char* codes[] = {"EN","HG","BP"};
+    return codes[region];
+}
+
 /**
  * Area
  */
@@ -82,3 +87,8 @@ enum Method {
     RE = 3
 };
 STENCILA_DIM(Methods,methods,method,4);
+
+std::string method_code(int region){
+    const char* codes[] = {"LL","BT","DS","RE"};
+    return codes[region];
+}

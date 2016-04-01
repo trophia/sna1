@@ -43,7 +43,7 @@ class Harvest {
                 auto length = length_bin.index() + 0.5;
                 double selectivity;
                 if(length<=mode) selectivity = std::pow(2,-std::pow((length-mode)/steep1,2));
-                else selectivity = std::pow((length-mode)/steep2,2);
+                else selectivity = std::pow(2,-std::pow((length-mode)/steep2,2));
                 selectivity_at_length(method,length_bin) = selectivity;
             }
         }

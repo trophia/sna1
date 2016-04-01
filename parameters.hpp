@@ -20,7 +20,7 @@ class Parameters : public Structure<Parameters> {
      * suggested 100,000 was a good trade-off between run duration and precision at least
      * during development. Should be increased for final runs.
      */
-    unsigned int fishes_seed_number = 100000;
+    unsigned int fishes_seed_number = 1e6;
 
     Uniform fishes_seed_region_dist;
 
@@ -29,7 +29,7 @@ class Parameters : public Structure<Parameters> {
      *
      * Determines the equilibrium age structure of the seed population.
      */
-    double fishes_seed_z = 0.1;
+    double fishes_seed_z = 0.075;
 
     /**
      * Exponential distribution for ages of the seed population
@@ -77,7 +77,7 @@ class Parameters : public Structure<Parameters> {
      * across population of fish
      */
     double fishes_k_mean = 0.1;
-    double fishes_k_cv = 0.01;
+    double fishes_k_cv = 0.1;
 
     /**
      * Lognormal distribution for fishes k
@@ -88,7 +88,7 @@ class Parameters : public Structure<Parameters> {
      * across population of fish
      */
     double fishes_linf_mean = 60;
-    double fishes_linf_cv = 0.01;
+    double fishes_linf_cv = 0.1;
 
     /**
      * Lognormal distribution for fishes Linf

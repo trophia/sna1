@@ -113,8 +113,9 @@ class Model {
         }
         harvest.biomass_vulnerable *= fishes.scalar;
 
+
         /*****************************************************************
-         * Harvesting and tagging
+         * Harvesting and monitoring
          ****************************************************************/
 
         if (harvesting) {
@@ -123,11 +124,19 @@ class Model {
             // from the catch history
             harvest.catch_observed_update();
 
+            // Monitoring of CPUE (currently perfect)
+            for (auto region : regions) {
+                for (auto method : methods) {
+                    monitor.cpue(region, method) = harvest.biomass_vulnerable(region, method);
+                }
+            }
+
             // Randomly draw fish and "assign" them with varying probabilities
             // to a particular region/method catch if that
             harvest.attempts = 0;
             harvest.catch_taken = 0;
             Array<bool,Regions,Methods> catch_caught = false;
+            monitor.age_sample = 0;
             while(true) {
                 Fish& fish = fishes[chance()*fishes.size()];
                 if (fish.alive()) {
@@ -140,9 +149,14 @@ class Model {
                             // Is this fish retained?
                             if (fish.length >= parameters.harvest_mls(method)) {
                                 fish.dies();
+                                
                                 // Add to catch taken for region/method
                                 harvest.catch_taken(region,method) += fish.weight() * fishes.scalar;
                                 catch_caught(region,method) = harvest.catch_taken(region,method) >= harvest.catch_observed(region,method);
+
+                                // Age sampling, currently 100% sampling of catch
+                                monitor.age_sample(region, method, fish.age_bin())++;
+
                                 // If catch is taken for all region/methods then quit
                                 if (sum(catch_caught) == catch_caught.size()) break;
                             } else {
@@ -151,6 +165,7 @@ class Model {
                                     fish.dies();
                                 }
                             }
+
                         }
 
                         // Tagging currently not active
@@ -219,8 +234,8 @@ class Model {
         // Should instead exit when stability in population characteristics
         int steps = 0;
         while (steps<100) {
-            if (callback) (*callback)();
             update();
+            if (callback) (*callback)();
             steps++;
             now++;
         }
@@ -248,8 +263,8 @@ class Model {
         // Iterate over times
         now = start;
         while (now <= finish) {
-            if (callback) (*callback)();
             update();
+            if (callback) (*callback)();
             now++;
         }
     }
