@@ -62,26 +62,6 @@ requires/stencila: requires/stencila-$(STENCILA_VERSION).zip
 requires-stencila: requires/stencila
 
 
-FSL_VERSION := 3d0178dfc1cf184839a6c0b9dbbf2f03e6fce4d0
-
-requires/fsl-$(FSL_VERSION).zip:
-	@mkdir -p requires
-	wget --no-check-certificate -O $@ https://github.com/trident-systems/fsl/archive/$(FSL_VERSION).zip
-
-requires/fsl: requires/fsl-$(FSL_VERSION).zip
-	rm -rf requires/fsl
-	unzip $< -d requires
-	mv requires/fsl-$(FSL_VERSION) requires/fsl
-	touch $@
-
-requires-fsl: requires/fsl
-
-requires-fsl-clean:
-	rm -rf requires/fsl
-
-requires: requires-boost requires-stencila requires-fsl
-
-
 #############################################################
 # Executables
  
