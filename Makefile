@@ -17,7 +17,7 @@ endif
 #############################################################
 # Requirements
 
-BOOST_VERSION := 1_58_0
+BOOST_VERSION := 1_61_0
 
 requires/boost_$(BOOST_VERSION).tar.bz2:
 	@mkdir -p requires
@@ -38,53 +38,52 @@ ifeq ($(OS), win)
 	BOOST_B2_FLAGS += --layout=system release toolset=gcc
 endif
 
-requires/boost-$(OS).flag: requires/boost-$(OS)
+requires/boost-$(OS)/lib: requires/boost-$(OS)
 	cd $< ; ./bootstrap.sh $(BOOST_BOOTSTRAP_FLAGS)
 	sed -i "s/mingw/gcc/g" $</project-config.jam
 	cd $< ; ./b2 $(BOOST_B2_FLAGS)
 	touch $@
 
-requires-boost: requires/boost-$(OS).flag
 
+REFLECT_VERSION := 0.1
 
-STENCILA_VERSION := 0.18
-
-requires/stencila-$(STENCILA_VERSION).zip:
+requires/reflect-$(REFLECT_VERSION).zip:
 	@mkdir -p requires
-	wget --no-check-certificate -O $@ https://github.com/stencila/stencila/archive/$(STENCILA_VERSION).zip
+	wget --no-check-certificate -O $@ https://github.com/stencila/reflect/archive/$(REFLECT_VERSION).zip
 
-requires/stencila: requires/stencila-$(STENCILA_VERSION).zip
-	rm -rf requires/stencila
+requires/reflect: requires/reflect-$(REFLECT_VERSION).zip
+	rm -rf requires/reflect
 	unzip $< -d requires
-	mv requires/stencila-$(STENCILA_VERSION) requires/stencila
+	mv requires/reflect-$(REFLECT_VERSION) requires/reflect
 	touch $@
 
-requires-stencila: requires/stencila
+
+requires: requires/boost-$(OS)/lib requires/reflect
 
 
 #############################################################
 # Executables
  
 # Define compile options and required libraries
-CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -pthread
-INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/stencila/cpp -Irequires/fsl
-LIB_DIRS := -Lrequires/boost-$(OS)/lib -Lrequires/stencila/build/current/cpp/library
-LIBS := -lboost_system -lboost_filesystem -lstencila -lz -lcrypto -lssl -lrt -lcurl
+CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -Wno-unused-variable -pthread
+INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/reflect
+LIB_DIRS := -Lrequires/boost-$(OS)/lib
+LIBS := -lboost_system -lboost_filesystem 
 
 # Find all .hpp and .cpp files (to save time don't recurse into subdirectories)
 HPPS := $(shell find . -maxdepth 1 -name "*.hpp")
 CPPS := $(shell find . -maxdepth 1 -name "*.cpp")
 
 # Executable for normal use
-sna1.exe: $(HPPS) $(CPPS)
+sna1.exe: $(HPPS) $(CPPS) requires
 	$(CXX) $(CXX_FLAGS) -O3 $(INC_DIRS) -o$@ sna1.cpp $(LIB_DIRS) $(LIBS)
 
 # Executable for debugging
-sna1.debug: $(HPPS) $(CPPS)
+sna1.debug: $(HPPS) $(CPPS) requires
 	$(CXX) $(CXX_FLAGS) -g -O0 $(INC_DIRS) -o$@ sna1.cpp $(LIB_DIRS) $(LIBS)
 
 # Executable for profiling
-sna1.prof: $(HPPS) $(CPPS)
+sna1.prof: $(HPPS) $(CPPS) requires
 	$(CXX) $(CXX_FLAGS) -pg -O3 $(INC_DIRS) -o$@ sna1.cpp $(LIB_DIRS) $(LIBS)
 
 
@@ -93,3 +92,8 @@ sna1.prof: $(HPPS) $(CPPS)
  
 run: sna1.exe
 	time ./sna1.exe run
+
+#############################################################
+# Testing
+
+test: sna1.exe
