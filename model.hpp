@@ -131,28 +131,38 @@ class Model {
                 }
             }
 
-            // Randomly draw fish and "assign" them with varying probabilities
-            // to a particular region/method catch if that
+            // Reset the harvesting accounting
             harvest.attempts = 0;
             harvest.catch_taken = 0;
-            Array<bool,Regions,Methods> catch_caught = false;
+            // Reset the age frequency sample counts
             monitor.age_sample = 0;
+            // Create boolean flags that keep track of whether the catch is caught
+            // for a method in a region
+            Array<bool, Regions, Methods> catch_caught = false;
+            // Randomly draw fish and "assign" them with varying probabilities
+            // to a particular region/method catch
             while(true) {
+                // Randomly choose a fish
                 Fish& fish = fishes[chance()*fishes.size()];
+                // If the fis is alive, then...
                 if (fish.alive()) {
-                    auto region = fish.region;
+                    // Randomly choose a fishing method in the region the fish currently resides
                     auto method = Method(int(chance()*Methods::size()));
-                    if (not catch_caught(region,method)) {
-                        // Is this fish caught?
-                        auto caught = harvest.selectivity_at_length(method,fish.length_bin());
-                        if (caught) {
-                            // Is this fish retained?
+                    auto region = fish.region;
+                    // If the catch for the method in the region is not yet caught...
+                    if (not catch_caught(region, method)) {
+                        // Is this fish caught by this method?
+                        auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
+                        if (chance() < selectivity) {
+                            // Is this fish greater than the MLS and thus retained?
                             if (fish.length >= parameters.harvest_mls(method)) {
+                                // Kill the fish
                                 fish.dies();
                                 
                                 // Add to catch taken for region/method
-                                harvest.catch_taken(region,method) += fish.weight() * fishes.scalar;
-                                catch_caught(region,method) = harvest.catch_taken(region,method) >= harvest.catch_observed(region,method);
+                                harvest.catch_taken(region, method) += fish.weight() * fishes.scalar;
+                                // Update flag `catch_caught` for region and method
+                                catch_caught(region, method) = harvest.catch_taken(region, method) >= harvest.catch_observed(region, method);
 
                                 // Age sampling, currently 100% sampling of catch
                                 monitor.age_sample(region, method, fish.age_bin())++;
