@@ -1,7 +1,9 @@
-language: cpp
+os: linux
+dist: trusty
+sudo: required
 
-compiler:
-    - gcc
+language: cpp
+compiler: gcc
 
 install:
     # Upgrade g++ to 4.9
@@ -17,4 +19,4 @@ script:
 
 after_success:
     # Publish code coverage
-    - bash <(curl -s https://codecov.io/bash)
+    - bash <(curl -s https://codecov.io/bash) -X coveragepy

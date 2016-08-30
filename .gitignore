@@ -12,6 +12,7 @@
 # Ignore coverage files
 *.gcno
 *.gcda
+*.gcov
 
 # Ignore editor/IDE files
 *.sublime-*
