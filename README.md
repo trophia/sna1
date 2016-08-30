@@ -2,6 +2,9 @@
 
 A simulation model of the snapper (_Pagrus auratus_) population and fishery in the Auckland (East) Fisheries Management Area (SNA 1).
 
+[![Travis](https://travis-ci.org/trophia/sna1.svg?branch=master)](https://travis-ci.org/trophia/sna1)
+[![codecov](https://codecov.io/gh/trophia/sna1/branch/master/graph/badge.svg)](https://codecov.io/gh/trophia/sna1)
+
 ## Background
 
 This model is being developed to aid in the evaluation alternative monitoring and management strategies for the SNA 1 fishery. For example: is it better to conduct a large tagging study every 10 years, or a smaller one every 3 years? What are the consequences of sampling age frequencies every three years as opposed to every year? What are the likely long term effects of changes in the minimum legal size?
