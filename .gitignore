@@ -9,5 +9,9 @@
 *.debug
 *.prof
 
+# Ignore coverage files
+*.gcno
+*.gcda
+
 # Ignore editor/IDE files
 *.sublime-*

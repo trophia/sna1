@@ -73,6 +73,7 @@ LIBS := -lboost_system -lboost_filesystem
 # Find all .hpp and .cpp files (to save time don't recurse into subdirectories)
 HPPS := $(shell find . -maxdepth 1 -name "*.hpp")
 CPPS := $(shell find . -maxdepth 1 -name "*.cpp")
+TEST_CPPS := $(wildcard tests/*.cpp)
 
 # Executable for normal use
 sna1.exe: $(HPPS) $(CPPS) requires
@@ -86,6 +87,10 @@ sna1.debug: $(HPPS) $(CPPS) requires
 sna1.prof: $(HPPS) $(CPPS) requires
 	$(CXX) $(CXX_FLAGS) -pg -O3 $(INC_DIRS) -o$@ sna1.cpp $(LIB_DIRS) $(LIBS)
 
+# Tests executable with coverage
+tests.exe: $(HPPS) $(TEST_CPPS) requires
+	$(CXX) $(CXX_FLAGS) -g -O0 --coverage $(INC_DIRS) -o$@ $(TEST_CPPS) $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework -lgcov
+
 
 #############################################################
 # Running
@@ -96,4 +101,5 @@ run: sna1.exe
 #############################################################
 # Testing
 
-test: sna1.exe
+test: tests.exe
+	time ./tests.exe
