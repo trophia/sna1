@@ -148,7 +148,7 @@ class Model {
                 // If the fis is alive, then...
                 if (fish.alive()) {
                     // Randomly choose a fishing method in the region the fish currently resides
-                    auto method = Method(methods.select(chance()));
+                    auto method = Method(methods.select(chance()).index());
                     auto region = fish.region;
                     // If the catch for the method in the region is not yet caught...
                     if (not catch_caught(region, method)) {

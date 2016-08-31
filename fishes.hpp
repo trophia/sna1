@@ -249,7 +249,7 @@ class Fish {
         if (parameters.fishes_movement_type == 'n') return;
         // Instantaneous movement between regions is eith Markovian (based on where fish is)
         // or home fidelity (based on fish's home)
-        Region basis;
+        Region basis = region;
         switch (parameters.fishes_movement_type) {
             case 'm':
                 basis = region;
@@ -277,7 +277,7 @@ class Fish {
 class Fishes : public std::vector<Fish> {
  public:
 
-    Fishes(int size):
+    Fishes(int size = 0):
         std::vector<Fish>(size){}
 
     /**
