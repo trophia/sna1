@@ -316,6 +316,12 @@ class Model {
         for(auto age : ages) age_file << "age" << age << "\t";
         age_file << "\n";
 
+        // Override of `region_code` method to output `REC`
+        auto region_code = [](Stencila::Level<Regions> region){
+            if (region == RE) return std::string("REC");
+            else return ::region_code(region);
+        };
+
         // Callback function that is called each year
         std::function<void()> callback([&](){
             auto y = year(now);
