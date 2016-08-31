@@ -13,7 +13,7 @@ BOOST_AUTO_TEST_CASE(casal){
 	model.initialise();
 
 	// Generate files for CASAL
-	model.generate_casal(1900, 2015);
+	model.generate_casal(1900, 2020);
 
 	// Run CASAL
 	auto ok = std::system("Rscript tests/casal-runner.r");
