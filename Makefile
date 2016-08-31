@@ -106,7 +106,7 @@ run: sna1.exe
 #############################################################
 # Testing
 
-test-fast: tests-fast.exe
+tests-fast: tests-fast.exe
 	time ./tests-fast.exe
 
 tests-slow: tests-slow.exe
