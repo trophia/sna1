@@ -6,7 +6,7 @@
 cat(
 	'B0_EN ', 99046, '\n',
 	'B0_HG ', 208257, '\n',
-	'BO_BP ', 99592.7, '\n',
+	'B0_BP ', 99592.7, '\n',
 	file='output/casal-estimates.txt',
 	sep=''
 )
