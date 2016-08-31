@@ -89,8 +89,9 @@ sna1.prof: $(HPPS) $(CPPS) requires
 
 # Test executable with coverage (and no optimisation) for tests that run fast
 # These tests are likely to be run often during development and don't require optimisation
+# The `no-inline` options provide better coverage statistics because lines don't get "inlined away"
 tests-fast.exe: $(HPPS) tests/tests-fast.cpp $(TEST_CPPS) requires
-	$(CXX) $(CXX_FLAGS) -g -O0 --coverage $(INC_DIRS) -o$@ tests/tests-fast.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework -lgcov
+	$(CXX) $(CXX_FLAGS) -g -O0 --coverage -fno-inline -fno-inline-small-functions -fno-default-inline $(INC_DIRS) -o$@ tests/tests-fast.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework -lgcov
 
 # Test executable with no coverage and full optimisation for tests that run very slowly without these
 tests-slow.exe: $(HPPS) tests/tests-slow.cpp $(TEST_CPPS) requires
@@ -107,10 +108,10 @@ run: sna1.exe
 #############################################################
 # Testing
 
-tests-fast: tests-fast.exe
+test-fast: tests-fast.exe
 	time ./tests-fast.exe
 
-tests-slow: tests-slow.exe
+test-slow: tests-slow.exe
 	time ./tests-slow.exe
 
-test: tests-fast tests-slow
+test: test-fast test-slow
