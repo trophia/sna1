@@ -104,6 +104,11 @@ class Parameters : public Structure<Parameters> {
     Array<double, Ages> fishes_maturation;
 
     /**
+     * Movement type
+     */
+    char fishes_movement_type = 'm';    
+
+    /**
      * Movement matrix
      */
     Array<double, Regions, RegionTos> fishes_movement;
@@ -192,8 +197,9 @@ class Parameters : public Structure<Parameters> {
     template<class Mirror>
     void reflect(Mirror& mirror){
         mirror
-            .data(fishes_k_mean,"fishes_k_mean")
-            .data(fishes_linf_mean,"fishes_linf_mean")
+            .data(fishes_movement_type, "fishes_movement_type")
+            .data(fishes_k_mean, "fishes_k_mean")
+            .data(fishes_linf_mean, "fishes_linf_mean")
         ;
     }
 };  // class Parameters

@@ -245,11 +245,23 @@ class Fish {
      * Move this fish
      */
     void movement(void) {
-        for (auto region_to : region_tos){
-            if (chance() < parameters.fishes_movement(region, region_to)) {
-                region = Region(region_to.index());
-                break;
-            }
+        // If no movement, don't do anything
+        if (parameters.fishes_movement_type == 'n') return;
+        // Instantaneous movement between regions is eith Markovian (based on where fish is)
+        // or home fidelity (based on fish's home)
+        Region basis;
+        switch (parameters.fishes_movement_type) {
+            case 'm':
+                basis = region;
+            break;
+            case 'h':
+                basis = home;
+            break; 
+        };
+        // Randomly move a region (note that rows of the movement matrix sum to 1)
+        auto region_to = Region(regions.select(chance()).index());
+        if (chance() < parameters.fishes_movement(basis, region_to)) {
+            region = region_to;
         }
     }
 
@@ -264,6 +276,9 @@ class Fish {
  */
 class Fishes : public std::vector<Fish> {
  public:
+
+    Fishes(int size):
+        std::vector<Fish>(size){}
 
     /**
      * Population scalar
