@@ -4,8 +4,9 @@
 
 # TODO This is just a placeholder implementation which writes a parameter estimates file
 cat(
-	'B0_EN', 99046, '\n',
-	'B0_HG', 208257, '\n',
-	'BO_BP', 99592.7, '\n',
-	file='casal-estimates.txt'
+	'B0_EN ', 99046, '\n',
+	'B0_HG ', 208257, '\n',
+	'BO_BP ', 99592.7, '\n',
+	file='output/casal-estimates.txt',
+	sep=''
 )

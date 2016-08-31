@@ -10,12 +10,13 @@ BOOST_AUTO_TEST_SUITE(model)
 
 BOOST_AUTO_TEST_CASE(casal){
 	Model model;
+	model.initialise();
 
 	// Generate files for CASAL
 	model.generate_casal(1900, 2015);
 
 	// Run CASAL
-	auto ok = std::system("Rscript casal-runner.r");
+	auto ok = std::system("Rscript tests/casal-runner.r");
 	BOOST_CHECK(ok);
 
 	// Read in output files containing CASAL estimates

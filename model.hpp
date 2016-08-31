@@ -292,7 +292,8 @@ class Model {
      * This can be useful for generating simulated datasets to be passed to 
      * CASAL for testing. Three files are produced:
      * 
-     *  - output/overall.tsv : Overall summaries (e.g biomass) by year
+     *  - output/catch.tsv : catch by year and region and method
+     *  - output/biomass.tsv : spawning biomass by year and region
      *  - output/monitor/cpue.tsv : A simulated CPUE by year
      *  - output/monitor/age.tsv : Simulated age samples
      * 
@@ -301,24 +302,14 @@ class Model {
      */
     void generate_casal(Time start, Time finish) {
 
-        std::ofstream model_annual("output/overall.tsv");
-        model_annual << "year\t";
-        for (auto region : regions) {
-            auto rc = region_code(region.index());
-            model_annual 
-                << rc << "_B\t" 
-                << rc << "_R\t";
-            for (auto method : methods) {
-                auto mc = method_code(method.index());
-                model_annual  
-                    << rc << "_" << mc << "_C\t"
-                    << rc << "_" << mc << "_E\t";
-            }
-        }
-        model_annual << "\n";
+        std::ofstream catch_file("output/catch.tsv");
+        catch_file << "year\tregion\tmethod\tcatch\n";
+
+        std::ofstream biomass_file("output/biomass.tsv");
+        biomass_file << "year\tregion\tbiomass\n";
         
         std::ofstream cpue_file("output/monitor/cpue.tsv");
-        cpue_file<<"year\tEN_LL\tEN_BT\tEN_DS\tEN_RE\tHG_LL\tHG_BT\tHG_DS\tHG_RE\tBP_LL\tBP_BT\tBP_DS\tBP_RE\n";
+        cpue_file<<"year\tregion\tmethod\tcpue\n";
 
         std::ofstream age_file("output/monitor/age.tsv");
         age_file << "year\tregion\tmethod\t";
@@ -349,30 +340,36 @@ class Model {
 
             if (y>=1900) {
 
-                model_annual << y << "\t";
                 for (auto region : regions) {
-                    model_annual 
-                        << fishes.biomass_spawners(region) << "\t"
-                        << fishes.recruitment(region) << "\t";
                     for (auto method : methods) {
-                        model_annual 
-                            << harvest.catch_observed(region, method) << "\t"
-                            << harvest.catch_observed(region, method) / harvest.biomass_vulnerable(region, method) << "\t";
-                    }
+                        catch_file 
+                            << y << "\t"
+                            << region_code(region) << "\t"
+                            << method_code(method) << "\t"
+                            << harvest.catch_observed(region, method) << "\n";
+                     }
                 }
-                model_annual << "\n";
+
+                for (auto region : regions) {
+                    biomass_file 
+                        << y << "\t"
+                        << region_code(region) << "\t"
+                        << fishes.biomass_spawners(region) << "\n";
+                }
                 
-                cpue_file << y << "\t";
                 for (auto region : regions) {
                     for (auto method : methods) {
-                        cpue_file << monitor.cpue(region, method) << "\t";
+                        cpue_file 
+                            << y << "\t"
+                            << region_code(region) << "\t"
+                            << method_code(method) << "\t"
+                            << monitor.cpue(region, method) << "\n";
                     }
                 }
-                cpue_file << "\n";
 
                 for (auto region : regions) {
                     for (auto method : methods) {
-                        age_file << y << "\t" << region << "\t" << method << "\t";
+                        age_file << y << "\t" << region_code(region) << "\t" << method_code(method) << "\t";
                         for(auto age : ages) age_file << monitor.age_sample(region, method, age) << "\t";
                         age_file << "\n";
                     }
@@ -381,7 +378,7 @@ class Model {
             }
             
         });
-        run(1900, 2020, &callback);
+        run(1900, 2015, &callback);
     }
 
 

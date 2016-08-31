@@ -73,6 +73,7 @@ LIBS := -lboost_system -lboost_filesystem
 # Find all .hpp and .cpp files (to save time don't recurse into subdirectories)
 HPPS := $(shell find . -maxdepth 1 -name "*.hpp")
 CPPS := $(shell find . -maxdepth 1 -name "*.cpp")
+TEST_CPPS = $(wildcard tests/*.cpp)
 
 # Executable for normal use
 sna1.exe: $(HPPS) $(CPPS) requires
@@ -88,11 +89,11 @@ sna1.prof: $(HPPS) $(CPPS) requires
 
 # Test executable with coverage (and no optimisation) for tests that run fast
 # These tests are likely to be run often during development and don't require optimisation
-tests-fast.exe: $(HPPS) tests/tests-fast.cpp requires
+tests-fast.exe: $(HPPS) tests/tests-fast.cpp $(TEST_CPPS) requires
 	$(CXX) $(CXX_FLAGS) -g -O0 --coverage $(INC_DIRS) -o$@ tests/tests-fast.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework -lgcov
 
 # Test executable with no coverage and full optimisation for tests that run very slowly without these
-tests-slow.exe: $(HPPS) tests/tests-slow.cpp requires
+tests-slow.exe: $(HPPS) tests/tests-slow.cpp $(TEST_CPPS) requires
 	$(CXX) $(CXX_FLAGS) -O3 $(INC_DIRS) -o$@ tests/tests-slow.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework
 
 

@@ -42,6 +42,10 @@ std::string region_code(int region){
     return codes[region];
 }
 
+std::string region_code(Stencila::Level<Regions>& region){
+    return region_code(region.index());
+}
+
 /**
  * Area
  */
@@ -88,7 +92,11 @@ enum Method {
 };
 STENCILA_DIM(Methods,methods,method,4);
 
-std::string method_code(int region){
+std::string method_code(int method){
     const char* codes[] = {"LL","BT","DS","RE"};
-    return codes[region];
+    return codes[method];
+}
+
+std::string method_code(Stencila::Level<Methods>& method){
+    return method_code(method.index());
 }
