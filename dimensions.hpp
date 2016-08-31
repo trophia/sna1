@@ -36,6 +36,7 @@ enum Region {
     BP = 2
 };
 STENCILA_DIM(Regions,regions,region,3);
+STENCILA_DIM(RegionTos,region_tos,region_to,3);  // For defining and accessing movement matrix
 
 std::string region_code(int region){
     const char* codes[] = {"EN","HG","BP"};
@@ -45,13 +46,6 @@ std::string region_code(int region){
 std::string region_code(Stencila::Level<Regions>& region){
     return region_code(region.index());
 }
-
-/**
- * Area
- */
-typedef uint Area;
-STENCILA_DIM(Areas,areas,area,9);
-STENCILA_DIM(AreaTos,area_tos,area_to,9);  // For defining and accessing movement matrix
 
 
 /**

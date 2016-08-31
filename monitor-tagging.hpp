@@ -78,7 +78,7 @@ class Tagging {
             if(recapture.time){
                 file<<number<<"\t"
                     <<release.time<<"\t"<<recapture.time<<"\t"
-                    <<release.area<<"\t"<<recapture.area<<"\t"
+                    <<release.region<<"\t"<<recapture.region<<"\t"
                     <<release.length<<"\t"<<recapture.length<<"\n";
             }
         }

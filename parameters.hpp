@@ -106,7 +106,7 @@ class Parameters : public Structure<Parameters> {
     /**
      * Movement matrix
      */
-    Array<double, Areas, AreaTos> fishes_movement;
+    Array<double, Regions, RegionTos> fishes_movement;
 
     /**
      * Minimum legal size limit

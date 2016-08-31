@@ -100,7 +100,8 @@ class Model {
                 if (survives) {
                     fish.growth();
                     fish.maturation();
-
+                    fish.movement();
+                    
                     if (harvesting) {
                         auto weight = fish.weight();
                         auto length_bin = fish.length_bin();

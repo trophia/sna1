@@ -11,11 +11,9 @@
 class Fish {
  public:
     /**
-     * Home area for this fish
-     *
-     * Initially the area this fish was born
+     * Home region for this fish
      */
-    Area home;
+    Region home;
 
     /**
      * Time of birth of this fish
@@ -51,11 +49,6 @@ class Fish {
      * Is this fish mature?
      */
     bool mature;
-
-    /**
-     * Current location of this fish
-     */
-    Area area;
 
     /**
      * Current region of this fish
@@ -163,9 +156,8 @@ class Fish {
      *  - maturity is approximated by maturation schedule
      */
     void seed(void) {
-        area = 0;
-        home = 0;
-        region = Region(int(parameters.fishes_seed_region_dist.random()));
+        home = Region(int(parameters.fishes_seed_region_dist.random()));
+        region = home;
 
         auto age = std::max(1.,std::min(parameters.fishes_seed_age_dist.random(),100.));
         birth = now-age;
@@ -192,9 +184,8 @@ class Fish {
      * to age 0
      */
     void born(Region region_) {
-        home = 0;
-        area = 0;
-        region = region_;
+        home = region_;
+        region = home;
 
         birth = now;
         death = 0;
@@ -254,9 +245,9 @@ class Fish {
      * Move this fish
      */
     void movement(void) {
-        for (auto area_to : area_tos){
-            if (chance() < parameters.fishes_movement(area,area_to)) {
-                area = Area(area_to.index());
+        for (auto region_to : region_tos){
+            if (chance() < parameters.fishes_movement(region, region_to)) {
+                region = Region(region_to.index());
                 break;
             }
         }
@@ -354,7 +345,7 @@ class Fishes : public std::vector<Fish> {
     /**
      * Counts of fish by model dimensions
      */
-    Array<uint,Areas,Sexes,Ages,Lengths> counts;
+    Array<uint,Regions,Sexes,Ages,Lengths> counts;
 
 
     /**
@@ -416,7 +407,7 @@ class Fishes : public std::vector<Fish> {
         for (auto fish : *this) {
             if(fish.alive()){
                 counts(
-                    fish.area,
+                    fish.region,
                     fish.sex,
                     fish.age_bin(),
                     fish.length_bin()
@@ -434,17 +425,17 @@ class Fishes : public std::vector<Fish> {
 
         enumerate();
 
-        for(auto area : areas){
+        for(auto region : regions){
             for(auto sex : sexes){
                 for(auto age: ages){
                     for(auto length : lengths){
                         (*counts_file)
                             <<now<<"\t"
-                            <<area<<"\t"
+                            <<region<<"\t"
                             <<sex<<"\t"
                             <<age<<"\t"
                             <<length<<"\t"
-                            <<counts(area,sex,age,length)<<"\n"
+                            <<counts(region,sex,age,length)<<"\n"
                         ;
                     }
                 }
