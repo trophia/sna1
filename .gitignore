@@ -5,6 +5,7 @@
 /output
 
 # Ignore compiled files
+*.o
 *.exe
 *.debug
 *.prof

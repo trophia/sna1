@@ -2,6 +2,7 @@
 
 #include "requirements.hpp"
 #include "dimensions.hpp"
+#include "parameters.hpp"
 #include "environ.hpp"
 
 /**

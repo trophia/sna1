@@ -1,6 +1,5 @@
 #include <boost/test/unit_test.hpp>
 
-#include "../parameters.hpp"
 #include "../fishes.hpp"
 
 
