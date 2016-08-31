@@ -128,6 +128,17 @@ class Parameters : public Structure<Parameters> {
     Array<double, Methods> harvest_sel_steep2;
 
     /**
+     * Because `parameters` is a global variable that always need initialisation
+     * we ensure initialisation on construction and finalisation on destruction.
+     */
+    Parameters() {
+        initialise();
+    }
+    ~Parameters() {
+        finalise();
+    }
+
+    /**
      * Initialise parameters
      */
     void initialise(void) {

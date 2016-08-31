@@ -64,7 +64,6 @@ void mls_changes_example(void) {
  * Main entry point; dispatches to one of the above tasks
  */
 int main(int argc, char** argv) {
-    parameters.initialise();
     model.initialise();
 
     try {
@@ -94,7 +93,6 @@ int main(int argc, char** argv) {
     }
 
     model.finalise();
-    parameters.finalise();
 
     return 0;
 }
