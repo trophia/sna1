@@ -45,7 +45,7 @@ requires/boost-$(OS)/lib: requires/boost-$(OS)
 	touch $@
 
 
-REFLECT_VERSION := 0.1
+REFLECT_VERSION := 0.2
 
 requires/reflect-$(REFLECT_VERSION).zip:
 	@mkdir -p requires

@@ -101,7 +101,7 @@ class Model {
                     fish.growth();
                     fish.maturation();
                     fish.movement();
-                    
+
                     if (harvesting) {
                         auto weight = fish.weight();
                         auto length_bin = fish.length_bin();
@@ -148,7 +148,7 @@ class Model {
                 // If the fis is alive, then...
                 if (fish.alive()) {
                     // Randomly choose a fishing method in the region the fish currently resides
-                    auto method = Method(int(chance()*Methods::size()));
+                    auto method = Method(methods.select(chance()));
                     auto region = fish.region;
                     // If the catch for the method in the region is not yet caught...
                     if (not catch_caught(region, method)) {
