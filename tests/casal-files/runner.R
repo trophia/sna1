@@ -26,7 +26,7 @@ catch$method <- ifelse(catch$method == 'RE', 'REC', catch$method)
 catch$fishery <- paste(catch$region, catch$method, sep = '_')
 
 ## load population csl 
-population <- extract.csl.file('tests/casal-files/age/SNA1_age.population.csl')
+population <- extract.csl.file('tests/casal-files/age/population.csl')
 fishiery.names <- population$annual_cycle$fishery_names
 
 ## put initial, current and final years in csl
@@ -64,7 +64,7 @@ cpue$method <- ifelse(cpue$method == 'RE', 'REC', cpue$method)
 cpue$fishery <- paste(cpue$region, cpue$method, sep = '_')
 
 ## load estimation csl
-estimation <- extract.csl.file('tests/casal-files/age/SNA1_age.estimation.csl')
+estimation <- extract.csl.file('tests/casal-files/age/estimation.csl')
 
 ## put CPUEs from model
 cpue.fisheries <- c('EN_LL', 'HG_LL', 'BP_LL')
@@ -136,7 +136,7 @@ for (fish in fishiery.names) {
 write.csl.file(estimation, 'tests/estimation.csl')
 
 # Copy template `output.csl` over to `test` directory
-file.copy('tests/casal-files/age/SNA1_age.output.csl', 'tests/output.csl')
+file.copy('tests/casal-files/age/output.csl', 'tests/output.csl')
 
 
 ## for test only: run CASAL
