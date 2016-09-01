@@ -16,11 +16,11 @@ BOOST_AUTO_TEST_CASE(casal){
 	model.generate_casal(1900, 2020);
 
 	// Run CASAL
-	auto ok = std::system("Rscript tests/casal-runner.r");
+	auto ok = std::system("Rscript tests/casal-files/runner.R");
 	BOOST_CHECK(ok==0);
 
 	// Read in output files containing CASAL estimates
-	std::ifstream file("output/casal-estimates.txt");
+	std::ifstream file("tests/casal-estimates.txt");
 	std::map<std::string, double> estimates;
 	std::string name;
 	double value;

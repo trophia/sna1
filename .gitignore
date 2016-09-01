@@ -1,6 +1,7 @@
 # Ignore requirements
 /requires
 /tests/casal*
+!/tests/casal-files
 
 # Ignore outputs
 /output
