@@ -20,13 +20,13 @@ library(casal)
 
 #### update population csl file ####
 ## load catch data
-catch <- read.table('catch.tsv', header = T, as.is = T)
+catch <- read.table('output/catch.tsv', header = T, as.is = T)
 catch <- subset(catch, year <= 2010)
 catch$method <- ifelse(catch$method == 'RE', 'REC', catch$method)
 catch$fishery <- paste(catch$region, catch$method, sep = '_')
 
 ## load population csl 
-population <- extract.csl.file('SNA1_age.population.csl')
+population <- extract.csl.file('tests/casal-files/age/SNA1_age.population.csl')
 fishiery.names <- population$annual_cycle$fishery_names
 
 ## put initial, current and final years in csl
@@ -54,17 +54,17 @@ for (stock in population$stock_names$value) {
   population[[i]]$YCS_years <- (y.start:y.current) - 1
   population[[i]]$YCS <- rep(1, length(y.start:y.current))
 }
-write.csl.file(population, 'population.csl')
+write.csl.file(population, 'tests/population.csl')
 
 #### update estimation csl file ####
 ## load CPUE data
-cpue <- read.table('cpue.tsv', header = T, as.is = T)
+cpue <- read.table('output/monitor/cpue.tsv', header = T, as.is = T)
 cpue <- subset(cpue, year <= 2010)
 cpue$method <- ifelse(cpue$method == 'RE', 'REC', cpue$method)
 cpue$fishery <- paste(cpue$region, cpue$method, sep = '_')
 
 ## load estimation csl
-estimation <- extract.csl.file('SNA1_age.estimation.csl')
+estimation <- extract.csl.file('tests/casal-files/age/SNA1_age.estimation.csl')
 
 ## put CPUEs from model
 cpue.fisheries <- c('EN_LL', 'HG_LL', 'BP_LL')
@@ -97,7 +97,7 @@ for (fish in cpue.fisheries) {
 }
 
 ## load catch at age data
-age <- read.table('age.tsv', header = T, as.is = T)
+age <- read.table('output/monitor/age.tsv', header = T, as.is = T)
 age <- subset(age, year <= 2010)
 age$method <- ifelse(age$method == 'RE', 'REC', age$method)
 age$fishery <- paste(age$region, age$method, sep = '_')
@@ -133,18 +133,21 @@ for (fish in fishiery.names) {
   estimation[[i]]$cv <- cv
 }
 
-write.csl.file(estimation, 'estimation.csl')
+write.csl.file(estimation, 'tests/estimation.csl')
+
+# Copy template `output.csl` over to `test` directory
+file.copy('tests/casal-files/age/SNA1_age.output.csl', 'tests/output.csl')
 
 
 ## for test only: run CASAL
 if (Sys.info()['sysname'] == 'Windows') {
   system('run_CASAL.bat')
 } else {
-  system('casal -e -q -O mpd.out > casal.out')
+  system('cd tests && ./casal -e -q -O mpd.out > casal.out')
 }
 
 #### run CASAL with Francis reweighting ####
-source('reweighting functions.R')
+source('tests/casal-files/reweighting-functions.R')
 
 ## provide the MPD output file from CASAL run
 mpd.file <- 'casal.out'
@@ -164,7 +167,7 @@ for (i in 1:10) {
   if (Sys.info()['sysname'] == 'Windows') {
     system('run_CASAL.bat')
   } else {
-    system('casal -e -q -O mpd.out > casal.out')
+    system('cd tests && ./casal -e -q -O mpd.out > casal.out')
   }
   
   ## calculate reweightings
@@ -172,7 +175,7 @@ for (i in 1:10) {
   
   ## if yes, save weightings to history file and update estimation.csl
   rewrite <- rewrite + 1
-  write.table(cbind(rewrite, weightings), 'rewriting history.txt', append = rewrite != 1, 
+  write.table(cbind(rewrite, weightings), 'tests/casal-rewriting-history.txt', append = rewrite != 1, 
               row.names = F, col.names = rewrite == 1, quote = F, sep = '\t')
   
   update.csl(csl.prefix)
@@ -180,7 +183,7 @@ for (i in 1:10) {
 
 
 #### get CASAL output and write to files ####
-output <- extract.quantities('casal.out')
+output <- extract.quantities('tests/casal.out')
 
 B0 <- data.frame(variable = 'B0', year = NA, stock = names(output$B0), 
                  estimate = as.numeric(output$B0))
@@ -191,12 +194,12 @@ SSB <- data.frame(variable = 'SSB', year = years,
                   stock = rep(names(output$SSBs), each = length(years)),
                   estimate = unlist(output$SSBs))
 
-write.table(rbind(B0, SSB), 'CASAL outputs.txt', 
+write.table(rbind(B0, SSB), 'tests/casal-estimates.txt', 
             row.names = F, quote = F, sep = '\t')
 
 
 ## plot SSBs from simulator and CASAL
-biomass <- read.table('biomass.tsv', header = T, as.is = T)
+biomass <- read.table('output/biomass.tsv', header = T, as.is = T)
 
 stocks <- c('ENLD', 'HAGU', 'BOP')
 areas <- c('EN', 'HG', 'BP')

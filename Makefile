@@ -129,7 +129,8 @@ tests/casal-%: tests/casal-%.zip
 #   - symbolic link to Linux executable
 tests/casal.installed: tests/casal-230 tests/casal-latest
 	R CMD INSTALL tests/casal-latest/R_library/casal_2.30.tar.gz
-	ln -sf tests/casal-230/Program/Linux/casal tests/casal
+	chmod 755 tests/casal-230/Program/Linux/casal
+	ln -sf casal-230/Program/Linux/casal tests/casal
 	touch $@
 
 # Run fast tests
