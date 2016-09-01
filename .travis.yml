@@ -5,6 +5,9 @@ sudo: required
 language: cpp
 compiler: gcc
 
+env:
+    - R_LIBS_USER=~/R/Library
+
 install:
     # Upgrade g++ to 4.9 and install R
     - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test -y

@@ -101,6 +101,7 @@ tests-slow.exe: $(HPPS) tests/tests-slow.cpp $(TEST_CPPS) requires
 #############################################################
 # Running
  
+# Run the model
 run: sna1.exe
 	time ./sna1.exe run
 
@@ -108,26 +109,36 @@ run: sna1.exe
 #############################################################
 # Testing
 
+# CASAL v230 for a linux binary
 tests/casal-230.zip:
 	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/CASALv230-2012-03-21.zip
 
+# CASAL "latest" for a version of the R package that is compatible
+# with recent R versions
 tests/casal-latest.zip:
 	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/latest_casal.zip
 
+# Unzip a CASAL zip
 tests/casal-%: tests/casal-%.zip
 	rm -rf $@
 	mkdir $@
 	unzip $< -d $@
 
+# Install CASAL
+#   - R package
+#   - symbolic link to Linux executable
 tests/casal.installed: tests/casal-230 tests/casal-latest
 	R CMD INSTALL tests/casal-latest/R_library/casal_2.30.tar.gz
 	ln -sf tests/casal-230/Program/Linux/casal tests/casal
 	touch $@
 
+# Run fast tests
 test-fast: tests-fast.exe
 	time ./tests-fast.exe
 
+# Run slow tests
 test-slow: tests-slow.exe tests/casal.installed
 	time ./tests-slow.exe
 
+# Run all tests
 test: test-fast test-slow
