@@ -49,9 +49,6 @@ class Model {
         auto y = year(now);
         //auto q = quarter(now);
 
-        // As an optimisation, only do harvesting after a particular time
-        // step 
-        bool harvesting = y>=1900;
 
         /*****************************************************************
          * Spawning and recruitment
@@ -88,49 +85,29 @@ class Model {
 
         /*****************************************************************
          * Fish population dynamics
-         *
-         * Also calculates some vulnerable biomass by region and method.
-         * This may be used for harvest calculations and/or monitoring
          ****************************************************************/
 
-        harvest.biomass_vulnerable = 0;
         for (Fish& fish : fishes) {
             if (fish.alive()) {
-                bool survives = fish.survival();
-                if (survives) {
+                if (fish.survival()) {
                     fish.growth();
                     fish.maturation();
                     fish.movement();
-
-                    if (harvesting) {
-                        auto weight = fish.weight();
-                        auto length_bin = fish.length_bin();
-                        for (auto method : methods) {
-                            harvest.biomass_vulnerable(fish.region,method) += weight * harvest.selectivity_at_length(method,length_bin);
-                        }
-                    }
                 }
             }
         }
-        harvest.biomass_vulnerable *= fishes.scalar;
-
 
         /*****************************************************************
-         * Harvesting and monitoring
+         * Harvesting and harvest related monitoring (e.g. CPUE, tag recoveries)
          ****************************************************************/
 
+        // As an optimisation, only do harvesting after a particular time step 
+        bool harvesting = y>=1900;
         if (harvesting) {
 
             // Update the current catches by region/method
             // from the catch history
             harvest.catch_observed_update();
-
-            // Monitoring of CPUE (currently perfect)
-            for (auto region : regions) {
-                for (auto method : methods) {
-                    monitor.cpue(region, method) = harvest.biomass_vulnerable(region, method);
-                }
-            }
 
             // Reset the harvesting accounting
             harvest.attempts = 0;
@@ -176,29 +153,15 @@ class Model {
                                     fish.dies();
                                 }
                             }
-
-                        }
-
-                        // Tagging currently not active
-                        // Need to consider in relation to harvest or
-                        // harvest induced mortality above
-                        #if 0
-                        // Is this fish already tagged?
-                        if(fish.tag) {
-                            // Is it reported?
-                            // TODO reporting probability may be dependent upon method and area
-                            if (fish.tag and chance()< 0.01) {
-                                monitor.tagging.recover(fish);
-                            }
-                        } else {
-                            // Does this fish get tagged?
-                            // TODO determine tagging probability from tag release design and catches by method area
-                            if (not fish.tag and chance()< 0.1) {
-                                monitor.tagging.mark(fish);
+                            // Is this fish tagged?
+                            if(fish.tag) {
+                                // Is it reported?
+                                // TODO reporting probability may be dependent upon method and area
+                                if (chance()< 0.5) {
+                                    monitor.tagging.recover(fish);
+                                }
                             }
                         }
-                        #endif
-
                     }
                     harvest.attempts++;
                     if (harvest.attempts > fishes.size() * 100) {
@@ -210,7 +173,28 @@ class Model {
                 }
             }
 
-        };
+
+            // Monitoring of CPUE (currently perfect)
+            
+            harvest.biomass_vulnerable = 0;
+            for (Fish& fish : fishes) {
+                if (fish.alive()) {
+                    auto weight = fish.weight();
+                    auto length_bin = fish.length_bin();
+                    for (auto method : methods) {
+                        harvest.biomass_vulnerable(fish.region,method) += weight * harvest.selectivity_at_length(method,length_bin);
+                    }
+                }
+            }
+            harvest.biomass_vulnerable *= fishes.scalar;
+    
+            for (auto region : regions) {
+                for (auto method : methods) {
+                    monitor.cpue(region, method) = harvest.biomass_vulnerable(region, method);
+                }
+            }
+
+        }
 
     }
 
