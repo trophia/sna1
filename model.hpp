@@ -137,9 +137,9 @@ class Model {
             harvest.catch_taken = 0;
             // Reset the age frequency sample counts
             monitor.age_sample = 0;
-            // Create boolean flags that keep track of whether the catch is caught
-            // for a method in a region
-            Array<bool, Regions, Methods> catch_caught = false;
+            // Keep track of total catch taken and quit when it is >= observed
+            double catch_taken = 0;
+            double catch_observed = sum(harvest.catch_observed);
             // Randomly draw fish and "assign" them with varying probabilities
             // to a particular region/method catch
             while(true) {
@@ -151,7 +151,7 @@ class Model {
                     auto method = Method(methods.select(chance()).index());
                     auto region = fish.region;
                     // If the catch for the method in the region is not yet caught...
-                    if (not catch_caught(region, method)) {
+                    if (harvest.catch_taken(region, method) < harvest.catch_observed(region, method)) {
                         // Is this fish caught by this method?
                         auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
                         if (chance() < selectivity) {
@@ -161,15 +161,15 @@ class Model {
                                 fish.dies();
                                 
                                 // Add to catch taken for region/method
-                                harvest.catch_taken(region, method) += fish.weight() * fishes.scalar;
-                                // Update flag `catch_caught` for region and method
-                                catch_caught(region, method) = harvest.catch_taken(region, method) >= harvest.catch_observed(region, method);
-
+                                double fish_biomass = fish.weight() * fishes.scalar;
+                                harvest.catch_taken(region, method) += fish_biomass;
+                                
                                 // Age sampling, currently 100% sampling of catch
                                 monitor.age_sample(region, method, fish.age_bin())++;
 
-                                // If catch is taken for all region/methods then quit
-                                if (sum(catch_caught) == catch_caught.size()) break;
+                                // Update total catch and quit if all taken
+                                catch_taken += fish_biomass;
+                                if (catch_taken >= catch_observed) break;
                             } else {
                                 // Does this fish die after released?
                                 if (chance() < parameters.harvest_handling_mortality) {
@@ -235,11 +235,7 @@ class Model {
                 parameters.fishes_b0(region)/sum(parameters.fishes_b0);
         }
         fishes.scalar = 1;
-        // Seed the population with seed individuals that have attribute values 
-        // intended to reduce the burn in time for the initial population
-        fishes.clear();
-        fishes.resize(parameters.fishes_seed_number);
-        for (Fish& fish : fishes) fish.seed();
+        fishes.seed(parameters.fishes_seed_number);
         // Burn in
         // TODO Currently just burns in for an arbitarty number of iterations
         // Should instead exit when stability in population characteristics
@@ -376,9 +372,13 @@ class Model {
 
                 for (auto region : regions) {
                     for (auto method : methods) {
-                        age_file << y << "\t" << region_code(region) << "\t" << method_code(method) << "\t";
-                        for(auto age : ages) age_file << monitor.age_sample(region, method, age) << "\t";
-                        age_file << "\n";
+                        double sum = 0;
+                        for(auto age : ages) sum += monitor.age_sample(region, method, age);
+                        if (sum > 0) {
+                            age_file << y << "\t" << region_code(region) << "\t" << method_code(method) << "\t";
+                            for(auto age : ages) age_file << monitor.age_sample(region, method, age) << "\t";
+                            age_file << "\n";
+                        }
                     }
                 }
 

@@ -289,6 +289,21 @@ class Fishes : public std::vector<Fish> {
     double scalar = 1.0;
 
     /**
+     * Seed the population with individuals that have attribute values 
+     * whos distributions approximate that of a pristine population
+     * 
+     * This method is usually used in `Model::pristine` to reduce burn in 
+     * but is a separate method so that it can also be used in unit tests. 
+     */
+    void seed(unsigned int number) {
+        clear();
+        resize(number);
+        for (auto& fish : *this) {
+            fish.seed();
+        }
+    }
+
+    /**
      * Aggregate properties that get calculated at various times
      */
     
