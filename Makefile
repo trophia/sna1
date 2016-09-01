@@ -121,7 +121,7 @@ tests/casal-%: tests/casal-%.zip
 
 tests/casal.installed: tests/casal-230 tests/casal-latest
 	R CMD INSTALL tests/casal-latest/R_library/casal_2.30.tar.gz
-	ln -sf tests/casal-230/Program/Linux/casal casal
+	ln -sf tests/casal-230/Program/Linux/casal tests/casal
 	touch $@
 
 test-fast: tests-fast.exe
