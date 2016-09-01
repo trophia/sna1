@@ -1,5 +1,6 @@
 # Ignore requirements
 /requires
+/tests/casal*
 
 # Ignore outputs
 /output

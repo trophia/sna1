@@ -108,10 +108,26 @@ run: sna1.exe
 #############################################################
 # Testing
 
+tests/casal-230.zip:
+	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/CASALv230-2012-03-21.zip
+
+tests/casal-latest.zip:
+	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/latest_casal.zip
+
+tests/casal-%: tests/casal-%.zip
+	rm -rf $@
+	mkdir $@
+	unzip $< -d $@
+
+tests/casal.installed: tests/casal-230 tests/casal-latest
+	R CMD INSTALL tests/casal-latest/R_library/casal_2.30.tar.gz
+	ln -sf tests/casal-230/Program/Linux/casal casal
+	touch $@
+
 test-fast: tests-fast.exe
 	time ./tests-fast.exe
 
-test-slow: tests-slow.exe
+test-slow: tests-slow.exe tests/casal.installed
 	time ./tests-slow.exe
 
 test: test-fast test-slow
