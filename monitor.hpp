@@ -19,6 +19,12 @@ class Monitor {
      */
     Array<double, Regions, Methods, Ages> age_sample;
 
+    /**
+     * Sample of measured fish by region, method and length bin
+     */
+    Array<double, Regions, Methods, Lengths> length_sample;
+
+
     void initialise(void) {
     	boost::filesystem::create_directories("output/monitor");
 

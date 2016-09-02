@@ -5,18 +5,41 @@
 /**
  * Simulation of a tagging programme
  *
- * Currently, a very simple implementation which just tags fish
- * uniformly with a given probability and recovers them with a given 
- * probability.
- *
  * Creates a "database" of tag release and recapture pairs which can be
  * analysed by various methods.
  */
 class Tagging {
  public:
-    void initialise(void) {
-        boost::filesystem::create_directories("output/monitor/tagging");
-    }
+
+
+    /**
+     * The number of releases by year, region and method
+     */
+    Array<int, Years, Regions, Methods> releases;
+
+    /**
+     * A boolean flag for years in which releases are made
+     */
+    Array<bool, Years> release_years;
+
+    /**
+     * A boolean flag for years in which recoveries are recorded
+     */
+    Array<bool, Years> recovery_years;
+
+    /**
+     * The minimum size of release
+     */
+    double min_release_length = 25;
+
+    /**
+     * The current tag number
+     *
+     * Is incremented in the `release()` method and applied
+     * to each fish.
+     */
+    unsigned int number = 0;
+
 
     /**
      * A tagging event
@@ -26,14 +49,16 @@ class Tagging {
     class Event : public Fish {
      public:
         Time time;
+        Method method;
 
         /**
          * Constructor used for both release and
          * recapture events
          */
-        Event(Time time, const Fish& fish):
+        Event(const Fish& fish, Time time, Method method):
             Fish(fish),
-            time(time){
+            time(time),
+            method(method){
         }
 
         /**
@@ -47,15 +72,35 @@ class Tagging {
     };
 
     /**
+     * A database of tagged fish
+     *
+     * A fish instance is stored at the time of release and recovery
+     */
+    std::map<int, std::pair<Event, Event> > tags;
+
+
+    void initialise(void) {
+        releases = 0;
+        release_years = false;
+        recovery_years = false;
+
+        boost::filesystem::create_directories("output/monitor/tagging");
+    }
+
+    void finalise(void) {
+        write();
+    }
+
+    /**
      * A mark and release of a fish.
      */
-    void mark(Fish& fish) {
+    void release(Fish& fish, Method method) {
         // Increment the tag number
-        number_++;
+        number++;
         // Apply the tag to the fish
-        fish.tag = number_;
+        fish.tag = number;
         // Record the fish in the database
-        tags_[number_].first = Event(now,fish);
+        tags[number].first = Event(fish, now, method);
     }
 
     /**
@@ -64,44 +109,28 @@ class Tagging {
      * Note that this method does not actually kill the 
      * fish (done elsewhere) it just records it
      */
-    void recover(const Fish& fish) {
+    void recover(const Fish& fish, Method method) {
         // Record the fish in the database
-        tags_[fish.tag].second = Event(now,fish);
+        tags[fish.tag].second = Event(fish, now, method);
+    }
+
+    void read(void) {
     }
 
     void write(void) {
         std::ofstream file("output/monitor/tagging/tags.tsv");
-        for(auto iter : tags_){
+        for(const auto& iter : tags){
             auto number = iter.first;
             auto release = iter.second.first;
             auto recapture = iter.second.second;
             if(recapture.time){
-                file<<number<<"\t"
-                    <<release.time<<"\t"<<recapture.time<<"\t"
-                    <<release.region<<"\t"<<recapture.region<<"\t"
-                    <<release.length<<"\t"<<recapture.length<<"\n";
+                file<< number << "\t"
+                    << release.time << "\t" << recapture.time << "\t"
+                    << region_code(release.region) << "\t" << region_code(recapture.region) << "\t"
+                    << method_code(release.method) << "\t" << method_code(recapture.method) << "\t"
+                    << release.length << "\t" << recapture.length << "\n";
             }
         }
     }
-
-    void finalise(void) {
-        write();
-    }
-
- private:
-    /**
-     * The current tag number
-     *
-     * Is incremented in the `release()` method and applied
-     * to each fish.
-     */
-    unsigned int number_ = 0;
-
-    /**
-     * A database of tagged fish
-     *
-     * A fish instance is stored at the time of release and recovery
-     */
-    std::map<int,std::pair<Event,Event>> tags_;
 
 };  // class Tagging

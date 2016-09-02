@@ -97,6 +97,9 @@ class Model {
             }
         }
 
+        // Don't go further if in burn in
+        if (y < Years_min) return;
+
         /*****************************************************************
          * Harvesting and harvest related monitoring (e.g. CPUE, tag recoveries)
          ****************************************************************/
@@ -114,9 +117,13 @@ class Model {
             harvest.catch_taken = 0;
             // Reset the age frequency sample counts
             monitor.age_sample = 0;
+            monitor.length_sample = 0;
             // Keep track of total catch taken and quit when it is >= observed
             double catch_taken = 0;
             double catch_observed = sum(harvest.catch_observed);
+            // Is this a tag recovery year
+            bool tag_recovery = monitor.tagging.recovery_years(y);
+
             // Randomly draw fish and "assign" them with varying probabilities
             // to a particular region/method catch
             while(true) {
@@ -143,6 +150,7 @@ class Model {
                                 
                                 // Age sampling, currently 100% sampling of catch
                                 monitor.age_sample(region, method, fish.age_bin())++;
+                                monitor.length_sample(region, method, fish.length_bin())++;
 
                                 // Update total catch and quit if all taken
                                 catch_taken += fish_biomass;
@@ -154,11 +162,11 @@ class Model {
                                 }
                             }
                             // Is this fish tagged?
-                            if(fish.tag) {
+                            if(tag_recovery and fish.tag) {
                                 // Is it reported?
                                 // TODO reporting probability may be dependent upon method and area
                                 if (chance()< 0.5) {
-                                    monitor.tagging.recover(fish);
+                                    monitor.tagging.recover(fish, method);
                                 }
                             }
                         }
@@ -191,6 +199,54 @@ class Model {
             for (auto region : regions) {
                 for (auto method : methods) {
                     monitor.cpue(region, method) = harvest.biomass_vulnerable(region, method);
+                }
+            }
+
+        }
+
+        /*****************************************************************
+         * Monitoring (independent of harvesting e.g. tag release)
+         ****************************************************************/
+
+        if (monitor.tagging.release_years(y)) {
+
+            int releases_total = 0;
+            for(auto region : regions) {
+                for(auto method : methods) {
+                    releases_total += monitor.tagging.releases(y, region, method);
+                }
+            }
+            Array<int, Regions, Methods> releases = 0;
+            int releases_done = 0;
+
+            unsigned int trials = 0;
+            while(true) {
+                // Randomly choose a fish
+                Fish& fish = fishes[chance()*fishes.size()];
+                // If the fish is alive, and not yet tagged then...
+                if (fish.alive() and not fish.tag and fish.length > monitor.tagging.min_release_length) {
+                    // Randomly choose a fishing method in the region the fish currently resides
+                    auto method = Method(methods.select(chance()).index());
+                    auto region = fish.region;
+                    // If the tag releases for the method in the region is not yet acheived...
+                    if (releases(region, method) < monitor.tagging.releases(y, region, method)) {
+                        // Is this fish caught by this method?
+                        auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
+                        if (chance() < selectivity) {
+                            // Tag the fish
+                            monitor.tagging.release(fish, method);
+                            // Increment the release counts
+                            releases(region, method)++;
+                            releases_done++;
+                            // Stop if the total number of tag releases has been obtained
+                            if (releases_done >= releases_total) break;
+                        }
+                    }
+                }
+                // Escape if too many trials
+                if (trials++ > fishes.size() * 100) {
+                    std::cerr << trials << " " << releases_done << " " << releases_total << std::endl;
+                    throw std::runtime_error("Too many attempts to tag fish. Something is probably wrong.");
                 }
             }
 
@@ -255,9 +311,10 @@ class Model {
      * @param[in]  finish    The finish
      * @param      callback  The callback function (can be used to output)
      */
-    void run(Time start, Time finish, std::function<void()>* callback = 0) {
+    void run(Time start, Time finish, std::function<void()>* callback = 0, int initial = 0) {
         // Create initial population of fish
-        pristine(start, callback);
+        if (initial == 0) pristine(start, callback);
+        else fishes.seed(1e6);
         // Iterate over times
         now = start;
         while (now <= finish) {
