@@ -40,7 +40,7 @@ class Harvest {
                 auto steep1 = parameters.harvest_sel_steep1(method);
                 auto mode = parameters.harvest_sel_mode(method);
                 auto steep2 = parameters.harvest_sel_steep2(method);
-                auto length = length_bin.index() + 0.5;
+                auto length = length_bin.index() * length_bin_width + 0.5;
                 double selectivity;
                 if(length<=mode) selectivity = std::pow(2,-std::pow((length-mode)/steep1,2));
                 else selectivity = std::pow(2,-std::pow((length-mode)/steep2,2));
