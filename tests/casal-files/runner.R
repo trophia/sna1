@@ -139,7 +139,7 @@ source('tests/casal-files/reweighting-functions.R')
 mpd.file <- 'tests/casal.out'
 
 ## provide prefix of your CSL file names
-csl.prefix <- ''
+csl.prefix <- 'tests/'
 
 obs.names <- c('EN_LL_age', 'EN_BT_age', 'EN_REC_age', 
                'HG_LL_age', 'HG_BT_age', 'HG_DS_age','HG_REC_age', 
@@ -153,7 +153,7 @@ for (i in 1:5) {
   if (Sys.info()['sysname'] == 'Windows') {
     system('run_CASAL.bat')
   } else {
-    system('cd tests && ./casal -e -q -O mpd.out > casal.out')
+    system('cd tests && ./casal -e -q -O mpd.out 1> casal.out 2> casal.err')
   }
   
   ## calculate reweightings
@@ -195,14 +195,14 @@ biomass <- read.table('output/biomass.tsv', header = T, as.is = T)
 stocks <- c('ENLD', 'HAGU', 'BOP')
 areas <- c('EN', 'HG', 'BP')
 
-windows(9, 7, 11)
+#windows(9, 7, 11)
 par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
 
 for (i in 1:length(stocks)) {
   sub.ssb <- subset(SSB, stock == stocks[i])
   sub.biom <- subset(biom, stock == stocks[i])
   sub.biomass <- subset(biomass, region == areas[i])
-  plot(sub.biomass$year, sub.biomass$biomass, type = 'l', xlab = '', ylab = '')
+  plot(sub.biomass$year, sub.biomass$biomass, type = 'l', xlab = '', ylab = '', ylim=c(0, max(biom$estimate)))
   lines(sub.biom$year, sub.biom$estimate, lty = 2, col = 2)
   lines(sub.ssb$year, sub.ssb$estimate, lty = 3, col = 4)
   legend('topright', stocks[i], bty = 'n', inset = 0.02)
