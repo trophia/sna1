@@ -1,13 +1,6 @@
 ## R script for modifying CASAL input files and run CASAL 
 ## and output B0s and SSBs
 
-# ## run the two lines to install casal package
-# if (Sys.info()['sysname'] == 'Windows') {
-#   install.packages("casal",contriburl="file://niwa.local/Groups/wellington/niwafisheries/R/",
-#                    type="win.binary",repos=NULL)
-# } else {
-#   install.packages('/data01/fisheries-modeling/bianrr/Rlib/casal_2.30.tar.gz', repos=NULL)
-# }
 
 library(casal)
 
