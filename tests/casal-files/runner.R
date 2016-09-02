@@ -14,7 +14,6 @@ library(casal)
 #### update population csl file ####
 ## load catch data
 catch <- read.table('output/catch.tsv', header = T, as.is = T)
-catch <- subset(catch, year <= 2010)
 catch$method <- ifelse(catch$method == 'RE', 'REC', catch$method)
 catch$fishery <- paste(catch$region, catch$method, sep = '_')
 
@@ -52,7 +51,6 @@ write.csl.file(population, 'tests/population.csl')
 #### update estimation csl file ####
 ## load CPUE data
 cpue <- read.table('output/monitor/cpue.tsv', header = T, as.is = T)
-cpue <- subset(cpue, year <= 2010)
 cpue$method <- ifelse(cpue$method == 'RE', 'REC', cpue$method)
 cpue$fishery <- paste(cpue$region, cpue$method, sep = '_')
 
@@ -71,8 +69,7 @@ for (fish in cpue.fisheries) {
   
   ## remove years not in data
   csl.years <- as.numeric(names(estimation[[i]]))
-  years.to.remove <- csl.years[!csl.years %in% sub.cpue$year]
-  years.to.remove <- years.to.remove[!is.na(years.to.remove)]
+  years.to.remove <- csl.years[!is.na(csl.years)]
   for (y in years.to.remove) {
     estimation[[i]][[as.character(y)]] <- NULL
   }
@@ -91,12 +88,16 @@ for (fish in cpue.fisheries) {
 
 ## load catch at age data
 age <- read.table('output/monitor/age.tsv', header = T, as.is = T)
-age <- subset(age, year <= 2010)
 age$method <- ifelse(age$method == 'RE', 'REC', age$method)
 age$fishery <- paste(age$region, age$method, sep = '_')
+
+## age need to be dynamic 
 cols <- paste('age', 1:30, sep = '')
 age$N <- apply(age[, cols], 1, sum)
 age[, cols] <- age[, cols]/age$N
+
+## temp:
+age <- subset(age, !(region == 'BP' & method == 'DS' & year %in% c(1970:1973, 1987:1989)))
 
 ## put catch at age in csl
 for (fish in fishiery.names) {
@@ -106,24 +107,23 @@ for (fish in fishiery.names) {
 
   ## remove years not in data
   csl.years <- as.numeric(names(estimation[[i]]))
-  years.to.remove <- csl.years[!csl.years %in% sub.age$year]
-  years.to.remove <- years.to.remove[!is.na(years.to.remove)]
+  years.to.remove <- csl.years[!is.na(csl.years)]
   for (y in years.to.remove) {
     estimation[[i]][[as.character(y)]] <- NULL
     estimation[[i]][[paste('N', y, sep = '_')]] <- NULL
   }
 
-  ## delete cv and add it in later to make it look nice
-  cv <- estimation[[i]]$cv
-  estimation[[i]]$cv <- NULL
-
   ## put data in
+  ## catch at age
   for (k in 1:nrow(sub.age)) {
     j <- as.character(sub.age$year[k])
     estimation[[i]][[j]] <- sub.age[k, cols]
+  }
+  ## N
+  for (k in 1:nrow(sub.age)) {
+    j <- as.character(sub.age$year[k])
     estimation[[i]][[paste('N', j, sep = '_')]] <- sub.age$N[k]
   }
-  estimation[[i]]$cv <- cv
 }
 
 write.csl.file(estimation, 'tests/estimation.csl')
@@ -132,18 +132,11 @@ write.csl.file(estimation, 'tests/estimation.csl')
 file.copy('tests/casal-files/age/output.csl', 'tests/output.csl')
 
 
-## for test only: run CASAL
-if (Sys.info()['sysname'] == 'Windows') {
-  system('run_CASAL.bat')
-} else {
-  system('cd tests && ./casal -e -q -O mpd.out > casal.out')
-}
-
 #### run CASAL with Francis reweighting ####
 source('tests/casal-files/reweighting-functions.R')
 
 ## provide the MPD output file from CASAL run
-mpd.file <- 'casal.out'
+mpd.file <- 'tests/casal.out'
 
 ## provide prefix of your CSL file names
 csl.prefix <- ''
@@ -155,7 +148,7 @@ obs.names <- c('EN_LL_age', 'EN_BT_age', 'EN_REC_age',
 ## reweighting times
 rewrite = 0
 
-for (i in 1:10) {
+for (i in 1:5) {
   ## run CASAL
   if (Sys.info()['sysname'] == 'Windows') {
     system('run_CASAL.bat')
@@ -187,6 +180,11 @@ SSB <- data.frame(variable = 'SSB', year = years,
                   stock = rep(names(output$SSBs), each = length(years)),
                   estimate = unlist(output$SSBs))
 
+years <- names(output$BP_Biom2)
+biom <- data.frame(variable = 'Biomass', year = as.numeric(names(output$BP_Biom2)), 
+                   stock = rep(names(output$SSBs), each = length(years)), 
+                   estimate = unlist(c(output$EN_Biom2, output$HG_Biom2, output$BP_Biom2)))
+
 write.table(rbind(B0, SSB), 'tests/casal-estimates.txt', 
             row.names = F, quote = F, sep = '\t')
 
@@ -201,13 +199,16 @@ windows(9, 7, 11)
 par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
 
 for (i in 1:length(stocks)) {
-  sub.ssb <- SSB[, c('year', stocks[i])]
+  sub.ssb <- subset(SSB, stock == stocks[i])
+  sub.biom <- subset(biom, stock == stocks[i])
   sub.biomass <- subset(biomass, region == areas[i])
-  plot(sub.ssb$year, sub.ssb[, stocks[i]], type = 'l', xlab = '', ylab = '')
-  lines(sub.biomass$year, sub.biomass$biomass, lty = 2, col = 2)
+  plot(sub.biomass$year, sub.biomass$biomass, type = 'l', xlab = '', ylab = '')
+  lines(sub.biom$year, sub.biom$estimate, lty = 2, col = 2)
+  lines(sub.ssb$year, sub.ssb$estimate, lty = 3, col = 4)
   legend('topright', stocks[i], bty = 'n', inset = 0.02)
 }
-legend('bottomleft', c('CASAL SSB', 'Biomass'), lty = 1:2, col = 1:2, bty = 'n', inset = 0.02)
+legend('bottomleft', c('IBM biomass', 'CASAL biom', 'CASAL SSB'), lty = 1:3, col = c(1:2, 4), 
+       bty = 'n', inset = 0.02)
 mtext('Year', 1, outer = T, line = 1)
 mtext('Biomass', 2, outer = T, line = 1)
 
