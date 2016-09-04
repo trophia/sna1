@@ -71,7 +71,7 @@ int age_bin(double age){
  */
 STENCILA_DIM(Lengths,lengths,length,51);
 
-const length_bin_width = 2; // cm
+const double length_bin_width = 2; // cm
 
 int length_bin(double length){
     return std::min(length,100.0)/length_bin_width;
