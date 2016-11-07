@@ -36,6 +36,23 @@ BOOST_AUTO_TEST_CASE(seed){
 	BOOST_CHECK(fish.length > 0);
 }
 
+
+BOOST_AUTO_TEST_CASE(growth){
+
+	std::ofstream file("output/fishes/growth.tsv");
+	for (int index = 0; index < 100; index++) {
+		Fish fish;
+		fish.born(EN);
+		for (int time = 0; time < 100; time++) {
+			file << index << "\t"
+				 << time << "\t"
+				 << fish.length << "\n";
+			fish.growth();
+		}
+	}
+
+}
+
 // Runs fish movement over many time steps and many 
 // fish and calculates the resulting distribution of fish 
 // across regions for each home region
