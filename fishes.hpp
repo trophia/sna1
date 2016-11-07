@@ -271,8 +271,9 @@ class Fish {
 /**
  * The population of `Fish`
  * 
- * We don't attempt to model every single fish in the population. Rather,
- * the population `Fish` objects is intended to be representative of the larger population.
+ * We don't attempt to model every single fish in the population. Instead,
+ * the vector of `Fish` objects is intended to be a representative sample of the overall population.
+ * The variable, `scalar` is then used to scale other variables, like biomass, to population levels.
  */
 class Fishes : public std::vector<Fish> {
  public:
@@ -290,9 +291,9 @@ class Fishes : public std::vector<Fish> {
 
     /**
      * Seed the population with individuals that have attribute values 
-     * whos distributions approximate that of a pristine population
+     * whose distributions approximate that of a pristine population
      * 
-     * This method is usually used in `Model::pristine` to reduce burn in 
+     * This method is usually used in `Model::pristine` to reduce burn-in times
      * but is a separate method so that it can also be used in unit tests. 
      */
     void seed(unsigned int number) {
