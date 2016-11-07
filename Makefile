@@ -17,7 +17,7 @@ endif
 #############################################################
 # Requirements
 
-BOOST_VERSION := 1_61_0
+BOOST_VERSION := 1_62_0
 
 requires/boost_$(BOOST_VERSION).tar.bz2:
 	@mkdir -p requires
