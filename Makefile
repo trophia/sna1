@@ -23,9 +23,9 @@ requires/boost_$(BOOST_VERSION).tar.bz2:
 	@mkdir -p requires
 	wget --no-check-certificate -O $@ http://prdownloads.sourceforge.net/boost/boost_$(BOOST_VERSION).tar.bz2
 
-requires/boost-$(OS): requires/boost_$(BOOST_VERSION).tar.bz2
+requires/boost: requires/boost_$(BOOST_VERSION).tar.bz2
 	tar --bzip2 -xf $< -C requires
-	mv requires/boost_$(BOOST_VERSION) requires/boost-$(OS)
+	mv requires/boost_$(BOOST_VERSION) requires/boost
 	touch $@
 
 BOOST_BOOTSTRAP_FLAGS := --with-libraries=filesystem,regex,test
@@ -38,7 +38,7 @@ ifeq ($(OS), win)
 	BOOST_B2_FLAGS += --layout=system release toolset=gcc
 endif
 
-requires/boost-$(OS)/lib: requires/boost-$(OS)
+requires/boost/lib: requires/boost
 	cd $< ; ./bootstrap.sh $(BOOST_BOOTSTRAP_FLAGS)
 	sed -i "s/mingw/gcc/g" $</project-config.jam
 	cd $< ; ./b2 $(BOOST_B2_FLAGS)
@@ -58,7 +58,7 @@ requires/stencila: requires/stencila-cpp-$(STENCILA_VERSION).zip
 	touch $@
 
 
-requires: requires/boost-$(OS)/lib requires/stencila
+requires: requires/boost/lib requires/stencila
 
 
 #############################################################
@@ -66,8 +66,8 @@ requires: requires/boost-$(OS)/lib requires/stencila
  
 # Define compile options and required libraries
 CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -Wno-unused-variable -pthread
-INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/stencila
-LIB_DIRS := -Lrequires/boost-$(OS)/lib
+INC_DIRS := -I. -Irequires/boost -Irequires/stencila
+LIB_DIRS := -Lrequires/boost/lib
 LIBS := -lboost_system -lboost_filesystem 
 
 # Find all .hpp and .cpp files (to save time don't recurse into subdirectories)
