@@ -28,7 +28,7 @@ requires/boost: requires/boost_$(BOOST_VERSION).tar.bz2
 	mv requires/boost_$(BOOST_VERSION) requires/boost
 	touch $@
 
-BOOST_BOOTSTRAP_FLAGS := --with-libraries=filesystem,regex,test
+BOOST_BOOTSTRAP_FLAGS := --with-libraries=filesystem,test
 BOOST_B2_FLAGS := -d0 --prefix=. link=static install
 ifeq ($(OS), linux)
 	BOOST_B2_FLAGS += cxxflags=-fPIC
