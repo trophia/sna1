@@ -45,20 +45,20 @@ requires/boost-$(OS)/lib: requires/boost-$(OS)
 	touch $@
 
 
-REFLECT_VERSION := 0.2
+STENCILA_VERSION := 0.2
 
-requires/reflect-$(REFLECT_VERSION).zip:
+requires/stencila-cpp-$(STENCILA_VERSION).zip:
 	@mkdir -p requires
-	wget --no-check-certificate -O $@ https://github.com/stencila/reflect/archive/$(REFLECT_VERSION).zip
+	wget --no-check-certificate -O $@ https://github.com/stencila/cpp/archive/$(STENCILA_VERSION).zip
 
-requires/reflect: requires/reflect-$(REFLECT_VERSION).zip
-	rm -rf requires/reflect
-	unzip $< -d requires
-	mv requires/reflect-$(REFLECT_VERSION) requires/reflect
+requires/stencila: requires/stencila-cpp-$(STENCILA_VERSION).zip
+	rm -rf requires/stencila
+	unzip -o $< -d requires
+	mv requires/cpp-$(STENCILA_VERSION)/ requires/stencila/
 	touch $@
 
 
-requires: requires/boost-$(OS)/lib requires/reflect
+requires: requires/boost-$(OS)/lib requires/stencila
 
 
 #############################################################
@@ -66,7 +66,7 @@ requires: requires/boost-$(OS)/lib requires/reflect
  
 # Define compile options and required libraries
 CXX_FLAGS := -std=c++11 -Wall -Wno-unused-function -Wno-unused-local-typedefs -Wno-unused-variable -pthread
-INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/reflect
+INC_DIRS := -I. -Irequires/boost-$(OS) -Irequires/stencila
 LIB_DIRS := -Lrequires/boost-$(OS)/lib
 LIBS := -lboost_system -lboost_filesystem 
 
