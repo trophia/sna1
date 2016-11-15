@@ -96,6 +96,11 @@ BOOST_AUTO_TEST_CASE(casal){
 	BOOST_CHECK_CLOSE(estimates["B0-NA-ENLD"], parameters.fishes_b0(EN), 20);
 	BOOST_CHECK_CLOSE(estimates["B0-NA-HAGU"], parameters.fishes_b0(HG), 20);
 	BOOST_CHECK_CLOSE(estimates["B0-NA-BOP"], parameters.fishes_b0(BP), 20);
+
+	// Check estimates of R0 by region are within 5%
+	BOOST_CHECK_CLOSE(estimates["R0-NA-ENLD"], model.fishes.recruitment_pristine(EN), 5);
+	BOOST_CHECK_CLOSE(estimates["R0-NA-HAGU"], model.fishes.recruitment_pristine(HG), 5);
+	BOOST_CHECK_CLOSE(estimates["R0-NA-BOP"], model.fishes.recruitment_pristine(BP), 5);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

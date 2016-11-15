@@ -121,7 +121,7 @@ biom <- data.frame(variable = 'Biomass', year = as.numeric(names(output$BP_Biom2
                    stock = rep(names(output$SSBs), each = length(years)), 
                    estimate = unlist(c(output$EN_Biom2, output$HG_Biom2, output$BP_Biom2)))
 
-write.table(rbind(B0, SSB), 'tests/casal-estimates.txt', 
+write.table(rbind(B0, R0, SSB), 'tests/casal-estimates.txt', 
             row.names = F, quote = F, sep = '\t')
 
 
