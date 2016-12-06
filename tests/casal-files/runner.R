@@ -1,7 +1,10 @@
 ## R script for modifying CASAL input files and run CASAL 
 ## and output B0s and SSBs
 
-
+library(tidyr)
+library(stringr)
+library(dplyr)
+library(ggplot2)
 library(casal)
 
 # #### Initialisation ####
@@ -188,7 +191,6 @@ biom <- data.frame(variable = 'Biomass', year = as.numeric(names(output$BP_Biom2
 write.table(rbind(B0, SSB), 'tests/casal-estimates.txt', 
             row.names = F, quote = F, sep = '\t')
 
-
 ## plot SSBs from simulator and CASAL
 biomass <- read.table('output/biomass.tsv', header = T, as.is = T)
 
@@ -211,5 +213,50 @@ legend('bottomleft', c('IBM biomass', 'CASAL biom', 'CASAL SSB'), lty = 1:3, col
        bty = 'n', inset = 0.02)
 mtext('Year', 1, outer = T, line = 1)
 mtext('Biomass', 2, outer = T, line = 1)
+
+# Compare stock status
+
+temp <- merge(SSB, B0[,c('stock', 'estimate')], by='stock')
+ggplot(temp, aes(x=year,y=estimate.x/estimate.y, color=stock)) +
+  geom_point() + 
+  geom_line(aes(x=year,y=biomass.x/biomass.y,color=region), data=merge(biomass,biomass[biomass$year==1900,c('region', 'biomass')],by='region')) +
+  ylim(0,NA)
+
+# Fits
+
+fits <- extract.fits('tests/casal.out')
+
+# CPUE 
+par(mfrow=c(3,1))
+plot(fits$EN_LLcpue$obs)
+lines(fits$EN_LLcpue$fits)
+plot(fits$HG_LLcpue$obs)
+lines(fits$HG_LLcpue$fits)
+plot(fits$BP_LLcpue$obs)
+lines(fits$BP_LLcpue$fits)
+
+# Catch at age
+
+obs <- fits$BP_LL_age$obs
+obs$year <- row.names(obs)
+obs <- gather(subset(obs, year >= 2004), key, value, -year)
+obs$age <- as.integer(str_sub(obs$key,2))
+
+fits <- fits$BP_LL_age$fits
+fits$year <- row.names(fits)
+fits <- gather(subset(fits, year >= 2004), key, value, -year)
+fits$age <- as.integer(str_sub(fits$key,2))
+
+# Obs v Pred by year
+ggplot() + 
+  geom_point(aes(x=age,y=value), data=obs) + 
+  geom_line(aes(x=age,y=value), data=fits) + 
+  facet_wrap(~year)
+
+# Obs v Pred
+ggplot() + 
+  geom_point(aes(x=age,y=value), obs %>% group_by(age) %>% summarise(value=mean(value))) + 
+  geom_line(aes(x=age,y=value), fits %>% group_by(age) %>% summarise(value=mean(value)))
+
 
 
