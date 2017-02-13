@@ -200,6 +200,10 @@ class Parameters : public Structure<Parameters> {
             .data(fishes_movement_type, "fishes_movement_type")
             .data(fishes_k_mean, "fishes_k_mean")
             .data(fishes_linf_mean, "fishes_linf_mean")
+
+            .data(harvest_sel_steep1, "harvest_sel_steep1")
+            .data(harvest_sel_mode, "harvest_sel_mode")
+            .data(harvest_sel_steep2, "harvest_sel_steep2")
         ;
     }
 };  // class Parameters

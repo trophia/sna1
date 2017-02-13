@@ -77,6 +77,10 @@ int length_bin(double length){
     return std::min(length,100.0)/length_bin_width;
 }
 
+int length_mid(Stencila::Level<Lengths>& length_bin){
+    return  (length_bin.index() + 0.5) * length_bin_width;
+}
+
 /**
  * Harvest methods
  */
