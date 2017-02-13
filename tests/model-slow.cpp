@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(casal){
 	model.generate_casal(1900, 2020);
 
 	// Run CASAL
-	auto ok = std::system("Rscript tests/casal-files/runner.R");
+	auto ok = std::system("Rscript tests/casal-files/len.runner.R");
 	BOOST_CHECK(ok==0);
 
 	// Read in output files containing CASAL estimates
