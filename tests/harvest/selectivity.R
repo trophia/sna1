@@ -22,4 +22,4 @@ print(ggplot(props, aes(x=length)) +
   labs(x='Length (cm)', y='Selectivity', colour=''))
 dev.off()
 
-cat(with(props, sum(abs(expect-value))),file='selectivity-diff.txt')
+cat(with(props, sum(abs(expect-value)/expect)),file='selectivity-diff.txt')
