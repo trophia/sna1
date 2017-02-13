@@ -132,7 +132,7 @@ for (fish in fishiery.names) {
 write.csl.file(estimation, 'tests/estimation.csl')
 
 # Copy template `output.csl` over to `test` directory
-file.copy('tests/casal-files/age/output.csl', 'tests/output.csl')
+file.copy('tests/casal-files/age/output.csl', 'tests/output.csl', overwrite=T)
 
 
 #### run CASAL with Francis reweighting ####

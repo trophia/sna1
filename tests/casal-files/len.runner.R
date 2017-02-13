@@ -90,7 +90,7 @@ write.csl.file(estimation, 'tests/estimation.csl')
 
 
 # Copy template `output.csl` over to `test` directory
-file.copy('tests/casal-files/length/SNA1_len.output.csl', 'tests/output.csl')
+file.copy('tests/casal-files/length/SNA1_len.output.csl', 'tests/output.csl', overwrite=T)
 
 
 ## run CASAL
@@ -175,9 +175,9 @@ par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
 for (fish in unique(ibm.cal$fishery)) {
   sub.ibm <- subset(ibm.cal, fishery == fish)
   sub.casal <- subset(casal.cal, fishery == fish)
-  plot(sub.ibm$length, sub.ibm$freq, type = 'l', xlab = '', ylab = '', 
-       ylim=c(0, max(ibm.cal$freq, casal.cal$freq)))
-  lines(sub.casal$len_bin, sub.casal$freq, lty = 2, col = 2)
+  plot(sub.ibm$length, sub.ibm$freq/sum(sub.ibm$freq), type = 'l', xlab = '', ylab = '', 
+       ylim=c(0, 0.1))
+  lines(sub.casal$len_bin, sub.casal$freq/sum(sub.casal$freq), lty = 2, col = 2)
   legend('topright', fish, bty = 'n', inset = 0.02)
   if (fish == 'EN_LL')
     legend('topleft', c('IBM CAL', 'CASAL CAL'), lty = 1:2, col = 1:2, 
