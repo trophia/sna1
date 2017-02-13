@@ -129,7 +129,7 @@ class Model {
             while(true) {
                 // Randomly choose a fish
                 Fish& fish = fishes[chance()*fishes.size()];
-                // If the fis is alive, then...
+                // If the fish is alive, then...
                 if (fish.alive()) {
                     // Randomly choose a fishing method in the region the fish currently resides
                     auto method = Method(methods.select(chance()).index());
