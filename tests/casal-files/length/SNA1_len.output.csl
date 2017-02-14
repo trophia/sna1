@@ -75,21 +75,21 @@ step 1
 ogive Sel_LL
 area EN
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at HG_LL
 step 1
 ogive Sel_LL
 area HG
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at BP_LL
 step 1
 ogive Sel_LL
 area BP
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 
 @numbers_at EN_BT
@@ -97,21 +97,21 @@ step 1
 ogive Sel_BT
 area EN
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at HG_BT
 step 1
 ogive Sel_BT
 area HG
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at BP_BT
 step 1
 ogive Sel_BT
 area BP
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 
 @numbers_at EN_DS
@@ -119,21 +119,21 @@ step 1
 ogive Sel_DS
 area EN
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at HG_DS
 step 1
 ogive Sel_DS
 area HG
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at BP_DS
 step 1
 ogive Sel_DS
 area BP
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 
 @numbers_at EN_REC
@@ -141,19 +141,19 @@ step 1
 ogive Sel_REC
 area EN
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at HG_REC
 step 1
 ogive Sel_REC
 area HG
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
 @numbers_at BP_REC
 step 1
 ogive Sel_REC
 area BP
 plus_group True
-years 2004
+years 1900 1910 1920 1930 1940 1950 1960 1970 1980 1990 2000 2010
 
