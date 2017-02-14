@@ -232,7 +232,7 @@ lengths <- lengths %>%
   )
 
 # Plot over years
-ggplot(lengths %>% 
+p <- ggplot(lengths %>% 
   group_by(region,method,length) %>%
   summarise(
     prop_casal = mean(prop_casal, na.rm=T),
@@ -242,17 +242,24 @@ ggplot(lengths %>%
   geom_line(aes(x=length,y=prop_casal, colour='CASAL')) + 
   geom_line(aes(x=length,y=prop_ibm, colour='IBM')) + 
   facet_grid(region~method)
+png(paste0('lengths-region-method.png'), width = 7, height = 4)
+print(p)
+dev.off()
+p
 
 # Plots by year for specific region & method
 temp <- function(region_, method_){
-  ggplot(filter(lengths, region==region_ & method==method_), aes(x=length)) + 
+  p <- ggplot(filter(lengths, region==region_ & method==method_), aes(x=length)) + 
     geom_line(aes(y=prop_casal, colour='CASAL')) +
     geom_line(aes(y=prop_ibm, colour='IBM')) + 
     facet_wrap(~year)
+  png(paste0('lengths-year-', region_, '-', method_, '.png'), width = 7, height = 4)
+  print(p)
+  dev.off()
+  p
 }
 temp('HG', 'pop')
 temp('EN', 'LL')
 temp('BP', 'LL')
 temp('HG', 'BT')
 temp('HG', 'REC')
-
