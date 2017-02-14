@@ -1,8 +1,9 @@
 ## R script for modifying CASAL input files and run CASAL 
 ## and output B0s and SSBs
 
-
 library(casal)
+library(tidyr)
+library(dplyr)
 
 # #### Initialisation ####
 # file.remove('estimation.csl')
@@ -163,59 +164,89 @@ mtext('Year', 1, outer = T, line = 1)
 mtext('Biomass', 2, outer = T, line = 1)
 dev.off()
 
+# -----------------------------------------------------------------------------
+# Comparision of catch at lengths
 
-## load catch at length data from IBM
-len <- read.table('output/monitor/length.tsv', header = F, as.is = T)
-colnames(len) <- c('year', 'region', 'method', 'length', 'freq')
-len$method <- ifelse(len$method == 'RE', 'REC', len$method)
-len$fishery <- paste(len$region, len$method, sep = '_')
+# Wrangle IBM lengths into long format
+lengths_ibm <- read.table('output/monitor/length.tsv', header=T, as.is=T)
+names(lengths_ibm)[4:54] <- seq(0, 100, 2)
+lengths_ibm <- lengths_ibm %>%
+  gather('length', 'count', -(1:3)) %>%
+  arrange(year, region, method) %>%
+  within({
+    length <- as.integer(length)
+  })
 
-
-## plot catch at length by LL for 2004
-ibm.cal <- subset(len, year == 2004 & method == 'LL' & length < 50)
-
-tmp <- data.frame(fishery = rep(c('EN_LL', 'HG_LL', 'BP_LL'), each = 100), 
-                        length = rep(0:99, times = 3), 
-                        freq = unlist(c(output$EN_LL, output$HG_LL, output$BP_LL)))
-
-tmp$len_bin <- floor(tmp$length/2)
-casal.cal <- aggregate(freq ~ fishery + len_bin, data = tmp, sum)
-
-## plot numbers at length
-pdf('tests/catch at length.pdf', width = 9, height = 7, pointsize = 11)
-par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
-
-for (fish in unique(ibm.cal$fishery)) {
-  sub.ibm <- subset(ibm.cal, fishery == fish)
-  sub.casal <- subset(casal.cal, fishery == fish)
-  plot(sub.ibm$length, sub.ibm$freq/sum(sub.ibm$freq), type = 'l', xlab = '', ylab = '', 
-       ylim=c(0, 0.1))
-  lines(sub.casal$len_bin, sub.casal$freq/sum(sub.casal$freq), lty = 2, col = 2)
-  legend('topright', fish, bty = 'n', inset = 0.02)
-  if (fish == 'EN_LL')
-    legend('topleft', c('IBM CAL', 'CASAL CAL'), lty = 1:2, col = 1:2, 
-           bty = 'n', inset = 0.02)
-  }
-mtext('Length (cm)', 1, outer = T, line = 1)
-mtext('Frequency', 2, outer = T, line = 1)
-dev.off()
-
-
-## plot cumulative proportions at length
-pdf('tests/catch at length cum prop.pdf', width = 9, height = 7, pointsize = 11)
-par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
-
-for (fish in unique(ibm.cal$fishery)) {
-  sub.ibm <- subset(ibm.cal, fishery == fish)
-  sub.ibm$prop <- cumsum(sub.ibm$freq)/sum(sub.ibm$freq)
-  sub.casal <- subset(casal.cal, fishery == fish)
-  sub.casal$prop <- cumsum(sub.casal$freq)/sum(sub.casal$freq)
-  plot(sub.ibm$length, sub.ibm$prop, type = 'l', xlab = '', ylab = '', ylim=c(0, 1))
-  lines(sub.casal$len_bin, sub.casal$prop, lty = 2, col = 2)
-  legend('bottomright', fish, bty = 'n', inset = 0.02)
+# Wrangle CASAL lengths into long format
+temp <- function(region, method) {
+  data <- do.call(rbind.data.frame, output[[paste(region, method, sep='_')]])
+  names(data) <- 1:100
+  data$year <- as.integer(row.names(data))
+  data$region <- region
+  data$method <- method
+  data <- gather(data, 'length', 'count', -(101:103))
+  data$length <- as.integer(data$length)
+  data
 }
-legend('topleft', c('IBM CAL', 'CASAL CAL'), lty = 1:2, col = 1:2, 
-       bty = 'n', inset = 0.02)
-mtext('Length (cm)', 1, outer = T, line = 1)
-mtext('Cumulative proportional frequency', 2, outer = T, line = 1)
-dev.off()
+lengths_casal <- rbind(
+  temp('EN', 'LL'), temp('EN', 'BT'), temp('EN', 'DS'), temp('EN', 'REC'),
+  temp('HG', 'LL'), temp('HG', 'BT'), temp('HG', 'DS'), temp('HG', 'REC'),
+  temp('BP', 'LL'), temp('BP', 'BT'), temp('BP', 'DS'), temp('BP', 'REC')
+)
+lengths_casal <- lengths_casal %>%
+  mutate(length_bin = floor((length-1)/2)*2) %>%
+  group_by(year, region, method, length_bin) %>% 
+  summarise(count_ = sum(count)) %>%
+  rename(length = length_bin, count = count_) %>%
+  arrange(year, region, method)
+
+# Join them together
+lengths <- left_join(
+  lengths_casal, 
+  lengths_ibm, 
+  by=c('year', 'region', 'method', 'length'), 
+  suffix=c('_casal', '_ibm')
+)
+# Convert some column types
+lengths <- within(lengths, {
+  year <- as.factor(year)
+  region <- factor(region, levels=c('EN', 'HG', 'BP'), ordered=T)
+  method <- factor(method, levels=c('LL', 'BT', 'DS', 'REC'), ordered=T)
+  length <- as.integer(length)
+})
+# Add proportions
+lengths <- lengths %>% 
+  group_by(year, region, method) %>% 
+  summarise(
+    total_casal = sum(count_casal, na.rm=T),
+    total_ibm = sum(count_ibm, na.rm=T)
+  ) %>%
+  right_join(lengths) %>%
+  mutate(
+    prop_casal = count_casal/total_casal,
+    prop_ibm = count_ibm/total_ibm
+  )
+
+# Plot over years
+ggplot(lengths %>% 
+  group_by(region,method,length) %>%
+  summarise(
+    prop_casal = mean(prop_casal, na.rm=T),
+    prop_ibm = mean(prop_ibm, na.rm=T)
+  )
+) +
+  geom_line(aes(x=length,y=prop_casal, colour='CASAL')) + 
+  geom_line(aes(x=length,y=prop_ibm, colour='IBM')) + 
+  facet_grid(region~method)
+
+# Plot by year for EN LL
+ggplot(filter(lengths, region=='EN' & method=='LL'), aes(x=length)) + 
+  geom_line(aes(y=prop_casal, colour='CASAL')) +
+  geom_line(aes(y=prop_ibm, colour='IBM')) + 
+  facet_wrap(~year)
+
+# Plot by year for HG BT
+ggplot(filter(lengths, region=='HG' & method=='BT'), aes(x=length)) + 
+  geom_line(aes(y=prop_casal, colour='CASAL')) +
+  geom_line(aes(y=prop_ibm, colour='IBM')) + 
+  facet_wrap(~year)
