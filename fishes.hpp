@@ -166,8 +166,15 @@ class Fish {
         sex = (chance()<parameters.fishes_males)?male:female;
 
         // Set von Bert growth parameters from their distributions
-        auto k = parameters.fishes_k_dist.random();
-        auto linf = parameters.fishes_linf_dist.random();
+        double k;
+        double linf;
+        if (parameters.fishes_growth_type == 't') {
+            k = parameters.fishes_k_mean;
+            linf = parameters.fishes_linf_mean;
+        } else {
+            k = parameters.fishes_k_dist.random();
+            linf = parameters.fishes_linf_dist.random();
+        }
         vonb(k, linf);
         length = length_at_age(age, k, linf);
 
@@ -193,8 +200,15 @@ class Fish {
         sex = (chance()<parameters.fishes_males)?male:female;
 
         // Set von Bert growth parameters from their distributions
-        auto k = parameters.fishes_k_dist.random();
-        auto linf = parameters.fishes_linf_dist.random();
+        double k;
+        double linf;
+        if (parameters.fishes_growth_type == 't') {
+            k = parameters.fishes_k_mean;
+            linf = parameters.fishes_linf_mean;
+        } else {
+            k = parameters.fishes_k_dist.random();
+            linf = parameters.fishes_linf_dist.random();
+        }
         vonb(k, linf);
         length = 0;
 
@@ -227,7 +241,17 @@ class Fish {
      * Increase the length of this fish
      */
     void growth(void) {
-        length += growth_intercept + growth_slope * length;
+        // Calculate growth increment
+        double incr = growth_intercept + growth_slope * length;
+        // Apply temporal variation in growth if needed
+        if (parameters.fishes_growth_type == 't' or parameters.fishes_growth_type == 'm') {
+            int sd = std::max(parameters.fishes_growth_temporal_sdmin, incr * parameters.fishes_growth_temporal_cv);
+            incr += standard_normal_rand() * sd;
+            if (incr < parameters.fishes_growth_temporal_incrmin) incr = parameters.fishes_growth_temporal_incrmin;
+        }
+        // Add increment but ensure fish size does not go below zero
+        length += incr;
+        if (length < 0) length = 0;
     }
 
     /**

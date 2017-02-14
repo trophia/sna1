@@ -115,8 +115,9 @@ class Model {
             // Reset the harvesting accounting
             harvest.attempts = 0;
             harvest.catch_taken = 0;
-            // Reset the age frequency sample counts
+            // Reset the monitoring counts
             monitor.age_sample = 0;
+            monitor.length_pop = 0;
             monitor.length_sample = 0;
             // Keep track of total catch taken and quit when it is >= observed
             double catch_taken = 0;
@@ -131,13 +132,16 @@ class Model {
                 Fish& fish = fishes[chance()*fishes.size()];
                 // If the fish is alive, then...
                 if (fish.alive()) {
+                    auto region = fish.region;
+                    auto length_bin = fish.length_bin();
+                    
+                    monitor.length_pop(region, length_bin)++;
                     // Randomly choose a fishing method in the region the fish currently resides
                     auto method = Method(methods.select(chance()).index());
-                    auto region = fish.region;
                     // If the catch for the method in the region is not yet caught...
                     if (harvest.catch_taken(region, method) < harvest.catch_observed(region, method)) {
                         // Is this fish caught by this method?
-                        auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
+                        auto selectivity = harvest.selectivity_at_length(method, length_bin);
                         if (chance() < selectivity) {
                             // Is this fish greater than the MLS and thus retained?
                             if (fish.length >= parameters.harvest_mls(method)) {
@@ -150,7 +154,7 @@ class Model {
                                 
                                 // Age sampling, currently 100% sampling of catch
                                 monitor.age_sample(region, method, fish.age_bin())++;
-                                monitor.length_sample(region, method, fish.length_bin())++;
+                                monitor.length_sample(region, method, length_bin)++;
 
                                 // Update total catch and quit if all taken
                                 catch_taken += fish_biomass;
@@ -368,25 +372,38 @@ class Model {
         // Output parameters for 'population.csl'
         std::ofstream population_file("tests/casal-files/length/population.tsv");
         population_file << "par\tvalue\n";
-        // Generate 1000 fish and calculate mean and cv of growth parameters
-        Mean growth_intercept_mean;
-        StandardDeviation growth_intercept_sd;
-        Mean growth_slope_mean;
-        for (int index = 0; index < 1000; index++) {
-            Fish fish;
-            fish.born(EN);
-            growth_intercept_mean.append(fish.growth_intercept);
-            growth_intercept_sd.append(fish.growth_intercept);
-            growth_slope_mean.append(fish.growth_slope);
+
+        double growth_20;
+        double growth_50;
+        double growth_cv;
+        double growth_sdmin = parameters.fishes_growth_temporal_sdmin;
+        if (parameters.fishes_growth_type == 't') {
+            auto growth_slope = std::exp(-parameters.fishes_k_mean)-1;
+            auto growth_intercept = -growth_slope * parameters.fishes_linf_mean;
+            growth_20 = growth_intercept + 20 * growth_slope;
+            growth_50 = growth_intercept + 50 * growth_slope;
+            growth_cv = parameters.fishes_growth_temporal_cv;
+        } else {
+            // Generate 1000 fish and calculate mean and cv of growth parameters
+            Mean growth_intercept_mean;
+            StandardDeviation growth_intercept_sd;
+            Mean growth_slope_mean;
+            for (int index = 0; index < 1000; index++) {
+                Fish fish;
+                fish.born(EN);
+                growth_intercept_mean.append(fish.growth_intercept);
+                growth_intercept_sd.append(fish.growth_intercept);
+                growth_slope_mean.append(fish.growth_slope);
+            }
+            growth_20 = growth_intercept_mean + 20 * growth_slope_mean;
+            growth_50 = growth_intercept_mean + 50 * growth_slope_mean;
+            growth_cv = growth_intercept_sd/growth_intercept_mean;
         }
-        auto growth_20 = growth_intercept_mean + 20 * growth_slope_mean;
-        auto growth_50 = growth_intercept_mean + 50 * growth_slope_mean;
-        auto growth_cv = growth_intercept_sd/growth_intercept_mean;
         population_file
             << "growth_20\t" << growth_20 << "\n"
             << "growth_50\t" << growth_50 << "\n"
             << "growth_cv\t" << growth_cv << "\n"
-            << "growth_min_sd\t" << 1 << "\n";
+            << "growth_sdmin\t" << growth_sdmin << "\n";
         population_file.close();
 
         // Callback function that is called each year
@@ -453,6 +470,10 @@ class Model {
                 }
 
                 for (auto region : regions) {
+                    length_file << y << "\t" << region_code(region) << "\tpop\t";
+                    for(auto length : lengths) length_file << monitor.length_pop(region, length) << "\t";
+                    length_file << "\n";
+
                     for (auto method : methods) {
                         double sum = 0;
                         for(auto length : lengths) sum += monitor.length_sample(region, method, length);
@@ -469,6 +490,5 @@ class Model {
         });
         run(1900, 2015, &callback);
     }
-
 
 };  // end class Model

@@ -39,15 +39,22 @@ BOOST_AUTO_TEST_CASE(seed){
 
 BOOST_AUTO_TEST_CASE(growth){
 
-	std::ofstream file("output/fishes/growth.tsv");
+	std::ofstream pars("tests/fishes/growth_pars.tsv");
+	pars << "fish\tintercept\tslope\n";
+	std::ofstream trajs("tests/fishes/growth_trajs.tsv");
+	trajs << "fish\ttime\tlength\tlength_new\n";
 	for (int index = 0; index < 100; index++) {
 		Fish fish;
 		fish.born(EN);
+		pars << index << "\t"
+			 << fish.growth_intercept << "\t" 
+			 << fish.growth_slope << "\n";
 		for (int time = 0; time < 100; time++) {
-			file << index << "\t"
+			trajs << index << "\t"
 				 << time << "\t"
-				 << fish.length << "\n";
+				 << fish.length << "\t";
 			fish.growth();
+			trajs << fish.length << "\n";
 		}
 	}
 

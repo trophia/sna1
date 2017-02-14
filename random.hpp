@@ -39,10 +39,16 @@ template<
 typedef Distribution< boost::uniform_01<> > Uniform01;
 typedef Distribution< boost::uniform_real<> > Uniform;
 typedef Distribution< boost::exponential_distribution<> > Exponential;
+typedef Distribution< boost::normal_distribution<> > Normal;
 typedef Distribution< boost::lognormal_distribution<> > Lognormal;
 
 
 Uniform01 chance_distr;
 double chance(void){
 	return chance_distr.random();
+}
+
+Normal standard_normal_distr = {0, 1};
+double standard_normal_rand(void){
+	return standard_normal_distr.random();
 }

@@ -20,7 +20,7 @@ class Parameters : public Structure<Parameters> {
      * suggested 100,000 was a good trade-off between run duration and precision at least
      * during development. Should be increased for final runs.
      */
-    unsigned int fishes_seed_number = 1e6;
+    unsigned int fishes_seed_number = 5e6;
 
     Uniform fishes_seed_region_dist;
 
@@ -73,27 +73,36 @@ class Parameters : public Structure<Parameters> {
     double fishes_b = 2.793;
 
     /**
+     * Growth type
+     *
+     * t = only temporal variation in growth
+     * i = only individual variation in growth
+     * m = mixed, both individual and temporal variation in growth
+     */
+    char fishes_growth_type = 't';
+
+    /**
      * Distribution of growth coefficients (von Bertalanffy k)
      * across population of fish
      */
     double fishes_k_mean = 0.1;
     double fishes_k_cv = 0.02;
-
-    /**
-     * Lognormal distribution for fishes k
-     */
     Lognormal fishes_k_dist;
+
     /**
      * Distribution of assymptotic length (von Bertalanffy Linf)
      * across population of fish
      */
     double fishes_linf_mean = 60;
     double fishes_linf_cv = 10;
+    Lognormal fishes_linf_dist;
 
     /**
-     * Lognormal distribution for fishes Linf
+     * Coefficient of variation of temporal variation in growth
      */
-    Lognormal fishes_linf_dist;
+    double fishes_growth_temporal_cv = 0.3;
+    double fishes_growth_temporal_sdmin = 1;
+    double fishes_growth_temporal_incrmin = 0;
 
     /**
      * Maturiation-at-age
@@ -117,7 +126,7 @@ class Parameters : public Structure<Parameters> {
      * Minimum legal size limit
      */
     Array<double, Methods> harvest_mls = {
-        25, 25, 25, 30
+        25, 25, 25, 25
     };
 
     /**

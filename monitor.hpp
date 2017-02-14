@@ -20,6 +20,11 @@ class Monitor {
     Array<double, Regions, Methods, Ages> age_sample;
 
     /**
+     * Lengths of fish in population by region
+     */
+    Array<double, Regions, Lengths> length_pop;
+
+    /**
      * Sample of measured fish by region, method and length bin
      */
     Array<double, Regions, Methods, Lengths> length_sample;
