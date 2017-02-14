@@ -58,7 +58,12 @@ requires/stencila: requires/stencila-cpp-$(STENCILA_VERSION).zip
 	touch $@
 
 
-requires: requires/boost/lib requires/stencila
+requires/r-packages.installed:
+	Rscript -e "install.packages(c('tidyr','dplyr','ggplot2'), repos='http://cran.us.r-project.org')"
+	touch $@
+
+
+requires: requires/boost/lib requires/stencila requires/r-packages.installed
 
 
 #############################################################
