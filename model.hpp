@@ -354,10 +354,15 @@ class Model {
         for(auto age : ages) age_file << "age" << age << "\t";
         age_file << "\n";
 
-        // Override of `region_code` method to output `REC`
-        auto region_code = [](Stencila::Level<Regions> region){
-            if (region == RE) return std::string("REC");
-            else return ::region_code(region);
+        std::ofstream length_file("output/monitor/length.tsv");
+        length_file << "year\tregion\tmethod\t";
+        for(auto length : lengths) length_file << "length" << length << "\t";
+        length_file << "\n";
+
+        // Override of `method_code` method to output `REC`
+        auto method_code = [](Stencila::Level<Methods> method){
+            if (method == RE) return std::string("REC");
+            else return ::method_code(method);
         };
 
         // Output parameters for 'population.csl'
@@ -443,6 +448,18 @@ class Model {
                             age_file << y << "\t" << region_code(region) << "\t" << method_code(method) << "\t";
                             for(auto age : ages) age_file << monitor.age_sample(region, method, age) << "\t";
                             age_file << "\n";
+                        }
+                    }
+                }
+
+                for (auto region : regions) {
+                    for (auto method : methods) {
+                        double sum = 0;
+                        for(auto length : lengths) sum += monitor.length_sample(region, method, length);
+                        if (sum > 0) {
+                            length_file << y << "\t" << region_code(region) << "\t" << method_code(method) << "\t";
+                            for(auto length : lengths) length_file << monitor.length_sample(region, method, length) << "\t";
+                            length_file << "\n";
                         }
                     }
                 }
