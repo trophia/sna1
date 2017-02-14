@@ -4,6 +4,7 @@
 library(casal)
 library(tidyr)
 library(dplyr)
+library(ggplot2)
 
 # #### Initialisation ####
 # file.remove('estimation.csl')
@@ -31,15 +32,18 @@ population$final$value <- current + 5
 # Insert growth parameters from IBM
 population_ibm <- read.table('tests/casal-files/length/population.tsv', header = T, as.is = T)
 # Currently uses the same parameters for all substocks
+# EN
 population$`growth[1]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
 population$`growth[1]`$cv <- subset(population_ibm, par == 'growth_cv')$value
-population$`growth[1]`$minsigma <- subset(population_ibm, par == 'growth_min_sd')$value
+population$`growth[1]`$minsigma <- subset(population_ibm, par == 'growth_sdmin')$value
+# HG
 population$`growth[2]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
 population$`growth[2]`$cv <- subset(population_ibm, par == 'growth_cv')$value
-population$`growth[2]`$minsigma <- subset(population_ibm, par == 'growth_min_sd')$value
+population$`growth[2]`$minsigma <- subset(population_ibm, par == 'growth_sdmin')$value
+# BP
 population$`growth[3]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
 population$`growth[3]`$cv <- subset(population_ibm, par == 'growth_cv')$value
-population$`growth[2]`$minsigma <- subset(population_ibm, par == 'growth_min_sd')$value
+population$`growth[3]`$minsigma <- subset(population_ibm, par == 'growth_sdmin')$value
 
 ## put catches in csl from IBM
 for (fish in fishiery.names) {
@@ -189,9 +193,9 @@ temp <- function(region, method) {
   data
 }
 lengths_casal <- rbind(
-  temp('EN', 'LL'), temp('EN', 'BT'), temp('EN', 'DS'), temp('EN', 'REC'),
-  temp('HG', 'LL'), temp('HG', 'BT'), temp('HG', 'DS'), temp('HG', 'REC'),
-  temp('BP', 'LL'), temp('BP', 'BT'), temp('BP', 'DS'), temp('BP', 'REC')
+  temp('EN', 'LL'), temp('EN', 'BT'), temp('EN', 'DS'), temp('EN', 'REC'), temp('EN', 'pop'),
+  temp('HG', 'LL'), temp('HG', 'BT'), temp('HG', 'DS'), temp('HG', 'REC'), temp('HG', 'pop'),
+  temp('BP', 'LL'), temp('BP', 'BT'), temp('BP', 'DS'), temp('BP', 'REC'), temp('BP', 'pop')
 )
 lengths_casal <- lengths_casal %>%
   mutate(length_bin = floor((length-1)/2)*2) %>%
@@ -211,7 +215,7 @@ lengths <- left_join(
 lengths <- within(lengths, {
   year <- as.factor(year)
   region <- factor(region, levels=c('EN', 'HG', 'BP'), ordered=T)
-  method <- factor(method, levels=c('LL', 'BT', 'DS', 'REC'), ordered=T)
+  method <- factor(method, levels=c('pop', 'LL', 'BT', 'DS', 'REC'), ordered=T)
   length <- as.integer(length)
 })
 # Add proportions
@@ -239,14 +243,16 @@ ggplot(lengths %>%
   geom_line(aes(x=length,y=prop_ibm, colour='IBM')) + 
   facet_grid(region~method)
 
-# Plot by year for EN LL
-ggplot(filter(lengths, region=='EN' & method=='LL'), aes(x=length)) + 
-  geom_line(aes(y=prop_casal, colour='CASAL')) +
-  geom_line(aes(y=prop_ibm, colour='IBM')) + 
-  facet_wrap(~year)
+# Plots by year for specific region & method
+temp <- function(region_, method_){
+  ggplot(filter(lengths, region==region_ & method==method_), aes(x=length)) + 
+    geom_line(aes(y=prop_casal, colour='CASAL')) +
+    geom_line(aes(y=prop_ibm, colour='IBM')) + 
+    facet_wrap(~year)
+}
+temp('HG', 'pop')
+temp('EN', 'LL')
+temp('BP', 'LL')
+temp('HG', 'BT')
+temp('HG', 'REC')
 
-# Plot by year for HG BT
-ggplot(filter(lengths, region=='HG' & method=='BT'), aes(x=length)) + 
-  geom_line(aes(y=prop_casal, colour='CASAL')) +
-  geom_line(aes(y=prop_ibm, colour='IBM')) + 
-  facet_wrap(~year)
