@@ -69,6 +69,7 @@ BOOST_AUTO_TEST_CASE(tagging){
 
 
 BOOST_AUTO_TEST_CASE(casal){
+	// Create an initialise model
 	Model model;
 	model.initialise();
 
@@ -93,9 +94,9 @@ BOOST_AUTO_TEST_CASE(casal){
 	}
 
 	// Check estimates of B0 by region are within 5%
-	BOOST_CHECK_CLOSE(estimates["B0-NA-ENLD"], parameters.fishes_b0(EN), 20);
-	BOOST_CHECK_CLOSE(estimates["B0-NA-HAGU"], parameters.fishes_b0(HG), 20);
-	BOOST_CHECK_CLOSE(estimates["B0-NA-BOP"], parameters.fishes_b0(BP), 20);
+	BOOST_CHECK_CLOSE(estimates["B0-NA-ENLD"], parameters.fishes_b0(EN), 5);
+	BOOST_CHECK_CLOSE(estimates["B0-NA-HAGU"], parameters.fishes_b0(HG), 5);
+	BOOST_CHECK_CLOSE(estimates["B0-NA-BOP"], parameters.fishes_b0(BP), 5);
 
 	// Check estimates of R0 by region are within 5%
 	BOOST_CHECK_CLOSE(estimates["R0-NA-ENLD"], model.fishes.recruitment_pristine(EN), 5);

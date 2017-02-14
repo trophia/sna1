@@ -77,7 +77,7 @@ class Parameters : public Structure<Parameters> {
      * across population of fish
      */
     double fishes_k_mean = 0.1;
-    double fishes_k_cv = 0.1;
+    double fishes_k_cv = 0.02;
 
     /**
      * Lognormal distribution for fishes k
@@ -88,7 +88,7 @@ class Parameters : public Structure<Parameters> {
      * across population of fish
      */
     double fishes_linf_mean = 60;
-    double fishes_linf_cv = 0.1;
+    double fishes_linf_cv = 10;
 
     /**
      * Lognormal distribution for fishes Linf

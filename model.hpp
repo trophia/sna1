@@ -360,6 +360,30 @@ class Model {
             else return ::region_code(region);
         };
 
+        // Output parameters for 'population.csl'
+        std::ofstream population_file("tests/casal-files/length/population.tsv");
+        population_file << "par\tvalue\n";
+        // Generate 1000 fish and calculate mean and cv of growth parameters
+        Mean growth_intercept_mean;
+        StandardDeviation growth_intercept_sd;
+        Mean growth_slope_mean;
+        for (int index = 0; index < 1000; index++) {
+            Fish fish;
+            fish.born(EN);
+            growth_intercept_mean.append(fish.growth_intercept);
+            growth_intercept_sd.append(fish.growth_intercept);
+            growth_slope_mean.append(fish.growth_slope);
+        }
+        auto growth_20 = growth_intercept_mean + 20 * growth_slope_mean;
+        auto growth_50 = growth_intercept_mean + 50 * growth_slope_mean;
+        auto growth_cv = growth_intercept_sd/growth_intercept_mean;
+        population_file
+            << "growth_20\t" << growth_20 << "\n"
+            << "growth_50\t" << growth_50 << "\n"
+            << "growth_cv\t" << growth_cv << "\n"
+            << "growth_min_sd\t" << 1 << "\n";
+        population_file.close();
+
         // Callback function that is called each year
         std::function<void()> callback([&](){
             auto y = year(now);

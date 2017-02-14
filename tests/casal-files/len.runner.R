@@ -27,6 +27,19 @@ current <- unique(catch$year)[length(unique(catch$year))]
 population$current$value <- current
 population$final$value <- current + 5
 
+# Insert growth parameters from IBM
+population_ibm <- read.table('tests/casal-files/length/population.tsv', header = T, as.is = T)
+# Currently uses the same parameters for all substocks
+population$`growth[1]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
+population$`growth[1]`$cv <- subset(population_ibm, par == 'growth_cv')$value
+population$`growth[1]`$minsigma <- subset(population_ibm, par == 'growth_min_sd')$value
+population$`growth[2]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
+population$`growth[2]`$cv <- subset(population_ibm, par == 'growth_cv')$value
+population$`growth[2]`$minsigma <- subset(population_ibm, par == 'growth_min_sd')$value
+population$`growth[3]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
+population$`growth[3]`$cv <- subset(population_ibm, par == 'growth_cv')$value
+population$`growth[2]`$minsigma <- subset(population_ibm, par == 'growth_min_sd')$value
+
 ## put catches in csl from IBM
 for (fish in fishiery.names) {
   ## put catch
