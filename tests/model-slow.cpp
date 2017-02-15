@@ -7,7 +7,6 @@
 
 BOOST_AUTO_TEST_SUITE(model)
 
-/*
 BOOST_AUTO_TEST_CASE(tagging){
 	Model model;
 	model.initialise();
@@ -66,7 +65,6 @@ BOOST_AUTO_TEST_CASE(tagging){
 	// Output files for checking
 	model.finalise();
 }
-*/
 
 BOOST_AUTO_TEST_CASE(casal){
 	// Create an initialise model
