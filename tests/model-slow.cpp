@@ -36,27 +36,7 @@ BOOST_AUTO_TEST_CASE(tagging){
 	tagging.recovery_years(2002) = true;
 	tagging.recovery_years(2003) = true;
 
-	// Run over a few years
-    // Callback function that is called each year
-	std::ofstream length_file("output/monitor/length.tsv");
-    std::function<void()> callback([&](){
-        auto y = year(now);
-        if (y>=1900) {
-            for (auto region : regions) {
-                for (auto method : methods) {
-                	for (auto length : lengths) {
-                        length_file 
-                        	<< y << "\t" 
-                        	<< region_code(region) << "\t" 
-                        	<< method_code(method) << "\t"
-                        	<< length << "\t"
-                        	<< model.monitor.length_sample(region, method, length) << "\n";
-	                }
-                }
-            }
-        }
-    });
-	model.run(2000, 2004, &callback);
+	model.run(2000, 2004);
 
 	// Do checks
 	BOOST_CHECK(tagging.number > 0);
@@ -64,6 +44,65 @@ BOOST_AUTO_TEST_CASE(tagging){
 
 	// Output files for checking
 	model.finalise();
+}
+
+BOOST_AUTO_TEST_CASE(tagging_simple){
+	Model model;
+	model.initialise();
+
+	// No movement
+	parameters.fishes_movement_type = 'n';
+
+	// Set up tagging program
+	auto& monitor = model.monitor;
+	auto& tagging = model.monitor.tagging;
+
+	// Tag releases are not affected by the size selectivity of the gear
+	tagging.release_size_selective = false;
+	
+	// Release schedule
+	tagging.releases = 0;
+	tagging.releases(2000, EN, LL) = 10000;
+	tagging.releases(2000, HG, LL) = 10000;
+	tagging.releases(2000, BP, LL) = 10000;
+
+	tagging.release_years = false;
+	tagging.release_years(2000) = true;
+
+	// Recovery schedule
+	tagging.recovery_years = false;
+	tagging.recovery_years(2000) = true;
+	tagging.recovery_years(2001) = true;
+	tagging.recovery_years(2002) = true;
+	tagging.recovery_years(2003) = true;
+	tagging.recovery_years(2004) = true;
+
+	// We'll keep a track of
+	Array<int, Years, Regions> pop = 0;
+	std::function<void()> callback([&](){
+		if (year(now) >= 2000) {
+			for (const auto& fish : model.fishes) {
+				if (fish.alive() and (fish.length > tagging.min_release_length)) {
+					pop(year(now), fish.region)++;
+				}
+			}
+		}
+	});
+
+	// Run the model
+	model.run(2000, 2005, &callback);
+
+	// Do checks
+	BOOST_CHECK(tagging.number > 0);
+	BOOST_CHECK(tagging.tags.size() > 0);
+
+	// Output files for R script
+	tagging.write("tests/tagging/simple");
+	pop.write("tests/tagging/simple/population.tsv");
+
+	// Run analysis script
+	auto ok = std::system("cd tests/tagging/simple && Rscript analysis.R");
+	BOOST_CHECK(ok==0);
 }
 
 BOOST_AUTO_TEST_CASE(casal){

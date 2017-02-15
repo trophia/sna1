@@ -20,7 +20,7 @@ class Parameters : public Structure<Parameters> {
      * suggested 100,000 was a good trade-off between run duration and precision at least
      * during development. Should be increased for final runs.
      */
-    unsigned int fishes_seed_number = 5e6;
+    unsigned int fishes_seed_number = 1e6;
 
     Uniform fishes_seed_region_dist;
 
