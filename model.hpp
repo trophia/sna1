@@ -342,23 +342,28 @@ class Model {
      * @param[in]  start     The start
      * @param[in]  finish    The finish
      */
-    void generate_casal(Time start, Time finish) {
+    void generate_casal(Time start, Time finish, std::string directory = "") {
+        if (directory.length() > 0) {
+            boost::filesystem::create_directories(directory);
+        } else {
+            directory = ".";
+        }
 
-        std::ofstream catch_file("output/catch.tsv");
+        std::ofstream catch_file(directory + "/catch.tsv");
         catch_file << "year\tregion\tmethod\tcatch\n";
 
-        std::ofstream biomass_file("output/biomass.tsv");
+        std::ofstream biomass_file(directory + "/biomass.tsv");
         biomass_file << "year\tregion\tbiomass\n";
         
-        std::ofstream cpue_file("output/monitor/cpue.tsv");
+        std::ofstream cpue_file(directory + "/cpue.tsv");
         cpue_file<<"year\tregion\tmethod\tcpue\n";
 
-        std::ofstream age_file("output/monitor/age.tsv");
+        std::ofstream age_file(directory + "/age.tsv");
         age_file << "year\tregion\tmethod\t";
         for(auto age : ages) age_file << "age" << age << "\t";
         age_file << "\n";
 
-        std::ofstream length_file("output/monitor/length.tsv");
+        std::ofstream length_file(directory + "/length.tsv");
         length_file << "year\tregion\tmethod\t";
         for(auto length : lengths) length_file << "length" << length << "\t";
         length_file << "\n";
@@ -370,7 +375,7 @@ class Model {
         };
 
         // Output parameters for 'population.csl'
-        std::ofstream population_file("tests/casal-files/length/population.tsv");
+        std::ofstream population_file(directory + "/parameters.tsv");
         population_file << "par\tvalue\n";
 
         double growth_20;

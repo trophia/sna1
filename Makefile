@@ -115,16 +115,16 @@ run: sna1.exe
 # Testing
 
 # CASAL v230 for a linux binary
-tests/casal-230.zip:
+tests/casal/casal-230.zip:
 	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/CASALv230-2012-03-21.zip
 
 # CASAL "latest" for a version of the R package that is compatible
 # with recent R versions
-tests/casal-latest.zip:
+tests/casal/casal-latest.zip:
 	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/latest_casal.zip
 
 # Unzip a CASAL zip
-tests/casal-%: tests/casal-%.zip
+tests/casal/casal-%: tests/casal/casal-%.zip
 	rm -rf $@
 	mkdir $@
 	unzip $< -d $@
@@ -132,10 +132,10 @@ tests/casal-%: tests/casal-%.zip
 # Install CASAL
 #   - R package
 #   - symbolic link to Linux executable
-tests/casal.installed: tests/casal-230 tests/casal-latest
-	R CMD INSTALL tests/casal-latest/R_library/casal_2.30.tar.gz
-	chmod 755 tests/casal-230/Program/Linux/casal
-	ln -sf casal-230/Program/Linux/casal tests/casal
+tests/casal/casal.installed: tests/casal/casal-230 tests/casal/casal-latest
+	R CMD INSTALL tests/casal/casal-latest/R_library/casal_2.30.tar.gz
+	chmod 755 tests/casal/casal-230/Program/Linux/casal
+	ln -sf casal-230/Program/Linux/casal tests/casal/casal
 	touch $@
 
 # Run fast tests
@@ -143,7 +143,7 @@ test-fast: tests-fast.exe
 	time ./tests-fast.exe
 
 # Run slow tests
-test-slow: tests-slow.exe tests/casal.installed
+test-slow: tests-slow.exe tests/casal/casal.installed
 	time ./tests-slow.exe
 
 # Run all tests

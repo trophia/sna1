@@ -80,14 +80,14 @@ BOOST_AUTO_TEST_CASE(casal){
 	parameters.harvest_mls = 0;
 
 	// Generate files for CASAL
-	model.generate_casal(1900, 2020);
+	model.generate_casal(1900, 2020, "tests/casal/ibm-outputs");
 
 	// Run CASAL
-	auto ok = std::system("Rscript tests/casal-files/len.runner.R");
+	auto ok = std::system("cd tests/casal && Rscript length-runner.R");
 	BOOST_CHECK(ok==0);
 
 	// Read in output files containing CASAL estimates
-	std::ifstream file("tests/casal-estimates.txt");
+	std::ifstream file("tests/casal/estimates.txt");
 	std::map<std::string, double> estimates;
 	std::string variable;
 	std::string year;
