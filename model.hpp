@@ -111,13 +111,12 @@ class Model {
 
         if (tagging.release_years(y)) {
 
-            int releases_total = 0;
+            int releases_targetted = 0;
             for(auto region : regions) {
                 for(auto method : methods) {
-                    releases_total += tagging.releases(y, region, method);
+                    releases_targetted += tagging.release_targets(y, region, method);
                 }
             }
-            Array<int, Regions, Methods> releases = 0;
             int releases_done = 0;
 
             unsigned int trials = 0;
@@ -125,28 +124,26 @@ class Model {
                 // Randomly choose a fish
                 Fish& fish = fishes[chance()*fishes.size()];
                 // If the fish is alive, and not yet tagged then...
-                if (fish.alive() and not fish.tag and fish.length >= tagging.min_release_length) {
+                if (fish.alive() and not fish.tag and fish.length >= tagging.release_length_min) {
                     // Randomly choose a fishing method in the region the fish currently resides
                     auto method = Method(methods.select(chance()).index());
                     auto region = fish.region;
                     // If the tag releases for the method in the region is not yet acheived...
-                    if (releases(region, method) < tagging.releases(y, region, method)) {
+                    if (tagging.released(y, region, method) < tagging.release_targets(y, region, method)) {
                         // Is this fish caught by this method?
                         auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
-                        if ((!tagging.release_size_selective) || (chance() < selectivity)) {
+                        if ((!tagging.release_length_selective) || (chance() < selectivity)) {
                             // Tag the fish
                             tagging.release(fish, method);
-                            // Increment the release counts
-                            releases(region, method)++;
-                            releases_done++;
                             // Stop if the total number of tag releases has been obtained
-                            if (releases_done >= releases_total) break;
+                            releases_done++;
+                            if (releases_done >= releases_targetted) break;
                         }
                     }
                 }
                 // Escape if too many trials
                 if (trials++ > fishes.size() * 100) {
-                    std::cerr << trials << " " << releases_done << " " << releases_total << std::endl;
+                    std::cerr << trials << " " << releases_done << " " << releases_targetted << std::endl;
                     throw std::runtime_error("Too many attempts to tag fish. Something is probably wrong.");
                 }
             }

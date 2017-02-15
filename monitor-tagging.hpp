@@ -12,14 +12,27 @@ class Tagging {
 public:
 
     /**
-     * The number of releases by year, region and method
+     * The number of target releases by year, region and method
      */
-    Array<int, Years, Regions, Methods> releases;
+    Array<int, Years, Regions, Methods> release_targets;
 
     /**
      * A boolean flag for years in which releases are made
      */
     Array<bool, Years> release_years;
+
+
+    /**
+     * The minimum size of release
+     */
+    double release_length_min = 25;
+
+    /**
+     * Size selective releases?
+     *
+     * Used for simplicity in some tests
+     */
+    bool release_length_selective = true;
 
     /**
      * A boolean flag for years in which recoveries are recorded
@@ -27,21 +40,15 @@ public:
     Array<bool, Years> recovery_years;
 
     /**
+     * The number of actual releases by year, region, and method 
+     * to compare to `release_targets`
+     */
+    Array<int, Years, Regions, Methods> released;
+
+    /**
      * The number of fish scanned by year, region, method and length
      */
     Array<int, Years, Regions, Methods, Lengths> scanned;
-
-    /**
-     * The minimum size of release
-     */
-    double min_release_length = 25;
-
-    /**
-     * Size selective releases?
-     *
-     * Used for simplicity in some tests
-     */
-    bool release_size_selective = true;
 
     /**
      * The current tag number
@@ -90,9 +97,11 @@ public:
 
 
     void initialise(void) {
-        releases = 0;
+        release_targets = 0;
         release_years = false;
         recovery_years = false;
+        released = 0;
+        scanned = 0;
     }
 
     void finalise(void) {
@@ -109,6 +118,8 @@ public:
         fish.tag = number;
         // Record the fish in the database
         tags[number].first = Event(fish, now, method);
+        // Add to released
+        released(year(now), fish.region, method)++;
     }
 
     bool scan(Fish& fish, Method method) {
@@ -133,18 +144,29 @@ public:
     void write(std::string directory = "output/monitor/tagging") {
         boost::filesystem::create_directories(directory);
         
-        releases.write(directory + "/releases.tsv");
-
+        released.write(directory + "/released.tsv");
         scanned.write(directory + "/scanned.tsv");
 
-        std::ofstream tags_file(directory + "/tags.tsv");
-        tags_file << "tag\ttime_rel\ttime_rec\tregion_rel\tregion_rec\tmethod_rel\tmethod_rec\tlength_rel\tlength_rec\n";
+        std::ofstream releases_file(directory + "/releases.tsv");
+        releases_file << "tag\ttime_rel\tregion_rel\tmethod_rel\tlength_rel\n";
+        for(const auto& iter : tags){
+            auto number = iter.first;
+            auto release = iter.second.first;
+            releases_file<< number << "\t"
+                << release.time << "\t"
+                << region_code(release.region) << "\t"
+                << method_code(release.method) << "\t"
+                << release.length << "\n";
+        }
+
+        std::ofstream recaptures_file(directory + "/recaptures.tsv");
+        recaptures_file << "tag\ttime_rel\ttime_rec\tregion_rel\tregion_rec\tmethod_rel\tmethod_rec\tlength_rel\tlength_rec\n";
         for(const auto& iter : tags){
             auto number = iter.first;
             auto release = iter.second.first;
             auto recapture = iter.second.second;
             if(recapture.time){
-                tags_file<< number << "\t"
+                recaptures_file<< number << "\t"
                     << release.time << "\t" << recapture.time << "\t"
                     << region_code(release.region) << "\t" << region_code(recapture.region) << "\t"
                     << method_code(release.method) << "\t" << method_code(recapture.method) << "\t"

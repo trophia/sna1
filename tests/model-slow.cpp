@@ -22,10 +22,10 @@ BOOST_AUTO_TEST_CASE(tagging){
 	// Set up tagging program
 	auto& tagging = model.monitor.tagging;
 
-	tagging.releases = 0;
-	tagging.releases(2000, EN, LL) =  7500;
-	tagging.releases(2000, HG, LL) = 15000;
-	tagging.releases(2000, BP, LL) =  7500;
+	tagging.release_targets = 0;
+	tagging.release_targets(2000, EN, LL) =  7500;
+	tagging.release_targets(2000, HG, LL) = 15000;
+	tagging.release_targets(2000, BP, LL) =  7500;
 
 	tagging.release_years = false;
 	tagging.release_years(2000) = true;
@@ -58,13 +58,13 @@ BOOST_AUTO_TEST_CASE(tagging_simple){
 	auto& tagging = model.monitor.tagging;
 
 	// Tag releases are not affected by the size selectivity of the gear
-	tagging.release_size_selective = false;
+	tagging.release_length_selective = false;
 	
 	// Release schedule
-	tagging.releases = 0;
-	tagging.releases(2000, EN, LL) = 10000;
-	tagging.releases(2000, HG, LL) = 10000;
-	tagging.releases(2000, BP, LL) = 10000;
+	tagging.release_targets = 0;
+	tagging.release_targets(2000, EN, LL) = 10000;
+	tagging.release_targets(2000, HG, LL) = 10000;
+	tagging.release_targets(2000, BP, LL) = 10000;
 
 	tagging.release_years = false;
 	tagging.release_years(2000) = true;
@@ -77,15 +77,21 @@ BOOST_AUTO_TEST_CASE(tagging_simple){
 	tagging.recovery_years(2003) = true;
 	tagging.recovery_years(2004) = true;
 
-	// We'll keep a track of
+	// Record population size in each year
 	Array<int, Years, Regions> pop = 0;
 	std::function<void()> callback([&](){
 		if (year(now) >= 2000) {
 			for (const auto& fish : model.fishes) {
-				if (fish.alive() and (fish.length > tagging.min_release_length)) {
+				if (fish.alive() and (fish.length > tagging.release_length_min)) {
 					pop(year(now), fish.region)++;
 				}
 			}
+			std::cout 
+				<< year(now) << "\t" 
+				<< model.fishes.number(false) << "\t" 
+				<< pop(year(now), EN) << "\t" 
+				<< pop(year(now), HG) << "\t" 
+				<< pop(year(now), BP) << std::endl;
 		}
 	});
 
@@ -103,6 +109,14 @@ BOOST_AUTO_TEST_CASE(tagging_simple){
 	// Run analysis script
 	auto ok = std::system("cd tests/tagging/simple && Rscript analysis.R");
 	BOOST_CHECK(ok==0);
+
+	// Read in mean error
+	std::ifstream file("tests/tagging/simple/error.txt");
+	double error;
+	file >> error;
+
+	// Check error <5%
+	BOOST_CHECK(error < 0.05);
 }
 
 BOOST_AUTO_TEST_CASE(casal){
