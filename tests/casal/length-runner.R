@@ -15,12 +15,12 @@ library(ggplot2)
 
 #### update population csl file ####
 ## load catch data
-catch <- read.table('output/catch.tsv', header = T, as.is = T)
+catch <- read.table('ibm-outputs/catch.tsv', header = T, as.is = T)
 catch$method <- ifelse(catch$method == 'RE', 'REC', catch$method)
 catch$fishery <- paste(catch$region, catch$method, sep = '_')
 
 ## load population csl 
-population <- extract.csl.file('tests/casal-files/length/SNA1_len.population.csl')
+population <- extract.csl.file('casal-inputs/length/population.csl')
 fishiery.names <- population$annual_cycle$fishery_names
 
 ## put initial, current and final years in csl
@@ -30,7 +30,7 @@ population$current$value <- current
 population$final$value <- current + 5
 
 # Insert growth parameters from IBM
-population_ibm <- read.table('tests/casal-files/length/population.tsv', header = T, as.is = T)
+population_ibm <- read.table('ibm-outputs/parameters.tsv', header = T, as.is = T)
 # Currently uses the same parameters for all substocks
 # EN
 population$`growth[1]`$g <- subset(population_ibm, par %in% c('growth_20', 'growth_50'))$value
@@ -64,16 +64,16 @@ for (stock in population$stock_names$value) {
   population[[i]]$YCS_years <- (y.start:y.current) - 1
   population[[i]]$YCS <- rep(1, length(y.start:y.current))
 }
-write.csl.file(population, 'tests/population.csl')
+write.csl.file(population, 'population.csl')
 
 #### update estimation csl file ####
 ## load CPUE data
-cpue <- read.table('output/monitor/cpue.tsv', header = T, as.is = T)
+cpue <- read.table('ibm-outputs/cpue.tsv', header = T, as.is = T)
 cpue$method <- ifelse(cpue$method == 'RE', 'REC', cpue$method)
 cpue$fishery <- paste(cpue$region, cpue$method, sep = '_')
 
 ## load estimation csl
-estimation <- extract.csl.file('tests/casal-files/length/SNA1_len.estimation.csl')
+estimation <- extract.csl.file('casal-inputs/length/estimation.csl')
 
 ## put CPUEs from model
 cpue.fisheries <- c('EN_LL', 'HG_LL', 'BP_LL')
@@ -104,23 +104,23 @@ for (fish in cpue.fisheries) {
   estimation[[i]]$cv <- cv
 }
 
-write.csl.file(estimation, 'tests/estimation.csl')
+write.csl.file(estimation, 'estimation.csl')
 
 
 # Copy template `output.csl` over to `test` directory
-file.copy('tests/casal-files/length/SNA1_len.output.csl', 'tests/output.csl', overwrite=T)
+file.copy('casal-inputs/length/output.csl', 'output.csl', overwrite=T)
 
 
 ## run CASAL
 if (Sys.info()['sysname'] == 'Windows') {
-  system('tests/run_CASAL.bat')
+  system('run_CASAL.bat')
 } else {
-  system('cd tests && ./casal -r -q -O mpd.out 1> casal.out 2> casal.err')
+  system('./casal -r -q -O mpd.out 1> casal.out 2> casal.err')
 }
 
 
 #### get CASAL output and write to files ####
-output <- extract.quantities('tests/casal.out')
+output <- extract.quantities('casal.out')
 
 B0 <- data.frame(variable = 'B0', year = NA, stock = names(output$B0), 
                  estimate = as.numeric(output$B0))
@@ -139,17 +139,16 @@ biom <- data.frame(variable = 'Biomass', year = as.numeric(names(output$BP_Biom2
                    stock = rep(names(output$SSBs), each = length(years)), 
                    estimate = unlist(c(output$EN_Biom2, output$HG_Biom2, output$BP_Biom2)))
 
-write.table(rbind(B0, R0, SSB), 'tests/casal-estimates.txt', 
-            row.names = F, quote = F, sep = '\t')
+write.table(rbind(B0, R0, SSB), 'estimates.txt', row.names = F, quote = F, sep = '\t')
 
 
 ## plot SSBs from IBM and CASAL
-biomass <- read.table('output/biomass.tsv', header = T, as.is = T)
+biomass <- read.table('ibm-outputs/biomass.tsv', header = T, as.is = T)
 
 stocks <- c('ENLD', 'HAGU', 'BOP')
 areas <- c('EN', 'HG', 'BP')
 
-pdf('tests/SSBs.pdf', width = 9, height = 7, pointsize = 11)
+pdf('SSBs.pdf', width = 9, height = 7, pointsize = 11)
 par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
 
 for (i in 1:length(stocks)) {
@@ -172,7 +171,7 @@ dev.off()
 # Comparision of catch at lengths
 
 # Wrangle IBM lengths into long format
-lengths_ibm <- read.table('output/monitor/length.tsv', header=T, as.is=T)
+lengths_ibm <- read.table('ibm-outputs/length.tsv', header=T, as.is=T)
 names(lengths_ibm)[4:54] <- seq(0, 100, 2)
 lengths_ibm <- lengths_ibm %>%
   gather('length', 'count', -(1:3)) %>%
@@ -242,7 +241,7 @@ p <- ggplot(lengths %>%
   geom_line(aes(x=length,y=prop_casal, colour='CASAL')) + 
   geom_line(aes(x=length,y=prop_ibm, colour='IBM')) + 
   facet_grid(region~method)
-png(paste0('lengths-region-method.png'), width = 7, height = 4)
+png(paste0('lengths-region-method.png'), width = 20, height = 20, units = "cm", res=250)
 print(p)
 dev.off()
 p
@@ -253,7 +252,7 @@ temp <- function(region_, method_){
     geom_line(aes(y=prop_casal, colour='CASAL')) +
     geom_line(aes(y=prop_ibm, colour='IBM')) + 
     facet_wrap(~year)
-  png(paste0('lengths-year-', region_, '-', method_, '.png'), width = 7, height = 4)
+  png(paste0('lengths-year-', region_, '-', method_, '.png'), width = 20, height = 20, units = "cm", res=250)
   print(p)
   dev.off()
   p

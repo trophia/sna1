@@ -1,10 +1,5 @@
 # Ignore requirements
 /requires
-/tests/casal*
-!/tests/casal-files*
-/tests/*.csl
-/tests/mpd.out
-AdjustedMN.txt
 
 # Ignore outputs
 /output
