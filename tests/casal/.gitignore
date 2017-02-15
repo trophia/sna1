@@ -1,4 +1,5 @@
 /casal*
+!/casal-inputs
 /ibm-outputs
 /*.pdf
 /*.png
