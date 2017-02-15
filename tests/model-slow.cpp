@@ -62,9 +62,9 @@ BOOST_AUTO_TEST_CASE(tagging_simple){
 	
 	// Release schedule
 	tagging.release_targets = 0;
-	tagging.release_targets(2000, EN, LL) = 10000;
-	tagging.release_targets(2000, HG, LL) = 10000;
-	tagging.release_targets(2000, BP, LL) = 10000;
+	tagging.release_targets(2000, EN, LL) = 100000;
+	tagging.release_targets(2000, HG, LL) = 100000;
+	tagging.release_targets(2000, BP, LL) = 100000;
 
 	tagging.release_years = false;
 	tagging.release_years(2000) = true;
