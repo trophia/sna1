@@ -69,9 +69,9 @@ int age_bin(double age){
 /**
  * Length of fish
  */
-STENCILA_DIM(Lengths,lengths,length,51);
+STENCILA_DIM(Lengths,lengths,length,100);
 
-const double length_bin_width = 2; // cm
+const double length_bin_width = 1; // cm
 
 int length_bin(double length){
     return std::min(length,100.0)/length_bin_width;

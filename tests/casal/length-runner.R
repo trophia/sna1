@@ -172,13 +172,18 @@ dev.off()
 
 # Wrangle IBM lengths into long format
 lengths_ibm <- read.table('ibm-outputs/length.tsv', header=T, as.is=T)
-names(lengths_ibm)[4:54] <- seq(0, 100, 2)
+names(lengths_ibm)[4:103] <- seq(0, 99, 1)
 lengths_ibm <- lengths_ibm %>%
   gather('length', 'count', -(1:3)) %>%
   arrange(year, region, method) %>%
   within({
     length <- as.integer(length)
-  })
+    length_bin = floor((length-1)/2)*2
+  }) %>%
+  group_by(year, region, method, length_bin) %>% 
+  summarise(count_ = sum(count)) %>%
+  rename(length = length_bin, count = count_) %>%
+  arrange(year, region, method)
 
 # Wrangle CASAL lengths into long format
 temp <- function(region, method) {
