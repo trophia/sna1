@@ -183,9 +183,6 @@ class Parameters : public Structure<Parameters> {
         harvest_sel_mode(RE) = 30.11;
         harvest_sel_steep2(RE) = 15.27;
 
-        // Read from file
-        //read("input/parameters.cila");
-
         // Derived values
         
         fishes_seed_region_dist = Uniform(0,3);
