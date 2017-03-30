@@ -1,6 +1,6 @@
 #define BOOST_TEST_MODULE tests_fast
 #include <boost/test/unit_test.hpp>
 
-#include "fish-fast.cpp"
-#include "harvest-fast.cpp"
-#include "model-fast.cpp"
+#include "tests-fish-fast.cpp"
+#include "tests-harvest-fast.cpp"
+#include "tests-model-fast.cpp"
