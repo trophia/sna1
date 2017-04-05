@@ -169,9 +169,12 @@ class Fish {
         double k;
         double linf;
         if (parameters.fishes_growth_type == 't') {
+            // All individual fish have the same growth parameters
+            // but there is temporal variation in increments
             k = parameters.fishes_k_mean;
             linf = parameters.fishes_linf_mean;
         } else {
+            // Each individual fish gets it's own growth parameters
             k = parameters.fishes_k_dist.random();
             linf = parameters.fishes_linf_dist.random();
         }
@@ -203,9 +206,12 @@ class Fish {
         double k;
         double linf;
         if (parameters.fishes_growth_type == 't') {
+            // All individual fish have the same growth parameters
+            // but there is temporal variation in increments
             k = parameters.fishes_k_mean;
             linf = parameters.fishes_linf_mean;
         } else {
+            // Each individual fish gets it's own growth parameters
             k = parameters.fishes_k_dist.random();
             linf = parameters.fishes_linf_dist.random();
         }

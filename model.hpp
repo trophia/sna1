@@ -377,18 +377,21 @@ class Model {
         std::ofstream population_file(directory + "/parameters.tsv");
         population_file << "par\tvalue\n";
 
+        // Growth parameters
         double growth_20;
         double growth_50;
         double growth_cv;
         double growth_sdmin = parameters.fishes_growth_temporal_sdmin;
         if (parameters.fishes_growth_type == 't') {
+            // Parameters calculated from mean of k and linf
             auto growth_slope = std::exp(-parameters.fishes_k_mean)-1;
             auto growth_intercept = -growth_slope * parameters.fishes_linf_mean;
             growth_20 = growth_intercept + 20 * growth_slope;
             growth_50 = growth_intercept + 50 * growth_slope;
             growth_cv = parameters.fishes_growth_temporal_cv;
         } else {
-            // Generate 1000 fish and calculate mean and cv of growth parameters
+            // Parameters calculated by generating 1000 fish and 
+            // calculating mean and cv of growth parameters
             Mean growth_intercept_mean;
             StandardDeviation growth_intercept_sd;
             Mean growth_slope_mean;
