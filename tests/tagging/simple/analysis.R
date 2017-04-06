@@ -72,7 +72,7 @@ temp <- scanned %>%
   summarise(count = sum(value)) %>%
   left_join(
     recaptures %>%
-      mutate(length_rec_bin=floor(length_rec)) %>%
+      mutate(length_rec_bin=length_rec) %>%
       group_by(region_rec, length_rec_bin) %>%
       count,
     by = c('region'='region_rec', 'length'='length_rec_bin')
