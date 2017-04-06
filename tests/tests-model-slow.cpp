@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE(casal){
 
 	// Ensure parameters are set to match the assumptions of CASAL
 	// Only temporal variation in growth
-	parameters.fishes_growth_type = 't';
+	Fish::growth_variation = 't';
 	// No movement
 	parameters.fishes_movement_type = 'n';
 	// No MLS
