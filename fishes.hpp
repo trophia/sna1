@@ -31,12 +31,31 @@ class Fish {
     Sex sex;
 
     /**
-     * Growth coefficient (von Bertalanffy k) for this fish
+     * Growth model type
+     *
+     * Increment by length
+     *
+     * l = linear model
+     * e = exponential model
+     */
+    static char growth_model;
+
+    /**
+     * Growth variation type
+     *
+     * t = only temporal variation in growth
+     * i = only individual variation in growth
+     * m = mixed, both individual and temporal variation in growth
+     */
+    static char growth_variation;
+
+    /**
+     * Intercept of the length increment to length relaion
      */
     float growth_intercept;
 
     /**
-     * Assymptotic length (von Bertalanffy Linf) for this fish
+     * Slope of the length increment to length relaion
      */
     float growth_slope;
 
@@ -94,14 +113,6 @@ class Fish {
     }
 
     /**
-     * Calculate the length at age for this fish based on its growth parameters
-     */
-    double length_at_age(uint age) const {
-        auto pars = vonb();
-        return length_at_age(age, pars[0], pars[1]);
-    }
-
-    /**
      * Calculate the length at age of a fish given vonB growth parameters
      */
     static double length_at_age(uint age, const double& k, const double& linf) {
@@ -109,25 +120,16 @@ class Fish {
     }
 
     /**
-     * Set the von Bert growth parameters for this fish
+     * Set the growth parameters for this fish using von Bert growth parameters
      *
      * Converts `k` and `linf` to `growth_intercept` and `growth_slope`
      */
-    void vonb(const double& k, const double& linf, const double& time = 1) {
+    void growth_vonb(const double& k, const double& linf, const double& time = 1) {
+        // Must be linear growth
+        assert(growth_model == 'l');
+
         growth_slope = std::exp(-k*time)-1;
         growth_intercept = -growth_slope * linf;
-    }
-
-    /**
-     * Get the von Bert growth parameters for this fish
-     *
-     * Converts `growth_intercept` and `growth_slope` to `k` and `linf`
-     */
-    std::array<double, 2> vonb(void) const {
-        // TODO
-        auto k = 0.0;
-        auto linf = 0.0;
-        return {k, linf};
     }
 
     /**
@@ -168,7 +170,7 @@ class Fish {
         // Set von Bert growth parameters from their distributions
         double k;
         double linf;
-        if (parameters.fishes_growth_type == 't') {
+        if (growth_variation == 't') {
             // All individual fish have the same growth parameters
             // but there is temporal variation in increments
             k = parameters.fishes_k_mean;
@@ -178,7 +180,7 @@ class Fish {
             k = parameters.fishes_k_dist.random();
             linf = parameters.fishes_linf_dist.random();
         }
-        vonb(k, linf);
+        growth_vonb(k, linf);
         length = length_at_age(age, k, linf);
 
         // The is an approximation
@@ -205,7 +207,7 @@ class Fish {
         // Set von Bert growth parameters from their distributions
         double k;
         double linf;
-        if (parameters.fishes_growth_type == 't') {
+        if (growth_variation == 't') {
             // All individual fish have the same growth parameters
             // but there is temporal variation in increments
             k = parameters.fishes_k_mean;
@@ -215,7 +217,7 @@ class Fish {
             k = parameters.fishes_k_dist.random();
             linf = parameters.fishes_linf_dist.random();
         }
-        vonb(k, linf);
+        growth_vonb(k, linf);
         length = 0;
 
         mature = false;
@@ -250,7 +252,7 @@ class Fish {
         // Calculate growth increment
         double incr = growth_intercept + growth_slope * length;
         // Apply temporal variation in growth if needed
-        if (parameters.fishes_growth_type == 't' or parameters.fishes_growth_type == 'm') {
+        if (growth_variation == 't' or growth_variation == 'm') {
             int sd = std::max(parameters.fishes_growth_temporal_sdmin, incr * parameters.fishes_growth_temporal_cv);
             incr += standard_normal_rand() * sd;
             if (incr < parameters.fishes_growth_temporal_incrmin) incr = parameters.fishes_growth_temporal_incrmin;
@@ -296,6 +298,9 @@ class Fish {
     }
 
 };  // end class Fish
+
+char Fish::growth_model = 'l';
+char Fish::growth_variation = 'm';
 
 
 /**

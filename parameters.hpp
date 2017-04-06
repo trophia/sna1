@@ -73,15 +73,6 @@ class Parameters : public Structure<Parameters> {
     double fishes_b = 2.793;
 
     /**
-     * Growth type
-     *
-     * t = only temporal variation in growth
-     * i = only individual variation in growth
-     * m = mixed, both individual and temporal variation in growth
-     */
-    char fishes_growth_type = 't';
-
-    /**
      * Distribution of growth coefficients (von Bertalanffy k)
      * across population of fish
      */
