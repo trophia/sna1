@@ -113,26 +113,6 @@ class Fish {
     }
 
     /**
-     * Calculate the length at age of a fish given vonB growth parameters
-     */
-    static double length_at_age(uint age, const double& k, const double& linf) {
-        return linf*(1-std::exp(-k*age));
-    }
-
-    /**
-     * Set the growth parameters for this fish using von Bert growth parameters
-     *
-     * Converts `k` and `linf` to `growth_intercept` and `growth_slope`
-     */
-    void growth_vonb(const double& k, const double& linf, const double& time = 1) {
-        // Must be linear growth
-        assert(growth_model == 'l');
-
-        growth_slope = std::exp(-k*time)-1;
-        growth_intercept = -growth_slope * linf;
-    }
-
-    /**
      * Get the weight of this fish
      *
      * Currently, all fish have the same condition factor so weight is
@@ -167,23 +147,9 @@ class Fish {
 
         sex = (chance()<parameters.fishes_males)?male:female;
 
-        // Set von Bert growth parameters from their distributions
-        double k;
-        double linf;
-        if (growth_variation == 't') {
-            // All individual fish have the same growth parameters
-            // but there is temporal variation in increments
-            k = parameters.fishes_k_mean;
-            linf = parameters.fishes_linf_mean;
-        } else {
-            // Each individual fish gets it's own growth parameters
-            k = parameters.fishes_k_dist.random();
-            linf = parameters.fishes_linf_dist.random();
-        }
-        growth_vonb(k, linf);
-        length = length_at_age(age, k, linf);
+        growth_init(age);
 
-        // The is an approximation
+        // This an approximation
         mature = chance()<parameters.fishes_maturation(age);
 
         tag = 0;
@@ -204,7 +170,21 @@ class Fish {
         
         sex = (chance()<parameters.fishes_males)?male:female;
 
-        // Set von Bert growth parameters from their distributions
+        growth_init(0);
+
+        mature = false;
+
+        tag = 0;
+    }
+
+    /**
+     * Initialises growth parameters and length for this fish
+     *
+     * Note that event if this is an exponential growth model that
+     * we are parameterize if using `k` and `linf`
+     */
+    void growth_init(int age) {
+        // Get von Bert growth parameters from their distributions
         double k;
         double linf;
         if (growth_variation == 't') {
@@ -217,12 +197,13 @@ class Fish {
             k = parameters.fishes_k_dist.random();
             linf = parameters.fishes_linf_dist.random();
         }
-        growth_vonb(k, linf);
-        length = 0;
-
-        mature = false;
-
-        tag = 0;
+        // Convert `k` and `linf` to `growth_intercept` and `growth_slope`
+        growth_slope = std::exp(-k)-1;
+        growth_intercept = -growth_slope * linf;
+        // Calculate expected length at age assuming von Bert parameters
+        // Note that this is an aproximation only. It does not allow for 
+        // temporal variation in growth or for the exponential growth model.
+        length = linf*(1-std::exp(-k*age));
     }
 
     /**
@@ -250,7 +231,22 @@ class Fish {
      */
     void growth(void) {
         // Calculate growth increment
-        double incr = growth_intercept + growth_slope * length;
+        double incr;
+        if (growth_model == 'l') {
+            // Linear increment v length
+            incr = growth_intercept + growth_slope * length;
+        } else if (growth_model == 'e') {
+            // Exponential increment v length
+            const double length_alpha = 25;
+            const double length_beta = 50;
+            double growth_alpha = growth_intercept + growth_slope * length_alpha;
+            double growth_beta = growth_intercept + growth_slope * length_beta;
+            double lamda = 1/(length_beta-length_alpha)*std::log(growth_alpha/growth_beta);
+            double kappa = std::pow(growth_alpha*(growth_alpha/growth_beta), length_alpha/(length_beta-length_alpha));
+            incr = 1/lamda*log(1+ (lamda*kappa*exp(-lamda*length)));
+        } else {
+            throw std::runtime_error("Unknown growth model: " + growth_model);
+        }
         // Apply temporal variation in growth if needed
         if (growth_variation == 't' or growth_variation == 'm') {
             int sd = std::max(parameters.fishes_growth_temporal_sdmin, incr * parameters.fishes_growth_temporal_cv);
