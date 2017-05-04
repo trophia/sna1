@@ -73,7 +73,12 @@ int main(int argc, char** argv) {
         }
 
         if (task == "run") {
-            model.run(1900, 2020);
+            std::function<void()> callback([&](){
+                std::cout
+                    << now << "\t"
+                    << sum(model.fishes.biomass_spawners) << "\n";
+            });
+            model.run(1900, 2018, &callback);
         } else if (task == "instances_seed_sensitivity") {
             instances_seed_sensitivity();
         } else if (task == "mls_changes_example") {
