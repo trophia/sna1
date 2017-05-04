@@ -77,7 +77,7 @@ class Parameters : public Structure<Parameters> {
      * across population of fish
      */
     double fishes_k_mean = 0.1;
-    double fishes_k_cv = 0.02;
+    double fishes_k_sd = 0.02;
     Lognormal fishes_k_dist;
 
     /**
@@ -85,7 +85,7 @@ class Parameters : public Structure<Parameters> {
      * across population of fish
      */
     double fishes_linf_mean = 60;
-    double fishes_linf_cv = 10;
+    double fishes_linf_sd = 10;
     Lognormal fishes_linf_dist;
 
     /**
@@ -181,8 +181,8 @@ class Parameters : public Structure<Parameters> {
 
         fishes_m_rate = 1 - std::exp(-fishes_m);
 
-        fishes_k_dist = Lognormal(fishes_k_mean,fishes_k_cv);
-        fishes_linf_dist = Lognormal(fishes_linf_mean,fishes_linf_cv);
+        fishes_k_dist = Lognormal(fishes_k_mean, fishes_k_sd);
+        fishes_linf_dist = Lognormal(fishes_linf_mean, fishes_linf_sd);
     }
 
     void finalise(void) {
