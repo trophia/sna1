@@ -174,6 +174,9 @@ class Parameters : public Structure<Parameters> {
         harvest_sel_mode(RE) = 30.11;
         harvest_sel_steep2(RE) = 15.27;
 
+        // Values can be overidden by setting them in
+        read("input/parameters.json");
+
         // Derived values
         
         fishes_seed_region_dist = Uniform(0,3);
@@ -187,13 +190,13 @@ class Parameters : public Structure<Parameters> {
 
     void finalise(void) {
         boost::filesystem::create_directories("output");
-
         write("output/parameters.json");
     }
 
     template<class Mirror>
     void reflect(Mirror& mirror){
         mirror
+            .data(fishes_seed_number, "fishes_seed_number")
             .data(fishes_movement_type, "fishes_movement_type")
             .data(fishes_k_mean, "fishes_k_mean")
             .data(fishes_linf_mean, "fishes_linf_mean")

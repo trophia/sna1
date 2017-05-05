@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
     model.initialise();
 
     try {
-        std::string task = "run";
+        std::string task;
         if (argc >= 2) {
             task = argv[1];
         }
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
         } else if (task == "mls_changes_example") {
             mls_changes_example();
         } else {
-            std::cout << "No task specified" <<std::endl;
+            std::cout << "No task (e.g. run) specified" <<std::endl;
         }
         
     } catch(std::exception& error) {
