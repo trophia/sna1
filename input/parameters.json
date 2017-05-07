@@ -10,10 +10,13 @@
     "fishes_a": 4.467e-08,
     "fishes_b": 2.793,
 
+    "fishes_growth_model": "l",
     "fishes_k_mean": 0.1,
     "fishes_k_sd": 0.02,
     "fishes_linf_mean": 60,
     "fishes_linf_sd": 10,
+
+    "fishes_growth_variation": "m",
     "fishes_growth_temporal_cv": 0.3,
     "fishes_growth_temporal_sdmin": 1,
     "fishes_growth_temporal_incrmin": 0,

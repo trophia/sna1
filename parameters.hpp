@@ -73,6 +73,14 @@ class Parameters : public Structure<Parameters> {
     double fishes_b = 2.793;
 
     /**
+     * Growth model
+     *
+     * l = linear
+     * e = exponential
+     */
+    char fishes_growth_model = 'l';
+
+    /**
      * Distribution of growth coefficients (von Bertalanffy k)
      * across population of fish
      */
@@ -87,6 +95,15 @@ class Parameters : public Structure<Parameters> {
     double fishes_linf_mean = 60;
     double fishes_linf_sd = 10;
     Lognormal fishes_linf_dist;
+
+    /**
+     * Growth variation type
+     *
+     * t = only temporal variation in growth
+     * i = only individual variation in growth
+     * m = mixed, both individual and temporal variation in growth
+     */
+    char fishes_growth_variation = 'm';
 
     /**
      * Coefficient of variation of temporal variation in growth
@@ -207,11 +224,13 @@ class Parameters : public Structure<Parameters> {
             .data(fishes_a, "fishes_a")
             .data(fishes_b, "fishes_b")
             
-            .data(fishes_k_mean , "fishes_k_mean ")
+            .data(fishes_growth_model , "fishes_growth_model")
+            .data(fishes_k_mean , "fishes_k_mean")
             .data(fishes_k_sd, "fishes_k_sd")
             .data(fishes_linf_mean, "fishes_linf_mean")
             .data(fishes_linf_sd, "fishes_linf_sd")
-            .data(fishes_growth_temporal_cv , "fishes_growth_temporal_cv ")
+            .data(fishes_growth_variation , "fishes_growth_variation")
+            .data(fishes_growth_temporal_cv , "fishes_growth_temporal_cv")
             .data(fishes_growth_temporal_sdmin, "fishes_growth_temporal_sdmin")
             .data(fishes_growth_temporal_incrmin, "fishes_growth_temporal_incrmin")
 

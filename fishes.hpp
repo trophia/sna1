@@ -31,25 +31,6 @@ class Fish {
     Sex sex;
 
     /**
-     * Growth model type
-     *
-     * Increment by length
-     *
-     * l = linear model
-     * e = exponential model
-     */
-    static char growth_model;
-
-    /**
-     * Growth variation type
-     *
-     * t = only temporal variation in growth
-     * i = only individual variation in growth
-     * m = mixed, both individual and temporal variation in growth
-     */
-    static char growth_variation;
-
-    /**
      * Intercept of the length increment to length relaion
      */
     float growth_intercept;
@@ -187,7 +168,7 @@ class Fish {
         // Get von Bert growth parameters from their distributions
         double k;
         double linf;
-        if (growth_variation == 't') {
+        if (parameters.fishes_growth_variation == 't') {
             // All individual fish have the same growth parameters
             // but there is temporal variation in increments
             k = parameters.fishes_k_mean;
@@ -232,10 +213,10 @@ class Fish {
     void growth(void) {
         // Calculate growth increment
         double incr;
-        if (growth_model == 'l') {
+        if (parameters.fishes_growth_model == 'l') {
             // Linear increment v length
             incr = growth_intercept + growth_slope * length;
-        } else if (growth_model == 'e') {
+        } else if (parameters.fishes_growth_model == 'e') {
             // Exponential increment v length
             const double length_alpha = 25;
             const double length_beta = 50;
@@ -245,10 +226,10 @@ class Fish {
             double kappa = std::pow(growth_alpha*(growth_alpha/growth_beta), length_alpha/(length_beta-length_alpha));
             incr = 1/lamda*log(1+ (lamda*kappa*exp(-lamda*length)));
         } else {
-            throw std::runtime_error("Unknown growth model: " + growth_model);
+            throw std::runtime_error("Unknown growth model: " + parameters.fishes_growth_model);
         }
         // Apply temporal variation in growth if needed
-        if (growth_variation == 't' or growth_variation == 'm') {
+        if (parameters.fishes_growth_variation == 't' or parameters.fishes_growth_variation == 'm') {
             int sd = std::max(parameters.fishes_growth_temporal_sdmin, incr * parameters.fishes_growth_temporal_cv);
             incr += standard_normal_rand() * sd;
             if (incr < parameters.fishes_growth_temporal_incrmin) incr = parameters.fishes_growth_temporal_incrmin;
@@ -294,9 +275,6 @@ class Fish {
     }
 
 };  // end class Fish
-
-char Fish::growth_model = 'l';
-char Fish::growth_variation = 'm';
 
 
 /**

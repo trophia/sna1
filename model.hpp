@@ -382,7 +382,7 @@ class Model {
         double growth_50;
         double growth_cv;
         double growth_sdmin = parameters.fishes_growth_temporal_sdmin;
-        if (Fish::growth_variation == 't') {
+        if (parameters.fishes_growth_variation == 't') {
             // Parameters calculated from mean of k and linf
             auto growth_slope = std::exp(-parameters.fishes_k_mean)-1;
             auto growth_intercept = -growth_slope * parameters.fishes_linf_mean;
