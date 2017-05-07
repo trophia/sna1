@@ -197,11 +197,30 @@ class Parameters : public Structure<Parameters> {
     void reflect(Mirror& mirror){
         mirror
             .data(fishes_seed_number, "fishes_seed_number")
-            .data(fishes_movement_type, "fishes_movement_type")
-            .data(fishes_k_mean, "fishes_k_mean")
+            .data(fishes_seed_z, "fishes_seed_z")
+            
+            .data(fishes_steepness, "fishes_steepness")
+            .data(fishes_males, "fishes_males")
+            
+            .data(fishes_m, "fishes_m")
+            
+            .data(fishes_a, "fishes_a")
+            .data(fishes_b, "fishes_b")
+            
+            .data(fishes_k_mean , "fishes_k_mean ")
+            .data(fishes_k_sd, "fishes_k_sd")
             .data(fishes_linf_mean, "fishes_linf_mean")
+            .data(fishes_linf_sd, "fishes_linf_sd")
+            .data(fishes_growth_temporal_cv , "fishes_growth_temporal_cv ")
+            .data(fishes_growth_temporal_sdmin, "fishes_growth_temporal_sdmin")
+            .data(fishes_growth_temporal_incrmin, "fishes_growth_temporal_incrmin")
+
+            .data(fishes_movement_type, "fishes_movement_type")
+            
+            .data(harvest_handling_mortality, "harvest_handling_mortality")
         ;
     }
+
 };  // class Parameters
 
 Parameters parameters;
