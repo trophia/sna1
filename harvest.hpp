@@ -49,6 +49,20 @@ class Harvest {
         }
     }
 
+    void biomass_vulnerable_update(const Fishes& fishes) {
+        biomass_vulnerable = 0;
+        for (const Fish& fish : fishes) {
+            if (fish.alive()) {
+                auto weight = fish.weight();
+                auto length_bin = fish.length_bin();
+                for (auto method : methods) {
+                    biomass_vulnerable(fish.region,method) += weight * selectivity_at_length(method,length_bin);
+                }
+            }
+        }
+        biomass_vulnerable *= fishes.scalar;
+    }
+
     void catch_observed_update(void) {
         auto y = year(now);
         if (y >= Years_min and y <= Years_max) {

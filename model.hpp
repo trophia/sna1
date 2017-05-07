@@ -164,13 +164,12 @@ class Model {
             // Reset the harvesting accounting
             harvest.attempts = 0;
             harvest.catch_taken = 0;
-            // Reset the monitoring counts
-            monitor.age_sample = 0;
-            monitor.length_pop = 0;
-            monitor.length_sample = 0;
             // Keep track of total catch taken and quit when it is >= observed
             double catch_taken = 0;
             double catch_observed = sum(harvest.catch_observed);
+
+            // Reset the monitoring counts
+            monitor.reset();
             // Is this a tag recovery year
             bool tag_recovery = tagging.recovery_years(y);
 
@@ -233,25 +232,11 @@ class Model {
                 }
             }
 
-            // Monitoring of CPUE (currently perfect)
-            
-            harvest.biomass_vulnerable = 0;
-            for (Fish& fish : fishes) {
-                if (fish.alive()) {
-                    auto weight = fish.weight();
-                    auto length_bin = fish.length_bin();
-                    for (auto method : methods) {
-                        harvest.biomass_vulnerable(fish.region,method) += weight * harvest.selectivity_at_length(method,length_bin);
-                    }
-                }
-            }
-            harvest.biomass_vulnerable *= fishes.scalar;
-    
-            for (auto region : regions) {
-                for (auto method : methods) {
-                    monitor.cpue(region, method) = harvest.biomass_vulnerable(region, method);
-                }
-            }
+            // Update harvest.biomass_vulnerable for use in monioring
+            harvest.biomass_vulnerable_update(fishes);
+
+            // Update monitoring
+            monitor.update(fishes, harvest);
 
         }
 
@@ -331,12 +316,15 @@ class Model {
      * @brief      Generate data for CASAL over a model run
      * 
      * This can be useful for generating simulated datasets to be passed to 
-     * CASAL for testing. Three files are produced:
+     * CASAL for testing. These files are produced:
      * 
      *  - output/catch.tsv : catch by year and region and method
      *  - output/biomass.tsv : spawning biomass by year and region
-     *  - output/monitor/cpue.tsv : A simulated CPUE by year
-     *  - output/monitor/age.tsv : Simulated age samples
+     *  - output/cpue.tsv : A simulated CPUE by year
+     *  - output/age.tsv : Simulated age samples
+     *
+     * TODO: this method has been largely replaced by theh output generated in `Monitoring::finalize()`
+     * and should be deprecated.
      * 
      * @param[in]  start     The start
      * @param[in]  finish    The finish
