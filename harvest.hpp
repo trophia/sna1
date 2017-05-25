@@ -9,11 +9,6 @@ class Harvest {
  public:
 
     /**
-     * Catc history
-     */
-    Array<double, Years, Regions, Methods> catch_history;
-
-    /**
      * Selectivity by method for each length bin
      */
     Array<double, Methods, Lengths> selectivity_at_length;
@@ -32,9 +27,6 @@ class Harvest {
 
 
     void initialise(void){
-        catch_history = 0;
-        catch_history.read("input/harvest/catch-history.tsv");
-
         for (auto method : methods) {
             for (auto length_bin : lengths) {
                 auto steep1 = parameters.harvest_sel_steep1(method);
@@ -68,7 +60,7 @@ class Harvest {
         if (y >= Years_min and y <= Years_max) {
             for (auto region : regions) {
                 for(auto method : methods) {
-                    auto catches = catch_history(y,region,method);
+                    auto catches = parameters.harvest_catch_history(y,region,method);
                     catch_observed(region,method) = catches;
                 }
             }
@@ -77,8 +69,6 @@ class Harvest {
 
     void finalise(void) {
         boost::filesystem::create_directories("output/harvest");
-
-        catch_history.write("output/harvest/catch-history.tsv");
         selectivity_at_length.write("output/harvest/selectivity_at_length.tsv");
     }
 

@@ -15,6 +15,12 @@ This work is being undertaken by [NIWA](http://niwa.co.nz) and [Trophia](http://
 
 The `input` folder contains several files that can be used for setting parameters of the model. All parameters have default values hardwired into the code, so these input files provide a way of optionally overriding these values. All of these parameters are then dumped into the corresponding file in the `output` folder so that you can check the values read in and actually used.
 
+Some of these files require the use of numeric codes for certain dimensions:
+
+- `sex`: male = `0`, female = `1`
+- `region`: EN = `0`, HG = `1`, BP = `2`\
+- `method`: LL = `0`, BT = `1`, DS = `2`, RE = `3`
+
 #### [`input/parameters.json`](input/parameters.json)
 
 A JSON file containing single valued parameters. The format is fairly self explanatory e.g.
@@ -45,6 +51,17 @@ For example, a recruitment strength of `1.3` in 1990, random recruitment strengt
 year	value
 1990	1.3
 1991	-1
+```
+
+#### [`input/harvest_catch_history.tsv`](input/harvest_catch_history.tsv)
+
+A tab separated values file with catches (in tonnes) for each `year`, `region` and `method`. You don't have to specify a value for each year; the default value is `0` (i.e. no catch). 
+
+For example, if you only wanted to simulate a single catch event of 100t taken by BT in EN in 2017:
+
+```
+year	region	method	value
+2017	0	1	100
 ```
 
 

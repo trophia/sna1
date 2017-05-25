@@ -136,6 +136,12 @@ class Parameters : public Structure<Parameters> {
      */
     Array<double, Regions, RegionTos> fishes_movement;
 
+
+    /**
+     * Catch history
+     */
+    Array<double, Years, Regions, Methods> harvest_catch_history = 0;
+
     /**
      * Minimum legal size limit
      */
@@ -201,6 +207,7 @@ class Parameters : public Structure<Parameters> {
         
         read("input/parameters.json");
         fishes_rec_strengths.read("input/fishes_rec_strengths.tsv");
+        harvest_catch_history.read("input/harvest_catch_history.tsv");
 
         // Derived values
         
@@ -218,6 +225,7 @@ class Parameters : public Structure<Parameters> {
 
         write("output/parameters.json");
         fishes_rec_strengths.write("output/fishes_rec_strengths.tsv");
+        harvest_catch_history.write("output/harvest_catch_history.tsv");
     }
 
     template<class Mirror>
