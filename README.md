@@ -15,7 +15,7 @@ This work is being undertaken by [NIWA](http://niwa.co.nz) and [Trophia](http://
 
 The `input` folder contains several files that can be used for setting parameters of the model. All parameters have default values hardwired into the code, so these input files provide a way of optionally overriding these values. All of these parameters are then dumped into the corresponding file in the `output` folder so that you can check the values read in and actually used.
 
-### [`input/parameters.json`](input/parameters.json)
+#### [`input/parameters.json`](input/parameters.json)
 
 A JSON file containing single valued parameters. The format is fairly self explanatory e.g.
 
@@ -35,16 +35,16 @@ A JSON file containing single valued parameters. The format is fairly self expla
 ...
 ```
 
-### [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv)
+#### [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv)
 
 A tab separated values file with recruitment strengths (multipliers of deterministic recruitment) for each year. Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
 
 For example, a recruitment strength of `1.3` in 1990, random recruitment strength in 1991, and deterministic in all other years would be specified using:
 
 ```
-year value
-1990 1.3
-1991 -1
+year	value
+1990	1.3
+1991	-1
 ```
 
 
