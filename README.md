@@ -11,6 +11,43 @@ This model is being developed to aid in the evaluation alternative monitoring an
 
 This work is being undertaken by [NIWA](http://niwa.co.nz) and [Trophia](http://trophia.com) as part of a project funded by the [New Zealand Ministry of Primary Industries](http://mpi.govt.nz).
 
+## Usage
+
+The `input` folder contains several files that can be used for setting parameters of the model. All parameters have default values hardwired into the code, so these input files provide a way of optionally overriding these values. All of these parameters are then dumped into the corresponding file in the `output` folder so that you can check the values read in and actually used.
+
+### [`input/parameters.json`](input/parameters.json)
+
+A JSON file containing single valued parameters. The format is fairly self explanatory e.g.
+
+```json
+{
+    "fishes_seed_number": 1000000,
+    "fishes_seed_z": 0.075,
+
+    "fishes_steepness": 0.85,
+    "fishes_males": 0.5,
+
+    "fishes_m": 0.075,
+
+    "fishes_a": 4.467e-08,
+    "fishes_b": 2.793,
+
+...
+```
+
+### [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv)
+
+A tab separated values file with recruitment strengths (multipliers of deterministic recruitment) for each year. Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
+
+For example, a recruitment strength of `1.3` in 1990, random recruitment strength in 1991, and deterministic in all other years would be specified using:
+
+```
+year value
+1990 1.3
+1991 -1
+```
+
+
 ## Structure
 
 The model is an [individual-based](https://en.wikipedia.org/wiki/Agent-based_model) (IBM, aka agent-based). IBMs have been used for some time in ecology (see Grimm & Railsback (2005) for a review) but their use in fisheries science has been limited (although see Thorson et al (2012) for a recent example). We chose to use an IBM because it has a number of advantages for simulating detailed temporal and spatial dynamics.

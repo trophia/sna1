@@ -51,6 +51,12 @@ class Parameters : public Structure<Parameters> {
     double fishes_steepness = 0.85;
 
     /**
+     * Recruitment variability
+     */
+    double fishes_rec_var = 0.6;
+    Array<double, Years> fishes_rec_strengths = 1;
+
+    /**
      * Sex ratio
      */
     double fishes_males = 0.5;
@@ -191,8 +197,10 @@ class Parameters : public Structure<Parameters> {
         harvest_sel_mode(RE) = 30.11;
         harvest_sel_steep2(RE) = 15.27;
 
-        // Values can be overidden by setting them in
+        // Parameter values can be overidden by setting them in the following files:
+        
         read("input/parameters.json");
+        fishes_rec_strengths.read("input/fishes_rec_strengths.tsv");
 
         // Derived values
         
@@ -207,7 +215,9 @@ class Parameters : public Structure<Parameters> {
 
     void finalise(void) {
         boost::filesystem::create_directories("output");
+
         write("output/parameters.json");
+        fishes_rec_strengths.write("output/fishes_rec_strengths.tsv");
     }
 
     template<class Mirror>
@@ -217,6 +227,8 @@ class Parameters : public Structure<Parameters> {
             .data(fishes_seed_z, "fishes_seed_z")
             
             .data(fishes_steepness, "fishes_steepness")
+            .data(fishes_rec_var, "fishes_rec_var")
+
             .data(fishes_males, "fishes_males")
             
             .data(fishes_m, "fishes_m")

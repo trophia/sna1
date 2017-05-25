@@ -367,6 +367,7 @@ class Fishes : public std::vector<Fish> {
 
 
     void recruitment_update(void) {
+        auto y = year(now);
         for(auto region : regions) {
             if (recruitment_mode == 'p') {
                 recruitment(region) = recruitment_pristine(region);
@@ -375,7 +376,15 @@ class Fishes : public std::vector<Fish> {
                 auto r0 = recruitment_pristine(region);
                 auto s0 = parameters.fishes_b0(region);
                 auto h = parameters.fishes_steepness;
-                recruitment(region) = 4*h*r0*s/((5*h-1)*s+s0*(1-h));
+                auto determ = 4*h*r0*s/((5*h-1)*s+s0*(1-h));
+
+                double strength = parameters.fishes_rec_strengths(y);
+                if (strength < 0) {
+                    strength = Lognormal(1, parameters.fishes_rec_var).random();
+                }
+
+                recruitment(region) = determ * strength;
+
             }
             recruitment_instances(region) = std::round(recruitment(region)/scalar);
         }

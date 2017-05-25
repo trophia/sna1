@@ -3,6 +3,7 @@
     "fishes_seed_z": 0.075,
 
     "fishes_steepness": 0.85,
+    "fishes_rec_var": 0.6,
     "fishes_males": 0.5,
 
     "fishes_m": 0.075,
