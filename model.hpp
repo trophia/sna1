@@ -109,43 +109,39 @@ class Model {
          * in the same time step as release
          ****************************************************************/
 
-        if (tagging.release_years(y)) {
-
-            int releases_targetted = 0;
-            for(auto region : regions) {
-                for(auto method : methods) {
-                    releases_targetted += tagging.release_targets(y, region, method);
-                }
+        int releases_targetted = 0;
+        for(auto region : regions) {
+            for(auto method : methods) {
+                releases_targetted += parameters.tagging_releases(y, region, method);
             }
-            int releases_done = 0;
+        }
+        int releases_done = 0;
 
-            unsigned int trials = 0;
-            while(true) {
-                // Randomly choose a fish
-                Fish& fish = fishes[chance()*fishes.size()];
-                // If the fish is alive, and not yet tagged then...
-                if (fish.alive() and not fish.tag and fish.length >= tagging.release_length_min) {
-                    // Randomly choose a fishing method in the region the fish currently resides
-                    auto method = Method(methods.select(chance()).index());
-                    auto region = fish.region;
-                    // If the tag releases for the method in the region is not yet acheived...
-                    if (tagging.released(y, region, method) < tagging.release_targets(y, region, method)) {
-                        // Is this fish caught by this method?
-                        auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
-                        if ((!tagging.release_length_selective) || (chance() < selectivity)) {
-                            // Tag the fish
-                            tagging.release(fish, method);
-                            // Stop if the total number of tag releases has been obtained
-                            releases_done++;
-                            if (releases_done >= releases_targetted) break;
-                        }
+        unsigned int trials = 0;
+        while(releases_done < releases_targetted) {
+            // Randomly choose a fish
+            Fish& fish = fishes[chance()*fishes.size()];
+            // If the fish is alive, and not yet tagged then...
+            if (fish.alive() and not fish.tag and fish.length >= tagging.release_length_min) {
+                // Randomly choose a fishing method in the region the fish currently resides
+                auto method = Method(methods.select(chance()).index());
+                auto region = fish.region;
+                // If the tag releases for the method in the region is not yet acheived...
+                if (tagging.released(y, region, method) < parameters.tagging_releases(y, region, method)) {
+                    // Is this fish caught by this method?
+                    auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
+                    if ((!tagging.release_length_selective) || (chance() < selectivity)) {
+                        // Tag the fish
+                        tagging.release(fish, method);
+                        // Stop if the total number of tag releases has been obtained
+                        releases_done++;
                     }
                 }
-                // Escape if too many trials
-                if (trials++ > fishes.size() * 100) {
-                    std::cerr << trials << " " << releases_done << " " << releases_targetted << std::endl;
-                    throw std::runtime_error("Too many attempts to tag fish. Something is probably wrong.");
-                }
+            }
+            // Escape if too many trials
+            if (trials++ > fishes.size() * 100) {
+                std::cerr << trials << " " << releases_done << " " << releases_targetted << std::endl;
+                throw std::runtime_error("Too many attempts to tag fish. Something is probably wrong.");
             }
         }
 
@@ -170,8 +166,6 @@ class Model {
 
             // Reset the monitoring counts
             monitor.reset();
-            // Is this a tag recovery year
-            bool tag_recovery = tagging.recovery_years(y);
 
             // Randomly draw fish and "assign" them with varying probabilities
             // to a particular region/method catch
@@ -209,10 +203,9 @@ class Model {
                                 catch_taken += fish_biomass;
                                 if (catch_taken >= catch_observed) break;
 
-                                // Is this fish tagged?
-                                if (tag_recovery) {
+                                // Is this fish scanned for a tag?
+                                if (chance() < parameters.tagging_scanning(y, region, method)) {
                                     tagging.scan(fish, method);
-                                    if (fish.tag) tagging.recover(fish, method);
                                 }
                             } else {
                                 // Does this fish die after released?

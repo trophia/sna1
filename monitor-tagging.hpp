@@ -12,17 +12,6 @@ class Tagging {
 public:
 
     /**
-     * The number of target releases by year, region and method
-     */
-    Array<int, Years, Regions, Methods> release_targets;
-
-    /**
-     * A boolean flag for years in which releases are made
-     */
-    Array<bool, Years> release_years;
-
-
-    /**
      * The minimum size of release
      */
     double release_length_min = 25;
@@ -33,11 +22,6 @@ public:
      * Used for simplicity in some tests
      */
     bool release_length_selective = true;
-
-    /**
-     * A boolean flag for years in which recoveries are recorded
-     */
-    Array<bool, Years> recovery_years;
 
     /**
      * The number of actual releases by year, region, and method 
@@ -97,9 +81,6 @@ public:
 
 
     void initialise(void) {
-        release_targets = 0;
-        release_years = false;
-        recovery_years = false;
         released = 0;
         scanned = 0;
     }
@@ -122,9 +103,9 @@ public:
         released(year(now), fish.region, method)++;
     }
 
-    bool scan(Fish& fish, Method method) {
+    void scan(const Fish& fish, Method method) {
         scanned(year(now), fish.region, method, fish.length_bin())++;
-        return true;
+        if (fish.tag) recover(fish, method);
     }
 
     /**

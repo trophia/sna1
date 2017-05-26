@@ -23,27 +23,19 @@ Some of these files require the use of numeric codes for certain dimensions:
 
 #### [`input/parameters.json`](input/parameters.json)
 
-A JSON file containing single valued parameters. The format is fairly self explanatory e.g.
+A JSON file containing single-valued parameters. The format is fairly self explanatory, but note that string parameters need to be quoted e.g.
 
 ```json
 {
     "fishes_seed_number": 1000000,
-    "fishes_seed_z": 0.075,
-
     "fishes_steepness": 0.85,
-    "fishes_males": 0.5,
-
-    "fishes_m": 0.075,
-
-    "fishes_a": 4.467e-08,
-    "fishes_b": 2.793,
-
-...
+    "fishes_movement_type": "h",
+}
 ```
 
 #### [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv)
 
-A tab separated values file with recruitment strengths (multipliers of deterministic recruitment) for each year. Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
+A TSV file with recruitment strengths (multipliers of deterministic recruitment) for each year. Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
 
 For example, a recruitment strength of `1.3` in 1990, random recruitment strength in 1991, and deterministic in all other years would be specified using:
 
@@ -55,7 +47,7 @@ year	value
 
 #### [`input/fishes_movement.tsv`](input/fishes_movement.tsv)
 
-A tab separated values file with the probability of a fish moving from `region` to `region_to`. You don't have to specify a value for all combinations of regions; the default value is `0` (i.e. no movement). But you should be careful to ensure that the probabilities for a region sum to 1. e.g.
+A TSV file with the probability of a fish moving from `region` to `region_to`. You don't have to specify a value for all combinations of regions; the default value is `0` (i.e. no movement). But you should be careful to ensure that the probabilities for a region sum to 1. e.g.
 
 ```
 region	region_to	value
@@ -70,9 +62,14 @@ region	region_to	value
 2	2	1
 ```
 
+Also note that `fishes_movement_type` can be set in `parameters.json`: 
+
+- `"h"` = home fidelity
+- `"m"` = markov
+
 #### [`input/harvest_catch_history.tsv`](input/harvest_catch_history.tsv)
 
-A tab separated values file with catches (in tonnes) for each `year`, `region` and `method`. You don't have to specify a value for each year; the default value is `0` (i.e. no catch). 
+A TSV file with catches (in tonnes) for each `year`, `region` and `method`. You don't have to specify a value for each year; the default value is `0` (i.e. no catch). 
 
 For example, if you only wanted to simulate a single catch event of 100t taken by BT in EN in 2017:
 
@@ -81,6 +78,43 @@ year	region	method	value
 2017	0	1	100
 ```
 
+#### Tagging
+
+Two TSV files allow you to specify release and recapture schedules for tagging programmes:
+
+- [`input/tagging_releases.tsv`](input/tagging_releases.tsv): the number of tags to release by `year`, `region` and `method`
+- [`input/tagging_scanning.tsv`](input/tagging_scanning.tsv): the proportion of catch to be scanned by `year`, `region` and `method`
+
+For example, to specify 30,000 longline tag releases in 2018, spread over the three regions, followed by 2 years of scanning 50% of LL and BT catches:
+
+`tagging_releases.tsv`:
+
+```
+year	region	method	value
+2018	0	0	10000
+2018	1	0	10000
+2018	2	0	10000
+```
+
+`tagging_scanning.tsv`:
+
+```
+year	region	method	value
+2019	0	0	0.5
+2019	1	0	0.5
+2019	2	0	0.5
+2019	0	1	0.5
+2019	1	1	0.5
+2019	2	1	0.5
+2020	0	0	0.5
+2020	1	0	0.5
+2020	2	0	0.5
+2020	0	1	0.5
+2020	1	1	0.5
+2020	2	1	0.5
+```
+
+When doing simulations involving tagging it may be appropriate to set the `fishes_seed_number` (i.e. the number of fish in the pristine, unfished, poulation) to a high value e.g. 50000000
 
 ## Structure
 
@@ -97,10 +131,6 @@ Perhaps most importantly, the nature of IBM models, and in particular how they m
 It is generally easy to add additional complexity to an IBM. This is important in the current context; we wanted a model that could start off relatively simple but be flexible enough to have complexity added to in response to questions asked of it by stakeholders. For example, in an IBM, explicit modeling of "trap shyness" just involves adding an attribute to each individual which counts the number of times it has previously been caught and then making it's probability of capture partly dependent on that count. 
 
 IBMs are inherently easy to parrallelize and thus take advantage of multi-core and multi-machine computing environments.
-
-## Status
-
-The model is in early stages of development. The basic architecture has been setup but much of the dynamics are yet to be implemented.
 
 ## References
 

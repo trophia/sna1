@@ -162,6 +162,16 @@ class Parameters : public Structure<Parameters> {
     Array<double, Methods> harvest_sel_steep2;
 
     /**
+     * The number of target tagging releases by year, region and method
+     */
+    Array<int, Years, Regions, Methods> tagging_releases = 0;
+
+    /**
+     * The proportion of catch scanned by year, region and method
+     */
+    Array<double, Years, Regions, Methods> tagging_scanning = 0;
+
+    /**
      * Because `parameters` is a global variable that always need initialisation
      * we ensure initialisation on construction and finalisation on destruction.
      */
@@ -209,6 +219,8 @@ class Parameters : public Structure<Parameters> {
         fishes_rec_strengths.read("input/fishes_rec_strengths.tsv");
         fishes_movement.read("input/fishes_movement.tsv");
         harvest_catch_history.read("input/harvest_catch_history.tsv");
+        tagging_releases.read("input/tagging_releases.tsv");
+        tagging_scanning.read("input/tagging_scanning.tsv");
 
         // Derived values
         
@@ -228,6 +240,8 @@ class Parameters : public Structure<Parameters> {
         fishes_rec_strengths.write("output/fishes_rec_strengths.tsv");
         fishes_movement.write("output/fishes_movement.tsv");
         harvest_catch_history.write("output/harvest_catch_history.tsv");
+        tagging_releases.write("output/tagging_releases.tsv");
+        tagging_scanning.write("output/tagging_scanning.tsv");
     }
 
     template<class Mirror>
