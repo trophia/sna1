@@ -105,7 +105,7 @@ public:
 
     void scan(const Fish& fish, Method method) {
         scanned(year(now), fish.region, method, fish.length_bin())++;
-        if (fish.tag) recover(fish, method);
+        if (fish.tag and chance() < parameters.tagging_detection) recover(fish, method);
     }
 
     /**

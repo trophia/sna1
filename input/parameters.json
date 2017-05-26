@@ -27,5 +27,6 @@
     "harvest_handling_mortality": 0,
 
     "tagging_mortality": 0,
-    "tagging_shedding": 0
+    "tagging_shedding": 0,
+    "tagging_detection": 1
 }
