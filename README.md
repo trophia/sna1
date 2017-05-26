@@ -118,12 +118,12 @@ When doing simulations involving tagging it may be appropriate to set the `fishe
 
 #### Shyness
 
-The `fishes_shyness` parameter controls the degree of shyness of a fish to the last fishing method that it was caught by (assuming it was subsequently released because it was undersized or tagged). This is used to mediate it vulnerability to that fishing method in subsequent time steps:
+The file [`input/fishes_shyness.tsv`](input/fishes_shyness.tsv) controls the degree of shyness of a fish to the last fishing method that it was caught by (assuming it was subsequently released because it was undersized or tagged). This is used to mediate it vulnerability to that fishing method in subsequent time steps. Shyness to a method should be a value between 0 and 1:
 
-- 1 = complete shyness, will never get by the method again
+- 1 = complete shyness, will never get caught by the method again
 - 0 = no shyness, normal vulnerability/selectivity applies
 
-Note that, although syness is of most interest for it's implications for tagging estimates, it also applies to undersized fish that have been returned to the sea.
+Note that although shyness is of most interest for it's implications for tagging estimates, it also applies to undersized fish that have been returned to the sea.
 
 ## Structure
 
