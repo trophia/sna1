@@ -60,6 +60,12 @@ class Fish {
      */
     unsigned int tag;
 
+    /**
+     * The method that this fish was last caught by (and released,
+     * because undersized or tag-release)
+     */
+    short method_last;
+
 
     /*************************************************************
      * Attributes
@@ -134,6 +140,8 @@ class Fish {
         mature = chance()<parameters.fishes_maturation(age);
 
         tag = 0;
+
+        method_last = -1;
     }
 
     /**
@@ -156,6 +164,8 @@ class Fish {
         mature = false;
 
         tag = 0;
+
+        method_last = -1;
     }
 
     /**
@@ -272,6 +282,13 @@ class Fish {
         if (chance() < parameters.fishes_movement(basis, region_to)) {
             region = region_to;
         }
+    }
+
+    /**
+     * Fish was released by a method
+     */
+    void released(Method method) {
+        method_last = method;
     }
 
     /**

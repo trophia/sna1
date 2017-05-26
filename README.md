@@ -116,6 +116,15 @@ year	region	method	value
 
 When doing simulations involving tagging it may be appropriate to set the `fishes_seed_number` (i.e. the number of fish in the pristine, unfished, poulation) to a high value e.g. 50000000
 
+#### Shyness
+
+The `fishes_shyness` parameter controls the degree of shyness of a fish to the last fishing method that it was caught by (assuming it was subsequently released because it was undersized or tagged). This is used to mediate it vulnerability to that fishing method in subsequent time steps:
+
+- 1 = complete shyness, will never get by the method again
+- 0 = no shyness, normal vulnerability/selectivity applies
+
+Note that, although syness is of most interest for it's implications for tagging estimates, it also applies to undersized fish that have been returned to the sea.
+
 ## Structure
 
 The model is an [individual-based](https://en.wikipedia.org/wiki/Agent-based_model) (IBM, aka agent-based). IBMs have been used for some time in ecology (see Grimm & Railsback (2005) for a review) but their use in fisheries science has been limited (although see Thorson et al (2012) for a recent example). We chose to use an IBM because it has a number of advantages for simulating detailed temporal and spatial dynamics.

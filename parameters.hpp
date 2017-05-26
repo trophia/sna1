@@ -136,6 +136,14 @@ class Parameters : public Structure<Parameters> {
      */
     Array<double, Regions, RegionTos> fishes_movement = 0;
 
+    /**
+     * The degree of shyness of a fish to the last fishing method that it
+     * was caught by (assuming it was released because undersized or tagged).
+     *
+     * 1 = complete shyness, will never get by the method again
+     * 0 = no shyness
+     */
+    Array<double, Methods> fishes_shyness = 0;
 
     /**
      * Catch history
@@ -228,6 +236,7 @@ class Parameters : public Structure<Parameters> {
         read("input/parameters.json");
         fishes_rec_strengths.read("input/fishes_rec_strengths.tsv");
         fishes_movement.read("input/fishes_movement.tsv");
+        fishes_shyness.read("input/fishes_shyness.tsv");
         harvest_catch_history.read("input/harvest_catch_history.tsv");
         tagging_releases.read("input/tagging_releases.tsv");
         tagging_scanning.read("input/tagging_scanning.tsv");
@@ -249,6 +258,7 @@ class Parameters : public Structure<Parameters> {
         write("output/parameters.json");
         fishes_rec_strengths.write("output/fishes_rec_strengths.tsv");
         fishes_movement.write("output/fishes_movement.tsv");
+        fishes_shyness.write("output/fishes_shyness.tsv");
         harvest_catch_history.write("output/harvest_catch_history.tsv");
         tagging_releases.write("output/tagging_releases.tsv");
         tagging_scanning.write("output/tagging_scanning.tsv");

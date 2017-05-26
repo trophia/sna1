@@ -132,8 +132,9 @@ class Model {
                     // Is this fish caught by this method?
                     auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
                     if ((!tagging.release_length_selective) || (chance() < selectivity)) {
-                        // Tag the fish
+                        // Tag and release the fish
                         tagging.release(fish, method);
+                        fish.released(method);
                         // Increment the number of releases
                         releases_done++;
                         // Apply tagging mortality
@@ -188,7 +189,8 @@ class Model {
                     if (harvest.catch_taken(region, method) < harvest.catch_observed(region, method)) {
                         // Is this fish caught by this method?
                         auto selectivity = harvest.selectivity_at_length(method, length_bin);
-                        if (chance() < selectivity) {
+                        auto boldness = (method == fish.method_last) ? (1 - parameters.fishes_shyness(method)) : 1;
+                        if (chance() < selectivity * boldness) {
                             // Is this fish greater than the MLS and thus retained?
                             if (fish.length >= parameters.harvest_mls(method)) {
                                 // Kill the fish
@@ -214,6 +216,8 @@ class Model {
                                 // Does this fish die after released?
                                 if (chance() < parameters.harvest_handling_mortality) {
                                     fish.dies();
+                                } else {
+                                    fish.released(method);
                                 }
                             }
                         }
