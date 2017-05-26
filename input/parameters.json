@@ -24,5 +24,7 @@
 
     "fishes_movement_type": "m",
 
-    "harvest_handling_mortality": 0
+    "harvest_handling_mortality": 0,
+
+    "tagging_mortality": 0
 }

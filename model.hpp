@@ -133,8 +133,10 @@ class Model {
                     if ((!tagging.release_length_selective) || (chance() < selectivity)) {
                         // Tag the fish
                         tagging.release(fish, method);
-                        // Stop if the total number of tag releases has been obtained
+                        // Increment the number of releases
                         releases_done++;
+                        // Apply tagging mortality
+                        if (chance() < parameters.tagging_mortality) fish.dies();
                     }
                 }
             }

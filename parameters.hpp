@@ -172,6 +172,11 @@ class Parameters : public Structure<Parameters> {
     Array<double, Years, Regions, Methods> tagging_scanning = 0;
 
     /**
+     * Mortality of fish that have been tagged (note, this is independent of `harvest_handling_mortality`)
+     */
+    double tagging_mortality = 0;
+
+    /**
      * Because `parameters` is a global variable that always need initialisation
      * we ensure initialisation on construction and finalisation on destruction.
      */
@@ -273,6 +278,8 @@ class Parameters : public Structure<Parameters> {
             .data(fishes_movement_type, "fishes_movement_type")
             
             .data(harvest_handling_mortality, "harvest_handling_mortality")
+
+            .data(tagging_mortality, "tagging_mortality")
         ;
     }
 
