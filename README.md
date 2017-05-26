@@ -55,7 +55,7 @@ year	value
 
 #### [`input/fishes_movement.tsv`](input/fishes_movement.tsv)
 
-A tab separated values file with the probability of a fish moving from `region` to `region_to`. You don't have to specify a value for combination of regions; the default value is `0` (i.e. no movement). But you should be careful to ensure that the probabilities for a region sum to 1. e.g.
+A tab separated values file with the probability of a fish moving from `region` to `region_to`. You don't have to specify a value for all combinations of regions; the default value is `0` (i.e. no movement). But you should be careful to ensure that the probabilities for a region sum to 1. e.g.
 
 ```
 region	region_to	value
