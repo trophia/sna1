@@ -18,7 +18,7 @@ The `input` folder contains several files that can be used for setting parameter
 Some of these files require the use of numeric codes for certain dimensions:
 
 - `sex`: male = `0`, female = `1`
-- `region`: EN = `0`, HG = `1`, BP = `2`\
+- `region`: EN = `0`, HG = `1`, BP = `2`
 - `method`: LL = `0`, BT = `1`, DS = `2`, RE = `3`
 
 #### [`input/parameters.json`](input/parameters.json)
@@ -51,6 +51,23 @@ For example, a recruitment strength of `1.3` in 1990, random recruitment strengt
 year	value
 1990	1.3
 1991	-1
+```
+
+#### [`input/fishes_movement.tsv`](input/fishes_movement.tsv)
+
+A tab separated values file with the probability of a fish moving from `region` to `region_to`. You don't have to specify a value for combination of regions; the default value is `0` (i.e. no movement). But you should be careful to ensure that the probabilities for a region sum to 1. e.g.
+
+```
+region	region_to	value
+0	0	0.8
+0	1	0.1
+0	2	0.1
+1	0	0
+1	1	0.9
+1	2	0.1
+2	0	0
+2	1	0
+2	2	1
 ```
 
 #### [`input/harvest_catch_history.tsv`](input/harvest_catch_history.tsv)
