@@ -274,6 +274,17 @@ class Fish {
         }
     }
 
+    /**
+     * Does this fish shed it's tag (if any)?
+     */
+    void shedding(void) {
+        if (tag) {
+            if (chance() < parameters.tagging_shedding) {
+                tag = 0;
+            }
+        }
+    }
+
 };  // end class Fish
 
 

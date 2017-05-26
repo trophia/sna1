@@ -177,6 +177,11 @@ class Parameters : public Structure<Parameters> {
     double tagging_mortality = 0;
 
     /**
+     * Probability that a tag will be shed by the fish
+     */
+    double tagging_shedding = 0;
+
+    /**
      * Because `parameters` is a global variable that always need initialisation
      * we ensure initialisation on construction and finalisation on destruction.
      */
@@ -280,6 +285,7 @@ class Parameters : public Structure<Parameters> {
             .data(harvest_handling_mortality, "harvest_handling_mortality")
 
             .data(tagging_mortality, "tagging_mortality")
+            .data(tagging_shedding, "tagging_shedding")
         ;
     }
 

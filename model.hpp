@@ -94,6 +94,7 @@ class Model {
                     fish.growth();
                     fish.maturation();
                     fish.movement();
+                    fish.shedding();
                 }
             }
         }
