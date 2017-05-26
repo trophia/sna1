@@ -4,6 +4,30 @@
 #include "random.hpp"
 #include "dimensions.hpp"
 
+
+/**
+ * Monitoring components
+ *
+ * Provides a convienient yet computationally efficient way of specifying
+ * annual monitoring programme
+ */
+class MonitoringComponents : public std::string {
+ public:
+
+    bool C, L, A;
+
+    MonitoringComponents(const char* value = ""):
+        std::string(value) {
+        update();
+    }
+
+    void update() {
+        C = find('C') != std::string::npos;
+        L = find('L') != std::string::npos;
+        A = find('A') != std::string::npos;
+    }
+};
+
 /**
  * Parameters
  *
@@ -170,6 +194,11 @@ class Parameters : public Structure<Parameters> {
     Array<double, Methods> harvest_sel_steep2;
 
     /**
+     * Monitoring programme by year
+     */
+    Array<MonitoringComponents, Years> monitoring_programme = "";
+
+    /**
      * The number of target tagging releases by year, region and method
      */
     Array<int, Years, Regions, Methods> tagging_releases = 0;
@@ -243,6 +272,7 @@ class Parameters : public Structure<Parameters> {
         fishes_movement.read("input/fishes_movement.tsv");
         fishes_shyness.read("input/fishes_shyness.tsv");
         harvest_catch_history.read("input/harvest_catch_history.tsv");
+        monitoring_programme.read("input/monitoring_programme.tsv");
         tagging_releases.read("input/tagging_releases.tsv");
         tagging_scanning.read("input/tagging_scanning.tsv");
 
@@ -255,6 +285,8 @@ class Parameters : public Structure<Parameters> {
 
         fishes_k_dist = Lognormal(fishes_k_mean, fishes_k_sd);
         fishes_linf_dist = Lognormal(fishes_linf_mean, fishes_linf_sd);
+
+        for (auto& item : monitoring_programme) item.update();
     }
 
     void finalise(void) {
@@ -265,6 +297,7 @@ class Parameters : public Structure<Parameters> {
         fishes_movement.write("output/fishes_movement.tsv");
         fishes_shyness.write("output/fishes_shyness.tsv");
         harvest_catch_history.write("output/harvest_catch_history.tsv");
+        monitoring_programme.write("output/monitoring_programme.tsv");
         tagging_releases.write("output/tagging_releases.tsv");
         tagging_scanning.write("output/tagging_scanning.tsv");
     }

@@ -179,16 +179,15 @@ class Model {
                 // If the fish is alive, then...
                 if (fish.alive()) {
                     auto region = fish.region;
-                    auto length_bin = fish.length_bin();
-                    
-                    monitor.length_pop(region, length_bin)++;
+
+                    monitor.population_sample(region, fish);
 
                     // Randomly choose a fishing method in the region the fish currently resides
                     auto method = Method(methods.select(chance()).index());
                     // If the catch for the method in the region is not yet caught...
                     if (harvest.catch_taken(region, method) < harvest.catch_observed(region, method)) {
                         // Is this fish caught by this method?
-                        auto selectivity = harvest.selectivity_at_length(method, length_bin);
+                        auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
                         auto boldness = (method == fish.method_last) ? (1 - parameters.fishes_shyness(method)) : 1;
                         if (chance() < selectivity * boldness) {
                             // Is this fish greater than the MLS and thus retained?
@@ -200,9 +199,8 @@ class Model {
                                 double fish_biomass = fish.weight() * fishes.scalar;
                                 harvest.catch_taken(region, method) += fish_biomass;
                                 
-                                // Age sampling, currently 100% sampling of catch
-                                monitor.age_sample(region, method, fish.age_bin())++;
-                                monitor.length_sample(region, method, length_bin)++;
+                                // Catch sampling, currently 100% sampling of catch
+                                monitor.catch_sample(region, method, fish);
 
                                 // Update total catch and quit if all taken
                                 catch_taken += fish_biomass;

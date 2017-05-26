@@ -78,6 +78,38 @@ year	region	method	value
 2017	0	1	100
 ```
 
+#### Monitoring
+
+The file [`input/monitoring_programme.tsv`](input/monitoring_programme.tsv) allows you to specify an annual monitoring programme. Each value is a character string with each character specifying if a type of monitoring will be conducted and outputted in `output/monitoring`:
+
+- `C`: catch-per-unit-effort index in `output/monitoring/cpue.tsv`
+- `L`: length sampling of the catch in `output/monitoring/length_samples.tsv`
+- `A`: age sampling of the catch in `output/monitoring/age_samples.tsv`
+
+The default value is an empty string i.e. no monitoring.
+
+For example, to specify CPUE and length sampling every year, and age sampling every second year, between 1990 and 1994:
+
+```
+year	value
+1990	CL
+1991	CLA
+1992	CL
+1993	CLA
+1994	CL
+```
+
+The output file `output/monitoring/programme.tsv` provides an alternative representation of the inputted programme with `0`s and `1`s in each column for every year e.g.
+
+```
+year	cpue	lengths	ages
+1900	0	0	0
+1901	0	0	0
+1902	0	0	0
+1903	0	0	0
+...
+``
+
 #### Tagging
 
 Two TSV files allow you to specify release and recapture schedules for tagging programmes:
