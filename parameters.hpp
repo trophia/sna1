@@ -268,6 +268,7 @@ class Parameters : public Structure<Parameters> {
         // Parameter values can be overidden by setting them in the following files:
         
         read("input/parameters.json");
+        fishes_b0.read("input/fishes_b0.tsv");
         fishes_rec_strengths.read("input/fishes_rec_strengths.tsv");
         fishes_movement.read("input/fishes_movement.tsv");
         fishes_shyness.read("input/fishes_shyness.tsv");
@@ -293,6 +294,7 @@ class Parameters : public Structure<Parameters> {
         boost::filesystem::create_directories("output");
 
         write("output/parameters.json");
+        fishes_b0.write("output/fishes_b0.tsv");
         fishes_rec_strengths.write("output/fishes_rec_strengths.tsv");
         fishes_movement.write("output/fishes_movement.tsv");
         fishes_shyness.write("output/fishes_shyness.tsv");

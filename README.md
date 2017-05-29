@@ -33,6 +33,17 @@ A JSON file containing single-valued parameters. The format is fairly self expla
 }
 ```
 
+#### Pristine spawning biomass (B0)
+
+The pristine spawning biomass (B0) for each regions can be set in the file [`input/fishes_b0.tsv`](input/fishes_b0.tsv) e.g.
+
+```
+region	value
+0	100000
+1	200000
+2	100000
+```
+
 #### [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv)
 
 A TSV file with recruitment strengths (multipliers of deterministic recruitment) for each year. Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
