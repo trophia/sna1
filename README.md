@@ -35,7 +35,7 @@ A JSON file containing single-valued parameters. The format is fairly self expla
 
 #### Pristine spawning biomass (B0)
 
-The pristine spawning biomass (B0) for each regions can be set in the file [`input/fishes_b0.tsv`](input/fishes_b0.tsv) e.g.
+The pristine spawning biomass (B0) for each region can be set in the file [`input/fishes_b0.tsv`](input/fishes_b0.tsv) e.g.
 
 ```
 region	value
@@ -119,7 +119,7 @@ year	cpue	lengths	ages
 1902	0	0	0
 1903	0	0	0
 ...
-``
+```
 
 #### Tagging
 
