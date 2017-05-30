@@ -10,14 +10,24 @@ class Monitor {
     MonitoringComponents components;
 
     /**
-     * Catches by year, region and method
+     * Population numbers by year and region
      */
-    Array<double, Years, Regions, Methods> catches;
+    Array<int, Years, Regions> population_numbers;
+
+    /**
+     * Population length distribution by region for current year
+     */
+    Array<double, Regions, Lengths> population_lengths_sample;
 
     /**
      * Biomass of spawners by year, region and method
      */
     Array<double, Years, Regions> biomass_spawners;
+
+    /**
+     * Catches by year, region and method
+     */
+    Array<double, Years, Regions, Methods> catches;
 
     /**
      * Current CPUE by region and method
@@ -46,11 +56,6 @@ class Monitor {
     Array<double, Years, Regions, Methods, Ages> age_samples;
 
     /**
-     * Current lengths of fish in population by region
-     */
-    Array<double, Regions, Lengths> length_pop;
-
-    /**
      * Sample of measured fish by region, method and length bin
      */
     Array<double, Regions, Methods, Lengths> length_sample;
@@ -62,6 +67,7 @@ class Monitor {
 
 
     void initialise(void) {
+        population_numbers = 0;
         tagging.initialise();
     }
 
@@ -72,14 +78,29 @@ class Monitor {
         auto y = year(now);
 
         components = parameters.monitoring_programme(y);
-        length_pop = 0;
+        population_lengths_sample = 0;
         cpue = 0;
         age_sample = 0;
         length_sample = 0;
     }
 
-    void population_sample(Region region, const Fish& fish) {
-        length_pop(region, fish.length_bin())++;
+    /**
+     * Monitor the fish population
+     *
+     * In reality, we can never sample the true underlying population of fish. 
+     * This method just allows us to capture some true population statistics for things
+     * like examining the precision and bias of our estimates.
+     * 
+     * @param fish   A fish
+     */
+    void population(const Fish& fish) {
+        auto y = year(now);
+        // Add fish to numbers by Year and Region
+        population_numbers(y, fish.region)++;
+        // Add fish to numbers by Region and Length for current year
+        population_lengths_sample(fish.region, fish.length_bin())++;
+        // Tagging specific population monitoring
+        tagging.population(fish);
     }
 
     void catch_sample(Region region, Method method, const Fish& fish) {
@@ -138,6 +159,8 @@ class Monitor {
 
         tagging.finalise();
 
+        population_numbers.write(directory + "/population_numbers.tsv");
+        
         cpues.write(directory + "/cpues.tsv");
         age_samples.write(directory + "/age_samples.tsv");
         length_samples.write(directory + "/length_samples.tsv");

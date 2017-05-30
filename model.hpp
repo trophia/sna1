@@ -47,9 +47,10 @@ class Model {
      */
     void update(void) {
         auto y = year(now);
-        //auto q = quarter(now);
+        bool burnin = (y < Years_min);
 
-        auto& tagging = monitor.tagging;
+        // Reset the monitoring counts
+        if (not burnin) monitor.reset();
 
         /*****************************************************************
          * Spawning and recruitment
@@ -95,12 +96,14 @@ class Model {
                     fish.maturation();
                     fish.movement();
                     fish.shedding();
+
+                    if (not burnin) monitor.population(fish);
                 }
             }
         }
 
         // Don't go further if in burn in
-        if (y < Years_min) return;
+        if (burnin) return;
 
 
         /*****************************************************************
@@ -123,17 +126,17 @@ class Model {
             // Randomly choose a fish
             Fish& fish = fishes[chance()*fishes.size()];
             // If the fish is alive, and not yet tagged then...
-            if (fish.alive() and not fish.tag and fish.length >= tagging.release_length_min) {
+            if (fish.alive() and not fish.tag and fish.length >= monitor.tagging.release_length_min) {
                 // Randomly choose a fishing method in the region the fish currently resides
                 auto method = Method(methods.select(chance()).index());
                 auto region = fish.region;
                 // If the tag releases for the method in the region is not yet acheived...
-                if (tagging.released(y, region, method) < parameters.tagging_releases(y, region, method)) {
+                if (monitor.tagging.released(y, region, method) < parameters.tagging_releases(y, region, method)) {
                     // Is this fish caught by this method?
                     auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
-                    if ((!tagging.release_length_selective) || (chance() < selectivity)) {
+                    if ((!monitor.tagging.release_length_selective) || (chance() < selectivity)) {
                         // Tag and release the fish
-                        tagging.release(fish, method);
+                        monitor.tagging.release(fish, method);
                         fish.released(method);
                         // Increment the number of releases
                         releases_done++;
@@ -153,90 +156,79 @@ class Model {
          * Harvesting and harvest related monitoring (e.g. CPUE, tag recoveries)
          ****************************************************************/
 
-        // As an optimisation, only do harvesting after a particular time step 
-        bool harvesting = y>=1900;
-        if (harvesting) {
+        // Update the current catches by region/method
+        // from the catch history
+        harvest.catch_observed_update();
 
-            // Update the current catches by region/method
-            // from the catch history
-            harvest.catch_observed_update();
+        // Reset the harvesting accounting
+        harvest.attempts = 0;
+        harvest.catch_taken = 0;
+        // Keep track of total catch taken and quit when it is >= observed
+        double catch_taken = 0;
+        double catch_observed = sum(harvest.catch_observed);
 
-            // Reset the harvesting accounting
-            harvest.attempts = 0;
-            harvest.catch_taken = 0;
-            // Keep track of total catch taken and quit when it is >= observed
-            double catch_taken = 0;
-            double catch_observed = sum(harvest.catch_observed);
+        // Randomly draw fish and "assign" them with varying probabilities
+        // to a particular region/method catch
+        while(true) {
+            // Randomly choose a fish
+            Fish& fish = fishes[chance()*fishes.size()];
+            // If the fish is alive, then...
+            if (fish.alive()) {
+                auto region = fish.region;
 
-            // Reset the monitoring counts
-            monitor.reset();
+                // Randomly choose a fishing method in the region the fish currently resides
+                auto method = Method(methods.select(chance()).index());
+                // If the catch for the method in the region is not yet caught...
+                if (harvest.catch_taken(region, method) < harvest.catch_observed(region, method)) {
+                    // Is this fish caught by this method?
+                    auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
+                    auto boldness = (method == fish.method_last) ? (1 - parameters.fishes_shyness(method)) : 1;
+                    if (chance() < selectivity * boldness) {
+                        // Is this fish greater than the MLS and thus retained?
+                        if (fish.length >= parameters.harvest_mls(method)) {
+                            // Kill the fish
+                            fish.dies();
+                            
+                            // Add to catch taken for region/method
+                            double fish_biomass = fish.weight() * fishes.scalar;
+                            harvest.catch_taken(region, method) += fish_biomass;
+                            
+                            // Catch sampling, currently 100% sampling of catch
+                            monitor.catch_sample(region, method, fish);
 
-            // Randomly draw fish and "assign" them with varying probabilities
-            // to a particular region/method catch
-            while(true) {
-                // Randomly choose a fish
-                Fish& fish = fishes[chance()*fishes.size()];
-                // If the fish is alive, then...
-                if (fish.alive()) {
-                    auto region = fish.region;
+                            // Update total catch and quit if all taken
+                            catch_taken += fish_biomass;
+                            if (catch_taken >= catch_observed) break;
 
-                    monitor.population_sample(region, fish);
-
-                    // Randomly choose a fishing method in the region the fish currently resides
-                    auto method = Method(methods.select(chance()).index());
-                    // If the catch for the method in the region is not yet caught...
-                    if (harvest.catch_taken(region, method) < harvest.catch_observed(region, method)) {
-                        // Is this fish caught by this method?
-                        auto selectivity = harvest.selectivity_at_length(method, fish.length_bin());
-                        auto boldness = (method == fish.method_last) ? (1 - parameters.fishes_shyness(method)) : 1;
-                        if (chance() < selectivity * boldness) {
-                            // Is this fish greater than the MLS and thus retained?
-                            if (fish.length >= parameters.harvest_mls(method)) {
-                                // Kill the fish
+                            // Is this fish scanned for a tag?
+                            if (chance() < parameters.tagging_scanning(y, region, method)) {
+                                monitor.tagging.scan(fish, method);
+                            }
+                        } else {
+                            // Does this fish die after released?
+                            if (chance() < parameters.harvest_handling_mortality) {
                                 fish.dies();
-                                
-                                // Add to catch taken for region/method
-                                double fish_biomass = fish.weight() * fishes.scalar;
-                                harvest.catch_taken(region, method) += fish_biomass;
-                                
-                                // Catch sampling, currently 100% sampling of catch
-                                monitor.catch_sample(region, method, fish);
-
-                                // Update total catch and quit if all taken
-                                catch_taken += fish_biomass;
-                                if (catch_taken >= catch_observed) break;
-
-                                // Is this fish scanned for a tag?
-                                if (chance() < parameters.tagging_scanning(y, region, method)) {
-                                    tagging.scan(fish, method);
-                                }
                             } else {
-                                // Does this fish die after released?
-                                if (chance() < parameters.harvest_handling_mortality) {
-                                    fish.dies();
-                                } else {
-                                    fish.released(method);
-                                }
+                                fish.released(method);
                             }
                         }
                     }
-                    harvest.attempts++;
-                    if (harvest.attempts > fishes.size() * 100) {
-                        std::cerr << y << std::endl
-                                  << "Catch taken so far:\n" << harvest.catch_taken << std::endl
-                                  << "Catch observed:\n" << harvest.catch_observed << std::endl;
-                        throw std::runtime_error("Too many attempts to take catch. Something is probably wrong.");
-                    };
                 }
+                harvest.attempts++;
+                if (harvest.attempts > fishes.size() * 100) {
+                    std::cerr << y << std::endl
+                              << "Catch taken so far:\n" << harvest.catch_taken << std::endl
+                              << "Catch observed:\n" << harvest.catch_observed << std::endl;
+                    throw std::runtime_error("Too many attempts to take catch. Something is probably wrong.");
+                };
             }
-
-            // Update harvest.biomass_vulnerable for use in monioring
-            harvest.biomass_vulnerable_update(fishes);
-
-            // Update monitoring
-            monitor.update(fishes, harvest);
-
         }
+
+        // Update harvest.biomass_vulnerable for use in monioring
+        harvest.biomass_vulnerable_update(fishes);
+
+        // Update monitoring
+        monitor.update(fishes, harvest);
 
     }
 
@@ -464,7 +456,7 @@ class Model {
 
                 for (auto region : regions) {
                     length_file << y << "\t" << region_code(region) << "\tpop\t";
-                    for(auto length : lengths) length_file << monitor.length_pop(region, length) << "\t";
+                    for(auto length : lengths) length_file << monitor.population_lengths_sample(region, length) << "\t";
                     length_file << "\n";
 
                     for (auto method : methods) {

@@ -24,6 +24,11 @@ public:
     bool release_length_selective = true;
 
     /**
+     * Population (above `release_length_min`) numbers by year and region
+     */
+    Array<int, Years, Regions> population_numbers;
+
+    /**
      * The number of actual releases by year, region, and method 
      * to compare to `release_targets`
      */
@@ -81,12 +86,28 @@ public:
 
 
     void initialise(void) {
+        population_numbers = 0;
         released = 0;
         scanned = 0;
     }
 
     void finalise(void) {
         write();
+    }
+
+    /**
+     * Monitor the fish population
+     *
+     * In reality, we can never sample the true underlying population of fish. 
+     * This method just allows us to capture some true population statistics for things
+     * like examining the precision and bias of our estimates.
+     * 
+     * @param fish   A fish
+     */
+    void population(const Fish& fish) {
+        auto y = year(now);
+        // Add fish to numbers by Year and Region
+        if (fish.length >= release_length_min) population_numbers(y, fish.region)++;
     }
 
     /**
@@ -125,6 +146,7 @@ public:
     void write(std::string directory = "output/monitor/tagging") {
         boost::filesystem::create_directories(directory);
         
+        population_numbers.write(directory + "/population_numbers.tsv");
         released.write(directory + "/released.tsv");
         scanned.write(directory + "/scanned.tsv");
 

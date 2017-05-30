@@ -159,6 +159,15 @@ year	region	method	value
 
 When doing simulations involving tagging it may be appropriate to set the `fishes_seed_number` (i.e. the number of fish in the pristine, unfished, poulation) to a high value e.g. 50000000
 
+The simulated tagging programme outputs five files to the folder `output/monitor/tagging/`:
+
+- `population_numbers.tsv` : the numbers of fish in the population that are above `release_length_min` by year and region
+- `released.tsv` : the number of fish scanned by year, region and method
+- `scanned.tsv` : the number of fish scanned by year, region, method and length bin
+- `releases.tsv` : the individual tag releases with fields `tag`, `time_rel`, `time_rec`, `region_rel`
+- `recaptures.tsv`: the individual tag recaptures with fields `tag`, `time_rel`, `time_rec`, `region_rel`, `region_rec`, `method_rel`, `method_rec`, `length_rel`, `length_rec`
+
+
 #### Shyness
 
 The file [`input/fishes_shyness.tsv`](input/fishes_shyness.tsv) controls the degree of shyness of a fish to the last fishing method that it was caught by (assuming it was subsequently released because it was undersized or tagged). This is used to mediate it vulnerability to that fishing method in subsequent time steps. Shyness to a method should be a value between 0 and 1:
