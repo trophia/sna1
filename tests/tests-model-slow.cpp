@@ -221,6 +221,10 @@ BOOST_AUTO_TEST_CASE(casal){
 	Model model;
 	model.initialise();
 
+	// Use a large population of individuals
+	parameters.fishes_seed_number = 5e6;
+	// Do all monitoring in every year
+	parameters.monitoring_programme = "CLA";
 	// Ensure parameters are set to match the assumptions of CASAL
 	// Only temporal variation in growth
 	parameters.fishes_growth_variation = 't';
