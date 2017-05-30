@@ -95,12 +95,12 @@ sna1.prof: $(HPPS) $(CPPS) requires
 # Test executable with coverage (and no optimisation) for tests that run fast
 # These tests are likely to be run often during development and don't require optimisation
 # The `no-inline` options provide better coverage statistics because lines don't get "inlined away"
-tests-fast.exe: $(HPPS) tests/tests-fast.cpp $(TEST_CPPS) requires
-	$(CXX) $(CXX_FLAGS) -g -O0 --coverage -fno-inline -fno-inline-small-functions -fno-default-inline $(INC_DIRS) -o$@ tests/tests-fast.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework -lgcov
+tests-fast.exe: $(HPPS) tests/fast.cpp $(TEST_CPPS) requires
+	$(CXX) $(CXX_FLAGS) -g -O0 --coverage -fno-inline -fno-inline-small-functions -fno-default-inline $(INC_DIRS) -o$@ tests/fast.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework -lgcov
 
 # Test executable with no coverage and full optimisation for tests that run very slowly without these
-tests-slow.exe: $(HPPS) tests/tests-slow.cpp $(TEST_CPPS) requires
-	$(CXX) $(CXX_FLAGS) -O3 $(INC_DIRS) -o$@ tests/tests-slow.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework
+tests-slow.exe: $(HPPS) tests/slow.cpp $(TEST_CPPS) requires
+	$(CXX) $(CXX_FLAGS) -O3 $(INC_DIRS) -o$@ tests/slow.cpp $(LIB_DIRS) $(LIBS) -lboost_unit_test_framework
 
 
 #############################################################
@@ -139,12 +139,12 @@ tests/casal/casal.installed: tests/casal/casal-230 tests/casal/casal-latest
 	touch $@
 
 # Run fast tests
-test-fast: tests-fast.exe
+tests-fast: tests-fast.exe
 	time ./tests-fast.exe
 
 # Run slow tests
-test-slow: tests-slow.exe tests/casal/casal.installed
+tests-slow: tests-slow.exe tests/casal/casal.installed
 	time ./tests-slow.exe
 
 # Run all tests
-test: test-fast test-slow
+test: tests-fast tests-slow

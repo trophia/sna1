@@ -23,19 +23,19 @@ class Model {
     Monitor monitor;
 
     void initialise(void) {
+        parameters.initialise();
         environ.initialise();
         fishes.initialise();
         harvest.initialise();
         monitor.initialise();
-        parameters.initialise();
     }
 
     void finalise(void) {
+        parameters.finalise();
         environ.finalise();
         fishes.finalise();
         harvest.finalise();
         monitor.finalise();
-        parameters.initialise();
     }
 
     /**
