@@ -69,6 +69,7 @@ write.csl.file(population, 'population.csl')
 #### update estimation csl file ####
 ## load CPUE data
 cpue <- read.table('ibm-outputs/cpue.tsv', header = T, as.is = T)
+cpue <- subset(cpue, cpue != 0)
 cpue$method <- ifelse(cpue$method == 'RE', 'REC', cpue$method)
 cpue$fishery <- paste(cpue$region, cpue$method, sep = '_')
 

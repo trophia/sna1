@@ -20,8 +20,8 @@ install:
     - R --version
 
 script:
-    # For now, do a run until tests are working again
     - make run
+    - make test
 
 after_success:
     # Publish code coverage
