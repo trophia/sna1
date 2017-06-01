@@ -429,13 +429,20 @@ class Fishes : public std::vector<Fish> {
      * Initialise parameters etc
      */
     void initialise(void){
-        boost::filesystem::create_directories("output/fishes");
     }
 
     /**
      * Finalise (e.g. write values to file)
      */
     void finalise(void){
+        boost::filesystem::create_directories("output/fishes");
+
+        std::ofstream values("output/fishes/values.tsv");
+        values << "name\tvalue" << std::endl
+               << "size\t" << size() << std::endl
+               << "alive\t" << number(false) << std::endl
+               << "scalar\t" << scalar << std::endl
+               << "number\t" << number(true) << std::endl;
     }
 
 
