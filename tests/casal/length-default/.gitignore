@@ -1,3 +1,7 @@
+output
+*.csl
+*.err
 *.out
 *.png
 *.pdf
+estimates.txt
