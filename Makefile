@@ -132,9 +132,9 @@ tests/casal/casal-%: tests/casal/casal-%.zip
 # Install CASAL
 #   - R package
 #   - symbolic link to Linux executable
-tests/casal/casal.installed: tests/casal/casal-230 tests/casal/casal-latest
-	R CMD INSTALL tests/casal/casal-latest/R_library/casal_2.30.tar.gz
-	chmod 755 tests/casal/casal-230/Program/Linux/casal
+casal/casal.installed: casal/casal-230 casal/casal-latest
+	R CMD INSTALL casal/casal-latest/R_library/casal_2.30.tar.gz
+	chmod 755 casal/casal-230/Program/Linux/casal
 	ln -sf casal-230/Program/Linux/casal tests/casal/casal
 	touch $@
 
@@ -143,7 +143,7 @@ tests-fast: tests-fast.exe
 	time ./tests-fast.exe
 
 # Run slow tests
-tests-slow: tests-slow.exe tests/casal/casal.installed
+tests-slow: tests-slow.exe casal/casal.installed
 	time ./tests-slow.exe
 
 # Run all tests
