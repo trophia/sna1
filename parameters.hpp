@@ -263,6 +263,7 @@ class Parameters : public Structure<Parameters> {
         IFE("input/fishes_rec_strengths.tsv", fishes_rec_strengths.read);
         IFE("input/fishes_movement.tsv", fishes_movement.read);
         IFE("input/fishes_shyness.tsv", fishes_shyness.read);
+        IFE("input/harvest_mls.tsv", harvest_mls.read);
         IFE("input/harvest_catch_history.tsv", harvest_catch_history.read);
         IFE("input/monitoring_programme.tsv", monitoring_programme.read);
         IFE("input/tagging_releases.tsv", tagging_releases.read);
@@ -291,6 +292,7 @@ class Parameters : public Structure<Parameters> {
         fishes_rec_strengths.write("output/fishes_rec_strengths.tsv");
         fishes_movement.write("output/fishes_movement.tsv");
         fishes_shyness.write("output/fishes_shyness.tsv");
+        harvest_mls.write("output/harvest_mls.tsv");
         harvest_catch_history.write("output/harvest_catch_history.tsv");
         monitoring_programme.write("output/monitoring_programme.tsv");
         tagging_releases.write("output/tagging_releases.tsv");
