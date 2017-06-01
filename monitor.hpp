@@ -242,6 +242,47 @@ class Monitor {
             }
 
         }
+
+        // Output parameters to be inserted in 'population.csl'
+        std::ofstream population_file(casal_directory + "/parameters.tsv");
+        population_file << "par\tvalue\n";
+
+        // Growth parameters
+        double growth_20;
+        double growth_50;
+        double growth_cv;
+        double growth_sdmin = parameters.fishes_growth_temporal_sdmin;
+        if (parameters.fishes_growth_variation == 't') {
+            // Parameters calculated from mean of k and linf
+            auto growth_slope = std::exp(-parameters.fishes_k_mean)-1;
+            auto growth_intercept = -growth_slope * parameters.fishes_linf_mean;
+            growth_20 = growth_intercept + 20 * growth_slope;
+            growth_50 = growth_intercept + 50 * growth_slope;
+            growth_cv = parameters.fishes_growth_temporal_cv;
+        } else {
+            // Parameters calculated by generating 1000 fish and 
+            // calculating mean and cv of growth parameters
+            Mean growth_intercept_mean;
+            StandardDeviation growth_intercept_sd;
+            Mean growth_slope_mean;
+            for (int index = 0; index < 1000; index++) {
+                Fish fish;
+                fish.born(EN);
+                growth_intercept_mean.append(fish.growth_intercept);
+                growth_intercept_sd.append(fish.growth_intercept);
+                growth_slope_mean.append(fish.growth_slope);
+            }
+            growth_20 = growth_intercept_mean + 20 * growth_slope_mean;
+            growth_50 = growth_intercept_mean + 50 * growth_slope_mean;
+            growth_cv = growth_intercept_sd/growth_intercept_mean;
+        }
+        population_file
+            << "growth_20\t" << growth_20 << "\n"
+            << "growth_50\t" << growth_50 << "\n"
+            << "growth_cv\t" << growth_cv << "\n"
+            << "growth_sdmin\t" << growth_sdmin << "\n";
+        population_file.close();
+
     }
 
 
