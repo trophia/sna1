@@ -59,7 +59,7 @@ requires/stencila: requires/stencila-cpp-$(STENCILA_VERSION).zip
 
 
 requires/r-packages.installed:
-	Rscript -e "install.packages(c('tidyr','dplyr','ggplot2'), repos='http://cran.us.r-project.org')"
+	Rscript -e "install.packages(c('tidyr','dplyr','ggplot2', 'knitr'), repos='http://cran.us.r-project.org')"
 	touch $@
 
 
@@ -115,16 +115,16 @@ run: sna1.exe
 # Testing
 
 # CASAL v230 for a linux binary
-tests/casal/casal-230.zip:
+casal/casal-230.zip:
 	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/CASALv230-2012-03-21.zip
 
 # CASAL "latest" for a version of the R package that is compatible
 # with recent R versions
-tests/casal/casal-latest.zip:
+casal/casal-latest.zip:
 	wget -O $@ ftp://ftp.niwa.co.nz/software/casal/latest_casal.zip
 
 # Unzip a CASAL zip
-tests/casal/casal-%: tests/casal/casal-%.zip
+casal/casal-%: casal/casal-%.zip
 	rm -rf $@
 	mkdir $@
 	unzip $< -d $@
