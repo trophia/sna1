@@ -10,45 +10,6 @@ BOOST_AUTO_TEST_SUITE(model)
 // Temporarily skip tagging tests which are currently broken
 #if 0
 
-BOOST_AUTO_TEST_CASE(tagging_basic){
-	Model model;
-	model.initialise();
-
-	// Set up movement
-	parameters.fishes_movement_type = 'h';
-	parameters.fishes_movement = {
-		0.8, 0.1, 0.1,
-		0.1, 0.7, 0.2,
-		0.1, 0.3, 0.6
-	};
-	
-	// Set up tagging program
-	auto& tagging = model.monitor.tagging;
-
-	tagging.release_targets = 0;
-	tagging.release_targets(2000, EN, LL) =  7500;
-	tagging.release_targets(2000, HG, LL) = 15000;
-	tagging.release_targets(2000, BP, LL) =  7500;
-
-	tagging.release_years = false;
-	tagging.release_years(2000) = true;
-
-	tagging.recovery_years = false;
-	tagging.recovery_years(2000) = true;
-	tagging.recovery_years(2001) = true;
-	tagging.recovery_years(2002) = true;
-	tagging.recovery_years(2003) = true;
-
-	model.run(2000, 2004);
-
-	// Do checks
-	BOOST_CHECK(tagging.number > 0);
-	BOOST_CHECK(tagging.tags.size() > 0);
-
-	// Output files for checking
-	model.finalise();
-}
-
 /**
  * A simple tagging "analysis"
  *
@@ -215,53 +176,3 @@ BOOST_AUTO_TEST_CASE(tagging_estimate){
 }
 
 #endif
-
-BOOST_AUTO_TEST_CASE(casal){
-	// Create an initialise model
-	Model model;
-	model.initialise();
-
-	// Use a large population of individuals
-	parameters.fishes_seed_number = 5e6;
-	// Do all monitoring in every year
-	parameters.monitoring_programme = "CLA";
-	// Ensure parameters are set to match the assumptions of CASAL
-	// Only temporal variation in growth
-	parameters.fishes_growth_variation = 't';
-	// No movement
-	parameters.fishes_movement_type = 'n';
-	// No MLS
-	parameters.harvest_mls = 0;
-
-	// Generate files for CASAL
-	model.generate_casal(1900, 2020, "tests/casal/ibm-outputs");
-
-	// Run CASAL
-	auto ok = std::system("cd tests/casal && Rscript length-runner.R");
-	BOOST_CHECK(ok==0);
-
-	// Read in output files containing CASAL estimates
-	std::ifstream file("tests/casal/estimates.txt");
-	std::map<std::string, double> estimates;
-	std::string variable;
-	std::string year;
-	std::string stock;
-	double estimate;
-	std::string header;
-	std::getline(file, header);
-	while (file >> variable >> year >> stock >> estimate) {
-		estimates[variable + "-" + year + "-" + stock] = estimate;
-	}
-
-	// Check estimates of B0 by region are within 5%
-	BOOST_CHECK_CLOSE(estimates["B0-NA-ENLD"], parameters.fishes_b0(EN), 5);
-	BOOST_CHECK_CLOSE(estimates["B0-NA-HAGU"], parameters.fishes_b0(HG), 5);
-	BOOST_CHECK_CLOSE(estimates["B0-NA-BOP"], parameters.fishes_b0(BP), 5);
-
-	// Check estimates of R0 by region are within 10%
-	BOOST_CHECK_CLOSE(estimates["R0-NA-ENLD"], model.fishes.recruitment_pristine(EN), 10);
-	BOOST_CHECK_CLOSE(estimates["R0-NA-HAGU"], model.fishes.recruitment_pristine(HG), 10);
-	BOOST_CHECK_CLOSE(estimates["R0-NA-BOP"], model.fishes.recruitment_pristine(BP), 10);
-}
-
-BOOST_AUTO_TEST_SUITE_END()

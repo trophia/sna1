@@ -1,0 +1,5 @@
+{
+    "fishes_seed_number": 5000000,
+    "fishes_growth_variation": "t",
+    "fishes_movement_type": "n"
+}
