@@ -6,7 +6,7 @@ library(tidyr)
 library(dplyr)
 library(ggplot2)
 
-CASAL_HOME = '~/trophia/code/sna1/casal'
+CASAL_HOME = Sys.getenv('CASAL_HOME')
 
 
 #################################################################
@@ -36,7 +36,7 @@ population <- extract.csl.file(file.path(CASAL_HOME, 'length/population.csl'))
 population$initial$value <- unique(catch_ibm$year)[1]
 current <- unique(catch_ibm$year)[length(unique(catch_ibm$year))]
 population$current$value <- current
-population$final$value <- current + 5
+population$final$value <- current + 1
 
 # Insert growth parameters from IBM
 # Currently uses the same parameters for all substocks
@@ -162,7 +162,6 @@ biomass <- read.table('output/monitor/casal/biomass.tsv', header = T, as.is = T)
 stocks <- c('ENLD', 'HAGU', 'BOP')
 areas <- c('EN', 'HG', 'BP')
 
-pdf('SSBs.pdf', width = 9, height = 7, pointsize = 11)
 par(mfrow = c(2, 2), mar = c(2, 2, 2, 2), oma = c(3, 3, 1, 1))
 
 for (i in 1:length(stocks)) {
@@ -179,7 +178,6 @@ legend('bottomleft', c('IBM biomass', 'CASAL biom', 'CASAL SSB'), lty = 1:3, col
        bty = 'n', inset = 0.02)
 mtext('Year', 1, outer = T, line = 1)
 mtext('Biomass', 2, outer = T, line = 1)
-dev.off()
 
 # -----------------------------------------------------------------------------
 # Comparision of catch at lengths
