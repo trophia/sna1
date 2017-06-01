@@ -20,13 +20,12 @@ BOOST_AUTO_TEST_CASE(run){
 
     for (auto folder : std::vector<std::string>({
         "tests/tagging/simple",
-        "tests/casal/length-default",
-        "tests/casal/run-x"
+        "tests/casal/length-default"
     })) {
         boost::filesystem::current_path(folder);
 
         // Run the model
-        std::cout << "\n" << folder << std::endl;
+        std::cout << "\n" << folder << ": ";
         try {
             Model model;
             model.initialise();
@@ -40,6 +39,7 @@ BOOST_AUTO_TEST_CASE(run){
         } catch(...) {
             BOOST_FAIL("Exception");
         }
+        std::cout << std::endl;
 
         // If there is a test.sh file then run that
         if (boost::filesystem::exists("test.sh")) {
