@@ -256,15 +256,19 @@ class Parameters : public Structure<Parameters> {
 
         // Parameter values can be overidden by setting them in the following files:
         
-        read("input/parameters.json");
-        fishes_b0.read("input/fishes_b0.tsv");
-        fishes_rec_strengths.read("input/fishes_rec_strengths.tsv");
-        fishes_movement.read("input/fishes_movement.tsv");
-        fishes_shyness.read("input/fishes_shyness.tsv");
-        harvest_catch_history.read("input/harvest_catch_history.tsv");
-        monitoring_programme.read("input/monitoring_programme.tsv");
-        tagging_releases.read("input/tagging_releases.tsv");
-        tagging_scanning.read("input/tagging_scanning.tsv");
+        #define IFE(FILE, WHAT) if(boost::filesystem::exists(FILE)) WHAT(FILE)
+
+        IFE("input/parameters.json", read);
+        IFE("input/fishes_b0.tsv", fishes_b0.read);
+        IFE("input/fishes_rec_strengths.tsv", fishes_rec_strengths.read);
+        IFE("input/fishes_movement.tsv", fishes_movement.read);
+        IFE("input/fishes_shyness.tsv", fishes_shyness.read);
+        IFE("input/harvest_catch_history.tsv", harvest_catch_history.read);
+        IFE("input/monitoring_programme.tsv", monitoring_programme.read);
+        IFE("input/tagging_releases.tsv", tagging_releases.read);
+        IFE("input/tagging_scanning.tsv", tagging_scanning.read);
+
+        #undef IFE
 
         // Derived values
         

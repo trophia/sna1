@@ -167,9 +167,9 @@ class Model {
         double catch_taken = 0;
         double catch_observed = sum(harvest.catch_observed);
 
-        // Randomly draw fish and "assign" them with varying probabilities
+        // If there was observed catch then randomly draw fish and "assign" them with varying probabilities
         // to a particular region/method catch
-        while(true) {
+        while(catch_observed > 0) {
             // Randomly choose a fish
             Fish& fish = fishes[chance()*fishes.size()];
             // If the fish is alive, then...
