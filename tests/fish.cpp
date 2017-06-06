@@ -5,9 +5,6 @@
 
 BOOST_AUTO_TEST_SUITE(fish)
 
-/**
- * @brief      Test the construction of fish at birth
- */
 BOOST_AUTO_TEST_CASE(birth){
 	Fish fish;
 	fish.born(HG);
@@ -23,9 +20,6 @@ BOOST_AUTO_TEST_CASE(birth){
 	BOOST_CHECK_EQUAL(fish.length_bin(), 0);
 }
 
-/**
- * @brief      Test the construction of fish through seeding
- */
 BOOST_AUTO_TEST_CASE(seed){
 	Fish fish;
 	fish.seed();
@@ -34,30 +28,6 @@ BOOST_AUTO_TEST_CASE(seed){
 
 	BOOST_CHECK(fish.age() > 0);
 	BOOST_CHECK(fish.length > 0);
-}
-
-
-BOOST_AUTO_TEST_CASE(growth){
-
-	std::ofstream pars("tests/fishes/growth_pars.tsv");
-	pars << "fish\tintercept\tslope\n";
-	std::ofstream trajs("tests/fishes/growth_trajs.tsv");
-	trajs << "fish\ttime\tlength\tlength_new\n";
-	for (int index = 0; index < 100; index++) {
-		Fish fish;
-		fish.born(EN);
-		pars << index << "\t"
-			 << fish.growth_intercept << "\t" 
-			 << fish.growth_slope << "\n";
-		for (int time = 0; time < 100; time++) {
-			trajs << index << "\t"
-				 << time << "\t"
-				 << fish.length << "\t";
-			fish.growth();
-			trajs << fish.length << "\n";
-		}
-	}
-
 }
 
 // Runs fish movement over many time steps and many 
@@ -131,7 +101,6 @@ BOOST_AUTO_TEST_CASE(movement_markov){
 
 	parameters.initialise();
 }
-
 
 BOOST_AUTO_TEST_CASE(movement_home){
 	parameters.fishes_movement_type = 'h';

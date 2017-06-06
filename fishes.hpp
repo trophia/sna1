@@ -443,6 +443,26 @@ class Fishes : public std::vector<Fish> {
                << "alive\t" << number(false) << std::endl
                << "scalar\t" << scalar << std::endl
                << "number\t" << number(true) << std::endl;
+
+        // Generate some example growth trajectories for checking
+        std::ofstream pars("output/fishes/growth_pars.tsv");
+        pars << "fish\tintercept\tslope\n";
+        std::ofstream trajs("output/fishes/growth_trajs.tsv");
+        trajs << "fish\ttime\tlength\tlength_new\n";
+        for (int index = 0; index < 100; index++) {
+            Fish fish;
+            fish.born(HG);
+            pars << index << "\t"
+                 << fish.growth_intercept << "\t" 
+                 << fish.growth_slope << "\n";
+            for (int time = 0; time < 50; time++) {
+                trajs << index << "\t"
+                     << time << "\t"
+                     << fish.length << "\t";
+                fish.growth();
+                trajs << fish.length << "\n";
+            }
+        }
     }
 
 
