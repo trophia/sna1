@@ -406,7 +406,7 @@ class Fishes : public std::vector<Fish> {
                 auto h = parameters.fishes_steepness;
                 auto determ = 4*h*r0*s/((5*h-1)*s+s0*(1-h));
 
-                double strength = parameters.fishes_rec_strengths(y);
+                double strength = parameters.fishes_rec_strengths(y, region);
                 if (strength < 0) {
                     strength = Lognormal(1, parameters.fishes_rec_var).random();
                 }

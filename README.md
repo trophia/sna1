@@ -41,7 +41,7 @@ The file `output/fishes/values.tsv` contains summary values related to the fish 
 - number : the scaled number of fish in the populaion in the *last year* e.g. `1.20492e+08`
 
 
-#### Pristine spawning biomass (B0)
+#### Pristine spawning biomass
 
 The pristine spawning biomass (B0) for each region can be set in the file [`input/fishes_b0.tsv`](input/fishes_b0.tsv) e.g.
 
@@ -52,16 +52,16 @@ region	value
 2	100000
 ```
 
-#### [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv)
+#### Recruitment year class strengths
 
-A TSV file with recruitment strengths (multipliers of deterministic recruitment) for each year. Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
+Year class strengths (multipliers of deterministic recruitment) can be set for each year and region using the file [`input/fishes_rec_strengths.tsv`](input/fishes_rec_strengths.tsv). Use `-1` for random recruitment strength (having mean `1` and a c.v. of `fishes_rec_var`). Use values of zero or greater to specify a recruitment strength. You don't have to specify a value for each year; the default recruitment strength is `1` (i.e. deterministic). 
 
-For example, a recruitment strength of `1.3` in 1990, random recruitment strength in 1991, and deterministic in all other years would be specified using:
+For example, a recruitment strength of `1.3` in 1990, random recruitment strength in 1991, and deterministic in all other years for Hauraki Gulf would be specified using:
 
 ```
-year	value
-1990	1.3
-1991	-1
+year	region	value
+1990	1	1.3
+1991	1	-1
 ```
 
 #### [`input/fishes_movement.tsv`](input/fishes_movement.tsv)

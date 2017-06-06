@@ -78,7 +78,7 @@ class Parameters : public Structure<Parameters> {
      * Recruitment variability
      */
     double fishes_rec_var = 0.6;
-    Array<double, Years> fishes_rec_strengths = 1;
+    Array<double, Years, Regions> fishes_rec_strengths = 1;
 
     /**
      * Sex ratio
