@@ -40,7 +40,6 @@ The file `output/fishes/values.tsv` contains summary values related to the fish 
 - scalar : the scalar used to scale the simulated population to the real population e.g. `244.498`
 - number : the scaled number of fish in the populaion in the *last year* e.g. `1.20492e+08`
 
-
 #### Pristine spawning biomass
 
 The pristine spawning biomass (B0) for each region can be set in the file [`input/fishes_b0.tsv`](input/fishes_b0.tsv) e.g.
@@ -63,6 +62,34 @@ year	region	value
 1990	1	1.3
 1991	1	-1
 ```
+
+#### Growth
+
+The model allows for two forms of the relation between fish length and the increment in fish length:
+
+- linear (`l`)
+- exponential (`e`)
+
+Both models are parameterized using the von Bertalanffy parameters _k_ and _Linf_ (for the exponential model these are converted into equivalent increments at length 25cm and 50cm and then into the _lamda_ and _kappa_ parameters of the exponential model). For example, a von Bertalanffy growth curve is defined as:
+
+```json
+{
+    "fishes_growth_model": "l",
+    "fishes_k_mean": 0.1,
+    "fishes_linf_mean": 60
+}
+```
+
+But can be converted to an exponential model by changing the `fishes_growth_model` code to `e`:
+
+```json
+{
+    "fishes_growth_model": "e",
+    "fishes_k_mean": 0.1,
+    "fishes_linf_mean": 60
+}
+```
+
 
 #### [`input/fishes_movement.tsv`](input/fishes_movement.tsv)
 
