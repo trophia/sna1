@@ -1,8 +1,11 @@
 library(ggplot2)
 
-pars <- read.table('growth_pars.tsv', header=T)
+pars <- read.table('../../output/fishes/growth_pars.tsv', header=T)
 
-trajs <- within(read.table('growth_trajs.tsv', header=T), {
+ggplot(pars, aes(x=intercept, y=..density..)) + geom_histogram()
+ggplot(pars, aes(x=slope, y=..density..)) + geom_histogram()
+
+trajs <- within(read.table('../../output/fishes/growth_trajs.tsv', header=T), {
   length_incr <- length_new - length
 })
 ggplot(trajs, aes(x=time, y=length, group=fish)) +
