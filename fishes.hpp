@@ -439,7 +439,8 @@ class Fishes : public std::vector<Fish> {
 
         std::ofstream values("output/fishes/values.tsv");
         values << "name\tvalue" << std::endl
-               << "size\t" << size() << std::endl
+               << "fishes_size\t" << size() << std::endl
+               << "fish_bytes\t" << sizeof(Fish) << std::endl
                << "alive\t" << number(false) << std::endl
                << "scalar\t" << scalar << std::endl
                << "number\t" << number(true) << std::endl;

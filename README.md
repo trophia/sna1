@@ -35,7 +35,8 @@ A JSON file containing single-valued parameters. The format is fairly self expla
 
 The file `output/fishes/values.tsv` contains summary values related to the fish population simulated:
 
-- size: the size of the vector of simulated fish (this may be above `fishes_seed_number` for example due to recruitment variation causing the population size to grow above the seed size)
+- fishes_size: the size of the vector of simulated fish (this may be above `fishes_seed_number` for example due to recruitment variation causing the population size to grow above the seed size)
+- fish_bytes: not something you buy from the freezer section at the supermarket; the number of bytes per `Fish` (useful for determining RAM usage for large populations)
 - alive : the simulated number of *alive* fish in the population in the *last year* e.g. `492813`
 - scalar : the scalar used to scale the simulated population to the real population e.g. `244.498`
 - number : the scaled number of fish in the populaion in the *last year* e.g. `1.20492e+08`
