@@ -74,7 +74,7 @@ STENCILA_DIM(Lengths,lengths,length,100);
 const double length_bin_width = 1; // cm
 
 int length_bin(double length){
-    return std::min(length,100.0)/length_bin_width;
+    return std::min(length, 99.99)/length_bin_width;
 }
 
 int length_mid(Stencila::Level<Lengths>& length_bin){
