@@ -391,7 +391,7 @@ class Fishes : public std::vector<Fish> {
     /**
      * Current recruitment (instances)
      */
-    Array<uint, Regions> recruitment_instances;
+    Array<unsigned int, Regions> recruitment_instances;
 
 
     void recruitment_update(void) {
@@ -422,7 +422,7 @@ class Fishes : public std::vector<Fish> {
     /**
      * Counts of fish by model dimensions
      */
-    Array<uint,Regions,Sexes,Ages,Lengths> counts;
+    Array<unsigned int,Regions,Sexes,Ages,Lengths> counts;
 
 
     /**

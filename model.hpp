@@ -55,7 +55,7 @@ class Model {
         /*****************************************************************
          * Spawning and recruitment
          ****************************************************************/
-        
+
         // Update spawning biomass
         fishes.biomass_spawners_update();
 
@@ -63,9 +63,9 @@ class Model {
         fishes.recruitment_update();
 
         // Create and insert each recruit into the population
-        uint slot = 0;
+        unsigned int slot = 0;
         for (auto region : regions) {
-            for (uint index = 0; index < fishes.recruitment_instances(region); index++){
+            for (unsigned int index = 0; index < fishes.recruitment_instances(region); index++){
                 Fish recruit;
                 recruit.born(Region(region.index()));
 
@@ -240,7 +240,7 @@ class Model {
      */
     void pristine(Time time, std::function<void()>* callback = 0){
         // Set `now` to some arbitrary time (but high enough that fish
-        // will have a birth time (uint) greater than 0)
+        // will have a birth time (unsigned int) greater than 0)
         now = 200;
         // Keep recruitment fixed at a constant level that will produce the
         // wanted `seed_number` of individuals in equilibrium
