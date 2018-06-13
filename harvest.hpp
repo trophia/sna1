@@ -22,7 +22,7 @@ class Harvest {
 
     Array<double, Regions, Methods> catch_taken;
 
-    uint attempts;
+    unsigned int attempts;
 
 
 

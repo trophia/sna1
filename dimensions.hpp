@@ -5,17 +5,17 @@
 /**
  * Time
  */
-typedef uint Time;
+typedef unsigned int Time;
 Time now;
 
-const uint times_per_year = 1;
+const unsigned int times_per_year = 1;
 
-uint year(Time t) {
+unsigned int year(Time t) {
     // TODO
     return t;
 }
 
-uint quarter(Time t) {
+unsigned int quarter(Time t) {
     // TODO
     return 0;
 }
@@ -23,8 +23,8 @@ uint quarter(Time t) {
 /**
  * Years
  */
-const uint Years_min = 1900;
-const uint Years_max = 2025;
+const unsigned int Years_min = 1900;
+const unsigned int Years_max = 2025;
 STENCILA_DIM_RANGE(Years,years,year,Years_min,Years_max)
 
 /**
